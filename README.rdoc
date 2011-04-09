@@ -1,0 +1,41 @@
+=Squeel
+
+This is a complete rewrite of the library formerly called MetaWhere. It's Rails 3.1-only
+for now.
+
+It's not really suitable for actual use yet, but you're welcome to test it and send
+me feedback.
+
+==What's new?
+
+A lot.
+
+* Symbol and hash methods aren't loaded by default. To enable them, do this in
+  your Squeel.configure block: <tt>config.load_core_extensions!</tt>
+* Speaking of, you can call Squeel.configure do |config| ... end and do
+  another bit of configuration, setting up your own aliases.
+  <tt>config.alias_predicate :new_name, :old_name</tt>
+* The preferred way to use the various enhancements is now by passing a block to
+  the relation method you're calling. For example:
+
+    Person.select{max(id).as(max_id)} # Call SQL functions
+    Person.where{(name == 'bob') & (salary == 100000)} # Compounds & and | work
+
+* Operators have changed. As before, operators starting with ! are only available
+  on Ruby 1.9. Upgrade, for the love of all that is good and holy.
+
+  * == - Equality
+  * != - Inequality
+  * ^ - Inequality, for those poor souls on 1.8.x
+  * >> - In, (mnemonic: value >> [1,2,3], the value is running INTO the array)
+  * << - Not in, (mnemonic: value << [1,2,3], the value is running OUT of the array)
+  * =~ - Matches (SQL LIKE)
+  * !~ - Not matches (SQL NOT LIKE) Again, only in Ruby 1.9
+  * > - Greater than
+  * >= - Greater than or equal to
+  * < - Less than
+  * <= - Less than or equal to
+  * [] - Alternative function syntax. Just use parentheses, not sure I'm gonna keep [].
+
+There's more -- have a read through the specs for a better idea of what you can do,
+or clone the repo, run <tt>bundle install</tt> and play around in <tt>rake console</tt>.
