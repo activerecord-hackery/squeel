@@ -11,7 +11,7 @@ me feedback.
 A lot.
 
 * Symbol and hash methods aren't loaded by default. To enable them, do this in
-  your Squeel.configure block: <tt>config.load_core_extensions!</tt>
+  your Squeel.configure block: <tt>config.load_core_extensions :hash, :symbol</tt>
 * Speaking of, you can call Squeel.configure do |config| ... end and do
   another bit of configuration, setting up your own aliases.
   <tt>config.alias_predicate :new_name, :old_name</tt>
