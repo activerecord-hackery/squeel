@@ -3,7 +3,7 @@ require 'squeel/contexts/join_dependency_context'
 
 module Squeel
   module Visitors
-    class SelectVisitor < Base
+    class AttributeVisitor < Base
 
       def visit_Hash(o, parent)
         o.map do |k, v|
@@ -55,6 +55,10 @@ module Squeel
         parent = traverse(o, parent)
 
         accept(o.endpoint, parent)
+      end
+
+      def visit_Squeel_Nodes_Order(o, parent)
+        accept(o.expr, parent).send(o.descending? ? :desc : :asc)
       end
 
       def visit_Squeel_Nodes_Function(o, parent)

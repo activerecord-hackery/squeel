@@ -1,6 +1,6 @@
 module Squeel
   module Visitors
-    describe SelectVisitor do
+    describe AttributeVisitor do
 
       before do
         @jd = ActiveRecord::Associations::JoinDependency.
@@ -12,7 +12,7 @@ module Squeel
                }
              }, [])
         @c = Squeel::Contexts::JoinDependencyContext.new(@jd)
-        @v = SelectVisitor.new(@c)
+        @v = AttributeVisitor.new(@c)
       end
 
       it 'creates a bare ARel attribute given a symbol with no asc/desc' do
@@ -22,47 +22,50 @@ module Squeel
         attribute.relation.name.should eq 'people'
       end
 
-      it 'creates the select against the proper table for nested hashes' do
-        selects = @v.accept({
+      it 'creates the ordering against the proper table for nested hashes' do
+        orders = @v.accept({
           :children => {
             :children => {
               :parent => {
-                :parent => :name
+                :parent => :name.asc
               }
             }
           }
         })
-        selects.should be_a Array
-        select = selects.first
-        select.should be_a Arel::Attribute
-        select.relation.table_alias.should eq 'parents_people_2'
+        orders.should be_a Array
+        ordering = orders.first
+        ordering.should be_a Arel::Nodes::Ordering
+        ordering.expr.relation.table_alias.should eq 'parents_people_2'
+        ordering.direction.should eq :asc
       end
 
-      it 'will not alter values it is unable to accept' do
-        select = @v.accept(['THIS PARAMETER', 'WHAT DOES IT MEAN???'])
-        select.should eq ['THIS PARAMETER', 'WHAT DOES IT MEAN???']
+      it 'does not alter values it is unable to accept' do
+        orders = @v.accept(['THIS PARAMETER', 'WHAT DOES IT MEAN???'])
+        orders.should eq ['THIS PARAMETER', 'WHAT DOES IT MEAN???']
       end
 
       it 'treats keypath keys like nested hashes' do
-        select = @v.accept(Nodes::Stub.new(:children).children.parent.parent.name)
-        select.should be_a Arel::Attribute
-        select.relation.table_alias.should eq 'parents_people_2'
+        ordering = @v.accept(Nodes::Stub.new(:children).children.parent.parent.name.asc)
+        ordering.should be_a Arel::Nodes::Ordering
+        ordering.expr.relation.table_alias.should eq 'parents_people_2'
+        ordering.direction.should eq :asc
       end
 
       it 'honors absolute keypaths' do
-        selects = @v.accept(dsl{{children => {children => ~children.children.name}}})
-        selects.should be_a Array
-        select = selects.first
-        select.should be_a Arel::Attribute
-        select.relation.table_alias.should eq 'children_people_2'
+        orders = @v.accept(dsl{{children => {children => ~children.children.name.asc}}})
+        orders.should be_a Array
+        ordering = orders.first
+        ordering.expr.relation.table_alias.should eq 'children_people_2'
+        ordering.direction.should eq :asc
       end
 
       it 'allows hashes with keypath keys' do
-        selects = @v.accept(Nodes::Stub.new(:children).children.parent.parent => :name)
-        selects.should be_a Array
-        select = selects.first
-        select.should be_a Arel::Attribute
-        select.relation.table_alias.should eq 'parents_people_2'
+        orders = @v.accept(Nodes::Stub.new(:children).children.parent.parent => :name.asc)
+        orders.should be_a Array
+        ordering = orders.first
+        ordering.should be_a Arel::Nodes::Ordering
+        ordering.expr.relation.table_alias.should eq 'parents_people_2'
+        ordering.direction.should eq :asc
       end
 
       it 'creates an ARel NamedFunction node for a Function node' do
@@ -73,6 +76,11 @@ module Squeel
       it 'maps symbols in Function args to ARel attributes' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3'))
         function.to_sql.should match /find_in_set\("people"."id", '1,2,3'\)/
+      end
+
+      it 'accepts Order with Function expression' do
+        function = @v.accept(dsl{find_in_set(children.children.id, '1,2,3').desc})
+        function.to_sql.should match /find_in_set\("children_people_2"."id", '1,2,3'\) DESC/
       end
 
       it 'accepts keypaths as function args' do
@@ -108,6 +116,11 @@ module Squeel
       it 'sets the alias on an InfixOperation from the Operation alias' do
         operation = @v.accept(dsl{(id + 1).as(:incremented_id)})
         operation.to_sql.should match /incremented_id/
+      end
+
+      it 'accepts Order with Operation expression' do
+        operation = @v.accept(dsl{(id / 1).desc})
+        operation.to_sql.should match /"people"."id" \/ 1 DESC/
       end
 
     end

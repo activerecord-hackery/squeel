@@ -15,20 +15,14 @@ module Squeel
           @join_dependency ||= (build_join_dependency(table.from(table), @joins_values) && @join_dependency)
         end
 
-        def select_visitor
-          Visitors::SelectVisitor.new(
-            Contexts::JoinDependencyContext.new(join_dependency)
-          )
-        end
-
         def predicate_visitor
           Visitors::PredicateVisitor.new(
             Contexts::JoinDependencyContext.new(join_dependency)
           )
         end
 
-        def order_visitor
-          Visitors::OrderVisitor.new(
+        def attribute_visitor
+          Visitors::AttributeVisitor.new(
             Contexts::JoinDependencyContext.new(join_dependency)
           )
         end
@@ -66,6 +60,7 @@ module Squeel
           build_join_dependency(arel, @joins_values) unless @joins_values.empty?
 
           predicate_viz = predicate_visitor
+          attribute_viz = attribute_visitor
 
           collapse_wheres(arel, predicate_viz.accept((@where_values - ['']).uniq))
 
@@ -77,11 +72,10 @@ module Squeel
           arel.group(*@group_values.uniq.reject{|g| g.blank?}) unless @group_values.empty?
 
           unless @order_values.empty?
-            order_viz = order_visitor
-            arel.order(*order_viz.accept(@order_values.uniq.reject{|o| o.blank?}))
+            arel.order(*attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?}))
           end
 
-          build_select(arel, select_visitor.accept(@select_values.uniq))
+          build_select(arel, attribute_viz.accept(@select_values.uniq))
 
           arel.from(@from_value) if @from_value
           arel.lock(@lock_value) if @lock_value

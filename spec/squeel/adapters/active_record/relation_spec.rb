@@ -23,9 +23,9 @@ module Squeel
 
         end
 
-        describe '#order_visitor' do
+        describe '#attribute_visitor' do
 
-          it 'creates an order visitor with a JoinDependencyContext for the relation' do
+          it 'creates an attribute visitor with a JoinDependencyContext for the relation' do
             relation = Person.joins({
               :children => {
                 :children => {
@@ -34,29 +34,9 @@ module Squeel
               }
             })
 
-            visitor = relation.order_visitor
+            visitor = relation.attribute_visitor
 
-            visitor.should be_a Visitors::OrderVisitor
-            table = visitor.contextualize(relation.join_dependency.join_parts.last)
-            table.table_alias.should eq 'parents_people_2'
-          end
-
-        end
-
-        describe '#select_visitor' do
-
-          it 'creates a select visitor with a JoinDependencyContext for the relation' do
-            relation = Person.joins({
-              :children => {
-                :children => {
-                  :parent => :parent
-                }
-              }
-            })
-
-            visitor = relation.select_visitor
-
-            visitor.should be_a Visitors::SelectVisitor
+            visitor.should be_a Visitors::AttributeVisitor
             table = visitor.contextualize(relation.join_dependency.join_parts.last)
             table.table_alias.should eq 'parents_people_2'
           end
