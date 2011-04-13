@@ -143,6 +143,13 @@ module Squeel
         predicate.to_sql.should match /"people"."id" IN \(SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3\)/
       end
 
+      it "doesn't try to sanitize_sql an array of strings in the value of a Predicate" do
+        predicate = @v.accept(dsl{name >> ['Aric Smith', 'Glayce Kulas']})
+        predicate.should be_a Arel::Nodes::In
+        predicate.right.should be_an Array
+        predicate.to_sql.should match /"people"."name" IN \('Aric Smith', 'Glayce Kulas'\)/
+      end
+
       it 'creates a node of the proper type when a hash has a Predicate as a key' do
         predicate = @v.accept(:name.matches => 'Joe%')
         predicate.should be_a Arel::Nodes::Matches

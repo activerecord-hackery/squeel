@@ -24,11 +24,7 @@ module Squeel
       end
 
       def visit_Array(o, parent)
-        if o.first.is_a? String
-          sanitize_sql(o, parent)
-        else
-          o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
-        end
+        o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
       end
 
       def visit_Squeel_Nodes_KeyPath(o, parent)
