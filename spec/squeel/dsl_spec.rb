@@ -4,25 +4,25 @@ module Squeel
   describe DSL do
 
     it 'evaluates code' do
-      result = DSL.evaluate { {id => 1} }
+      result = DSL.eval { {id => 1} }
       result.should be_a Hash
       result.keys.first.should be_a Nodes::Stub
     end
 
     it 'creates function nodes when a method has arguments' do
-      result = DSL.evaluate { max(id) }
+      result = DSL.eval { max(id) }
       result.should be_a Nodes::Function
       result.args.should eq [Nodes::Stub.new(:id)]
     end
 
     it 'creates polymorphic join nodes when a method has a single class argument' do
-      result = DSL.evaluate { association(Person) }
+      result = DSL.eval { association(Person) }
       result.should be_a Nodes::Join
       result.klass.should eq Person
     end
 
     it 'handles OR between predicates' do
-      result = DSL.evaluate {(name =~ 'Joe%') | (articles.title =~ 'Hello%')}
+      result = DSL.eval {(name =~ 'Joe%') | (articles.title =~ 'Hello%')}
       result.should be_a Nodes::Or
       result.left.should be_a Nodes::Predicate
       result.right.should be_a Nodes::KeyPath
@@ -36,7 +36,7 @@ module Squeel
         end
 
         def dsl_test
-          DSL.evaluate {name =~ a_method}
+          DSL.eval {name =~ a_method}
         end
       end
 
@@ -56,7 +56,7 @@ module Squeel
         end
 
         def dsl_test
-          DSL.evaluate {|q| q.name =~ a_method}
+          DSL.eval {|q| q.name =~ a_method}
         end
       end
 

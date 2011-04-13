@@ -9,7 +9,7 @@ module Squeel
       end
     end
 
-    def self.evaluate(&block)
+    def self.eval(&block)
       if block.arity > 0
         yield self.new
       else

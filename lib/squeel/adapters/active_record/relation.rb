@@ -139,7 +139,7 @@ module Squeel
               to_a.select {|*block_args| value.call(*block_args)}
             else
               relation = clone
-              relation.select_values += Array.wrap(DSL.evaluate &value)
+              relation.select_values += Array.wrap(DSL.eval &value)
               relation
             end
           else
@@ -149,7 +149,7 @@ module Squeel
 
         def where(opts = Proc.new, *rest)
           if block_given? && Proc === opts
-            super(DSL.evaluate &opts)
+            super(DSL.eval &opts)
           else
             super
           end
@@ -175,7 +175,7 @@ module Squeel
 
         def order(*args)
           if block_given? && args.empty?
-            super(DSL.evaluate &Proc.new)
+            super(DSL.eval &Proc.new)
           else
             super
           end
@@ -183,7 +183,7 @@ module Squeel
 
         def joins(*args)
           if block_given? && args.empty?
-            super(DSL.evaluate &Proc.new)
+            super(DSL.eval &Proc.new)
           else
             super
           end
@@ -191,7 +191,7 @@ module Squeel
 
         def having(*args)
           if block_given? && args.empty?
-            super(DSL.evaluate &Proc.new)
+            super(DSL.eval &Proc.new)
           else
             super
           end

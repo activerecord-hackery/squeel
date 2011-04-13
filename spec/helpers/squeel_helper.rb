@@ -1,5 +1,5 @@
 module SqueelHelper
   def dsl(&block)
-    Squeel::DSL.evaluate(&block)
+    Squeel::DSL.eval(&block)
   end
 end
