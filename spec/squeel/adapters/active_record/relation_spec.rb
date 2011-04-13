@@ -264,6 +264,13 @@ module Squeel
             relation.first.id.should eq 1
           end
 
+          it 'allows a subquery on the value side of a predicate' do
+            old_and_busted = Person.where(:name => ['Aric Smith', 'Gladyce Kulas'])
+            new_hotness = Person.where{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
+            new_hotness.should have(2).items
+            old_and_busted.to_a.should eq new_hotness.to_a
+          end
+
         end
 
         describe '#joins' do
