@@ -136,6 +136,13 @@ module Squeel
         predicate.to_sql.should match /"people"."name" = "children_people"."name"/
       end
 
+      it 'visits ActiveRecord::Relation values in predicates' do
+        predicate = @v.accept(dsl{id >> Person.select{id}.limit(3).order{id.desc}})
+        predicate.should be_a Arel::Nodes::In
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+        predicate.to_sql.should match /"people"."id" IN \(SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3\)/
+      end
+
       it 'creates a node of the proper type when a hash has a Predicate as a key' do
         predicate = @v.accept(:name.matches => 'Joe%')
         predicate.should be_a Arel::Nodes::Matches

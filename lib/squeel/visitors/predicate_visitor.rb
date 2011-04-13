@@ -39,11 +39,10 @@ module Squeel
 
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
-        case value
-        when Nodes::Function
-          value = accept(value, parent)
-        when Nodes::KeyPath
+        if Nodes::KeyPath === value
           value = can_accept?(value.endpoint) ? accept(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
+        else
+          value = accept(value, parent) if can_accept?(value)
         end
         if Nodes::Function === o.expr
           accept(o.expr, parent).send(o.method_name, value)
@@ -66,6 +65,10 @@ module Squeel
           end
         end
         Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
+      end
+
+      def visit_ActiveRecord_Relation(o, parent)
+        o.arel
       end
 
       def visit_Squeel_Nodes_Operation(o, parent)
