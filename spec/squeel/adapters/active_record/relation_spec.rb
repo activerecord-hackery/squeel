@@ -264,6 +264,16 @@ module Squeel
             relation.first.id.should eq 1
           end
 
+          it 'maps conditions onto their proper table with multiple polymorphic joins' do
+            relation = Note.joins{[notable(Article).outer, notable(Person).outer]}
+            people_notes = relation.where{notable(Person).salary > 30000}
+            article_notes = relation.where{notable(Article).title =~ '%'}
+            people_and_article_notes = relation.where{(notable(Person).salary > 30000) | (notable(Article).title =~ '%')}
+            people_notes.should have(10).items
+            article_notes.should have(30).items
+            people_and_article_notes.should have(40).items
+          end
+
           it 'allows a subquery on the value side of a predicate' do
             old_and_busted = Person.where(:name => ['Aric Smith', 'Gladyce Kulas'])
             new_hotness = Person.where{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
@@ -292,9 +302,20 @@ module Squeel
             relation.to_sql.should match /"notes"."notable_type" = 'Article'/
           end
 
+          it 'joins multiple polymorphic belongs_to associations' do
+            relation = Note.joins{[notable(Article), notable(Person)]}
+            relation.to_sql.should match /"notes"."notable_type" = 'Article'/
+            relation.to_sql.should match /"notes"."notable_type" = 'Person'/
+          end
+
           it "only joins once, even if two join types are used" do
             relation = Person.joins(:articles.inner, :articles.outer)
             relation.to_sql.scan("JOIN").size.should eq 1
+          end
+
+          it 'joins a keypath' do
+            relation = Note.joins{notable(Article).person.children}
+            relation.to_sql.should match /SELECT "notes".* FROM "notes" INNER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' INNER JOIN "people" ON "people"."id" = "articles"."person_id" INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
           end
 
         end

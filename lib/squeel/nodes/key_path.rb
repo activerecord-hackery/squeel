@@ -101,8 +101,8 @@ module Squeel
         if endpoint.respond_to? method_id
           @endpoint = @endpoint.send(method_id, *args)
           self
-        elsif Stub === endpoint
-          @path << endpoint.symbol
+        elsif Stub === endpoint || Join === endpoint
+          @path << endpoint
           if args.empty?
             @endpoint = Stub.new(method_id)
           elsif (args.size == 1) && (Class === args[0])

@@ -26,6 +26,24 @@ module Squeel
         @klass
       end
 
+      def eql?(other)
+        self.class == other.class &&
+        self.name  == other.name &&
+        self.type == other.type &&
+        self.klass == other.klass
+      end
+
+      alias :== :eql?
+
+      def method_missing(method_id, *args)
+        super if method_id == :to_ary
+        if (args.size == 1) && (Class === args[0])
+          KeyPath.new(self, Join.new(method_id, Arel::InnerJoin, args[0]))
+        else
+          KeyPath.new(self, method_id)
+        end
+      end
+
       # expand_hash_conditions_for_aggregates assumes our hash keys can be
       # converted to symbols, so this has to be implemented, but it doesn't
       # really have to do anything useful.

@@ -24,6 +24,10 @@ module Squeel
         ensure
           reflection.options[:polymorphic] = original_polymorphic
         end
+        #
+        # def ==(other)
+        #   super && active_record == other.active_record
+        # end
 
         def join_to(relation)
           tables        = @tables.dup

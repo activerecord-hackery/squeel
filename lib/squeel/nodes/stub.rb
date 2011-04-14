@@ -33,7 +33,11 @@ module Squeel
 
       def method_missing(method_id, *args)
         super if method_id == :to_ary
-        KeyPath.new(self.symbol, method_id)
+        if (args.size == 1) && (Class === args[0])
+          KeyPath.new(self, Join.new(method_id, Arel::InnerJoin, args[0]))
+        else
+          KeyPath.new(self, method_id)
+        end
       end
 
       def ==(value)

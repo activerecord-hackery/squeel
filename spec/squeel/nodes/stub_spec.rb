@@ -27,6 +27,18 @@ module Squeel
         merged[Stub.new(:attribute)].should eq 2
       end
 
+      it 'creates a KeyPath when sent an unknown method' do
+        keypath = @s.another
+        keypath.should be_a KeyPath
+        keypath.path_with_endpoint.should eq [@s, Stub.new(:another)]
+      end
+
+      it 'creates a KeyPath with a join endpoint when sent a method with a Class param' do
+        keypath = @s.another(Person)
+        keypath.should be_a KeyPath
+        keypath.path_with_endpoint.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
+      end
+
       Squeel::Constants::PREDICATES.each do |method_name|
         it "creates #{method_name} predicates with no value" do
           predicate = @s.send(method_name)
