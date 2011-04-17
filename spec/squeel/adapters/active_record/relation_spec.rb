@@ -189,6 +189,45 @@ module Squeel
 
         end
 
+        describe '#includes' do
+
+          it 'builds options with a block' do
+            standard = Person.includes(:children => :children).where(:children => {:children => {:name => 'bob'}})
+            block = Person.includes{{children => children}}.where(:children => {:children => {:name => 'bob'}})
+            block.debug_sql.should eq standard.debug_sql
+          end
+
+          it 'eager loads multiple top-level associations with a block' do
+            standard = Person.includes(:children, :articles, :comments).where(:children => {:name => 'bob'})
+            block = Person.includes{[children, articles, comments]}.where(:children => {:name => 'bob'})
+            block.debug_sql.should eq standard.debug_sql
+          end
+
+          it 'eager loads polymorphic belongs_to associations' do
+            relation = Note.includes{notable(Article)}.where{{notable(Article) => {title => 'hey'}}}
+            relation.debug_sql.should match /"notes"."notable_type" = 'Article'/
+          end
+
+          it 'eager loads multiple polymorphic belongs_to associations' do
+            relation = Note.includes{[notable(Article), notable(Person)]}.
+                            where{{notable(Article) => {title => 'hey'}}}.
+                            where{{notable(Person) => {name => 'joe'}}}
+            relation.debug_sql.should match /"notes"."notable_type" = 'Article'/
+            relation.debug_sql.should match /"notes"."notable_type" = 'Person'/
+          end
+
+          it "only includes once, even if two join types are used" do
+            relation = Person.includes(:articles.inner, :articles.outer).where(:articles => {:title => 'hey'})
+            relation.debug_sql.scan("JOIN").size.should eq 1
+          end
+
+          it 'includes a keypath' do
+            relation = Note.includes{notable(Article).person.children}.where{notable(Article).person.children.name == 'Ernie'}
+            relation.debug_sql.should match /SELECT "notes".* FROM "notes" LEFT OUTER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' LEFT OUTER JOIN "people" ON "people"."id" = "articles"."person_id" LEFT OUTER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
+          end
+
+        end
+
         describe '#select' do
 
           it 'accepts options from a block' do

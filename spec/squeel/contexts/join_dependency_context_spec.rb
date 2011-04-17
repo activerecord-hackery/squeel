@@ -33,9 +33,15 @@ module Squeel
         table.table_alias.should be_nil
       end
 
-      it 'contextualizes non-JoinPart/Symbols to the default join base table' do
-        table = @c.contextualize nil
-        table.name.should eq 'people'
+      it 'contextualizes polymorphic Join nodes to the arel_table of their klass' do
+        table = @c.contextualize Nodes::Join.new(:notable, Arel::InnerJoin, Article)
+        table.name.should eq 'articles'
+        table.table_alias.should be_nil
+      end
+
+      it 'contextualizes non-polymorphic Join nodes to the table for their name' do
+        table = @c.contextualize Nodes::Join.new(:notes, Arel::InnerJoin)
+        table.name.should eq 'notes'
         table.table_alias.should be_nil
       end
     end

@@ -35,15 +35,13 @@ module Squeel
               j.reflection == object && j.parent == parent
             }
           end
-        else
-          nil
         end
       end
 
       def traverse(keypath, parent = @base, include_endpoint = false)
         parent = @base if keypath.absolute?
         keypath.path.each do |key|
-          parent = find(key, parent)
+          parent = find(key, parent) || key
         end
         parent = find(keypath.endpoint, parent) if include_endpoint
 
@@ -63,10 +61,12 @@ module Squeel
       def get_table(object)
         if [Symbol, Nodes::Stub].include?(object.class)
           Arel::Table.new(object.to_sym, :engine => @engine)
+        elsif Nodes::Join === object
+          object.klass ? object.klass.arel_table : Arel::Table.new(object.name, :engine => @engine)
         elsif object.respond_to?(:aliased_table_name)
           Arel::Table.new(object.table_name, :as => object.aliased_table_name, :engine => @engine)
         else
-          @default_table
+          raise ArgumentError, "Unable to get table for #{object}"
         end
       end
     end

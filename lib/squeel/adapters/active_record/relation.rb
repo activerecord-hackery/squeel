@@ -11,6 +11,11 @@ module Squeel
         attr_writer :join_dependency
         private :join_dependency=
 
+        # Returns a JoinDependency for the current relation.
+        #
+        # We don't need to clear out @join_dependency by overriding #reset, because
+        # the default #reset already does this, despite never setting it anywhere that
+        # I can find. Serendipity, I say!
         def join_dependency
           @join_dependency ||= (build_join_dependency(table.from(table), @joins_values) && @join_dependency)
         end
@@ -27,6 +32,14 @@ module Squeel
           )
         end
 
+        # We need to be able to support merging two relations that have a different
+        # base class. Stock ActiveRecord doesn't have to do anything too special, because
+        # it's already created predicates out of the where_values by now, and they're
+        # already bound to the proper table.
+        #
+        # Squeel, on the other hand, needs to do its best to ensure the predicates are still
+        # winding up against the proper table. Merging relations is a really nifty shortcut
+        # but another little corner of ActiveRecord where the magic quickly fades. :(
         def merge(r, association_name = nil)
           if association_name || relation_with_different_base?(r)
             r = r.clone
@@ -131,6 +144,14 @@ module Squeel
           manager.join_sources.concat join_list
 
           manager
+        end
+
+        def includes(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
         end
 
         def select(value = Proc.new)
