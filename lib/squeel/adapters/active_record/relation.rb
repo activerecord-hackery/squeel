@@ -154,6 +154,14 @@ module Squeel
           end
         end
 
+        def preload(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
         def eager_load(*args)
           if block_given? && args.empty?
             super(DSL.eval &Proc.new)

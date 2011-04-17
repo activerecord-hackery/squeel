@@ -228,40 +228,72 @@ module Squeel
 
         end
 
+        describe '#preload' do
+
+          it 'builds options with a block' do
+            relation = Person.preload{children}
+            queries_for {relation.all}.should have(2).items
+            queries_for {relation.first.children}.should have(0).items
+          end
+
+          it 'builds options with a keypath' do
+            relation = Person.preload{articles.comments}
+            queries_for {relation.all}.should have(3).items
+            queries_for {relation.first.articles.first.comments}.should have(0).items
+          end
+
+          it 'builds options with a hash' do
+            relation = Person.preload{{
+              articles => {
+                comments => person
+              }
+            }}
+
+            queries_for {relation.all}.should have(4).items
+
+            queries_for {
+              relation.first.articles
+              relation.first.articles.first.comments
+              relation.first.articles.first.comments.first.person
+            }.should have(0).items
+          end
+
+        end
+
         describe '#eager_load' do
 
           it 'builds options with a block' do
-            standard = Person.eager_load(:children => :children).where(:children => {:children => {:name => 'bob'}})
-            block = Person.eager_load{{children => children}}.where(:children => {:children => {:name => 'bob'}})
+            standard = Person.eager_load(:children => :children)
+            block = Person.eager_load{{children => children}}
             block.debug_sql.should eq standard.debug_sql
+            queries_for {block.all}.should have(1).item
+            queries_for {block.first.children}.should have(0).items
           end
 
           it 'eager loads multiple top-level associations with a block' do
-            standard = Person.eager_load(:children, :articles, :comments).where(:children => {:name => 'bob'})
-            block = Person.eager_load{[children, articles, comments]}.where(:children => {:name => 'bob'})
+            standard = Person.eager_load(:children, :articles, :comments)
+            block = Person.eager_load{[children, articles, comments]}
             block.debug_sql.should eq standard.debug_sql
           end
 
           it 'eager loads polymorphic belongs_to associations' do
-            relation = Note.eager_load{notable(Article)}.where{{notable(Article) => {title => 'hey'}}}
+            relation = Note.eager_load{notable(Article)}
             relation.debug_sql.should match /"notes"."notable_type" = 'Article'/
           end
 
           it 'eager loads multiple polymorphic belongs_to associations' do
-            relation = Note.eager_load{[notable(Article), notable(Person)]}.
-                            where{{notable(Article) => {title => 'hey'}}}.
-                            where{{notable(Person) => {name => 'joe'}}}
+            relation = Note.eager_load{[notable(Article), notable(Person)]}
             relation.debug_sql.should match /"notes"."notable_type" = 'Article'/
             relation.debug_sql.should match /"notes"."notable_type" = 'Person'/
           end
 
           it "only eager_load once, even if two join types are used" do
-            relation = Person.eager_load(:articles.inner, :articles.outer).where(:articles => {:title => 'hey'})
+            relation = Person.eager_load(:articles.inner, :articles.outer)
             relation.debug_sql.scan("JOIN").size.should eq 1
           end
 
           it 'eager_load a keypath' do
-            relation = Note.eager_load{notable(Article).person.children}.where{notable(Article).person.children.name == 'Ernie'}
+            relation = Note.eager_load{notable(Article).person.children}
             relation.debug_sql.should match /SELECT "notes".* FROM "notes" LEFT OUTER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' LEFT OUTER JOIN "people" ON "people"."id" = "articles"."person_id" LEFT OUTER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
           end
 
