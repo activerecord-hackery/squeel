@@ -82,11 +82,10 @@ module Squeel
           arel.take(connection.sanitize_limit(@limit_value)) if @limit_value
           arel.skip(@offset_value) if @offset_value
 
-          arel.group(*@group_values.uniq.reject{|g| g.blank?}) unless @group_values.empty?
+          arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
-          unless @order_values.empty?
-            arel.order(*attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?}))
-          end
+          order = @reorder_value ? @reorder_value : @order_values
+          arel.order(*attribute_viz.accept(order.uniq.reject{|o| o.blank?})) unless order.empty?
 
           build_select(arel, attribute_viz.accept(@select_values.uniq))
 
@@ -184,9 +183,49 @@ module Squeel
           end
         end
 
+        def group(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
+        def order(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
+        def reorder(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
+        def joins(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
         def where(opts = Proc.new, *rest)
           if block_given? && Proc === opts
             super(DSL.eval &opts)
+          else
+            super
+          end
+        end
+
+        def having(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
           else
             super
           end
@@ -207,30 +246,6 @@ module Squeel
                 arg
               end
             end
-          end
-        end
-
-        def order(*args)
-          if block_given? && args.empty?
-            super(DSL.eval &Proc.new)
-          else
-            super
-          end
-        end
-
-        def joins(*args)
-          if block_given? && args.empty?
-            super(DSL.eval &Proc.new)
-          else
-            super
-          end
-        end
-
-        def having(*args)
-          if block_given? && args.empty?
-            super(DSL.eval &Proc.new)
-          else
-            super
           end
         end
 

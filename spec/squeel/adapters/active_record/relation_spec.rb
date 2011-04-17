@@ -341,6 +341,16 @@ module Squeel
 
         end
 
+        describe '#group' do
+
+          it 'builds options with a block' do
+            standard = Person.group(:name)
+            block = Person.group{name}
+            block.to_sql.should eq standard.to_sql
+          end
+
+        end
+
         describe '#where' do
 
           it 'builds options with a block' do
@@ -461,6 +471,19 @@ module Squeel
             standard = Person.order(:name)
             block = Person.order{name}
             block.to_sql.should eq standard.to_sql
+          end
+
+        end
+
+        describe '#reorder' do
+          before do
+            @standard = Person.order(:name)
+          end
+
+          it 'builds options with a block' do
+            block = Person.reorder{id}
+            block.to_sql.should_not eq @standard.to_sql
+            block.to_sql.should match /ORDER BY "people"."id"/
           end
 
         end
