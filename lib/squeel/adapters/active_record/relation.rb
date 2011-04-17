@@ -154,6 +154,14 @@ module Squeel
           end
         end
 
+        def eager_load(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
         def select(value = Proc.new)
           if block_given? && Proc === value
             if value.arity > 0
