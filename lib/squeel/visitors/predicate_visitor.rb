@@ -33,6 +33,10 @@ module Squeel
         accept(o.endpoint, parent)
       end
 
+      def visit_Squeel_Nodes_Stub(o, parent)
+        contextualize(parent)[o.symbol]
+      end
+
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
         if Nodes::KeyPath === value
@@ -113,7 +117,7 @@ module Squeel
         when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
           true
         when Nodes::KeyPath
-          can_accept?(v.endpoint)
+          can_accept?(v.endpoint) && !(Nodes::Stub === v.endpoint)
         when Array
           (!v.empty? && v.all? {|val| can_accept?(val)})
         else
