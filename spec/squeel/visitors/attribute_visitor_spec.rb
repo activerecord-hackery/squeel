@@ -11,7 +11,7 @@ module Squeel
                  }
                }
              }, [])
-        @c = Squeel::Contexts::JoinDependencyContext.new(@jd)
+        @c = Squeel::Adapters::ActiveRecord::Context.new(@jd)
         @v = AttributeVisitor.new(@c)
       end
 

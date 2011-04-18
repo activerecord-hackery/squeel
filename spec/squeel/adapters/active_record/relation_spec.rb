@@ -5,7 +5,7 @@ module Squeel
 
         describe '#predicate_visitor' do
 
-          it 'creates a predicate visitor with a JoinDependencyContext for the relation' do
+          it 'creates a predicate visitor with a Context for the relation' do
             relation = Person.joins({
               :children => {
                 :children => {
@@ -25,7 +25,7 @@ module Squeel
 
         describe '#attribute_visitor' do
 
-          it 'creates an attribute visitor with a JoinDependencyContext for the relation' do
+          it 'creates an attribute visitor with a Context for the relation' do
             relation = Person.joins({
               :children => {
                 :children => {

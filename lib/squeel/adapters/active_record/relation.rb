@@ -22,13 +22,13 @@ module Squeel
 
         def predicate_visitor
           Visitors::PredicateVisitor.new(
-            Contexts::JoinDependencyContext.new(join_dependency)
+            Context.new(join_dependency)
           )
         end
 
         def attribute_visitor
           Visitors::AttributeVisitor.new(
-            Contexts::JoinDependencyContext.new(join_dependency)
+            Context.new(join_dependency)
           )
         end
 

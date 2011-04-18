@@ -13,7 +13,7 @@ module Squeel
                  }
                }
              }, [])
-        @c = Squeel::Contexts::JoinDependencyContext.new(@jd)
+        @c = Squeel::Adapters::ActiveRecord::Context.new(@jd)
         @v = PredicateVisitor.new(@c)
       end
 
@@ -264,7 +264,7 @@ module Squeel
         before do
           @jd = ActiveRecord::Associations::JoinDependency.
                 new(Note, dsl{[notable(Article), notable(Person)]}, [])
-          @c = Squeel::Contexts::JoinDependencyContext.new(@jd)
+          @c = Squeel::Adapters::ActiveRecord::Context.new(@jd)
           @v = PredicateVisitor.new(@c)
         end
 

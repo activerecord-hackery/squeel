@@ -1,5 +1,4 @@
 require 'squeel/visitors/base'
-require 'squeel/contexts/join_dependency_context'
 
 module Squeel
   module Visitors
