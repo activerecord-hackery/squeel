@@ -3,7 +3,7 @@ module Squeel
     module ActiveRecord
       describe JoinDependency do
         before do
-          @jd = ::ActiveRecord::Associations::JoinDependency.new(Person, {}, [])
+          @jd = new_join_dependency(Person, {}, [])
         end
 
         it 'joins with symbols' do

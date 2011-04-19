@@ -5,8 +5,7 @@ module Squeel
     module ActiveRecord
       describe Context do
         before do
-          @jd = ::ActiveRecord::Associations::JoinDependency.
-               new(Person, {
+          @jd = new_join_dependency(Person, {
                  :children => {
                    :children => {
                      :parent => :parent

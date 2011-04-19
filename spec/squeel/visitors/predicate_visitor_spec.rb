@@ -5,8 +5,7 @@ module Squeel
     describe PredicateVisitor do
 
       before do
-        @jd = ActiveRecord::Associations::JoinDependency.
-             new(Person, {
+        @jd = new_join_dependency(Person, {
                :children => {
                  :children => {
                    :parent => :parent
@@ -140,7 +139,7 @@ module Squeel
         predicate = @v.accept(dsl{id >> Person.select{id}.limit(3).order{id.desc}})
         predicate.should be_a Arel::Nodes::In
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.to_sql.should match /"people"."id" IN \(SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3\)/
+        predicate.to_sql.should be_like '"people"."id" IN (SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3)'
       end
 
       it "doesn't try to sanitize_sql an array of strings in the value of a Predicate" do
@@ -262,8 +261,7 @@ module Squeel
 
       context 'with polymorphic joins in the JoinDependency' do
         before do
-          @jd = ActiveRecord::Associations::JoinDependency.
-                new(Note, dsl{[notable(Article), notable(Person)]}, [])
+          @jd = new_join_dependency(Note, dsl{[notable(Article), notable(Person)]}, [])
           @c = Squeel::Adapters::ActiveRecord::Context.new(@jd)
           @v = PredicateVisitor.new(@c)
         end

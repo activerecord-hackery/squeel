@@ -18,8 +18,6 @@ module ActiveRecord
     def call(name, start, finish, message_id, values)
       sql = values[:sql]
 
-      # FIXME: this seems bad. we should probably have a better way to indicate
-      # the query was cached
       unless 'CACHE' == values[:name]
         $queries_executed << sql unless IGNORED_SQL.any? { |r| sql =~ r }
       end
@@ -47,6 +45,13 @@ RSpec.configure do |config|
   config.before(:each)  { Sham.reset(:before_each) }
 
   config.include SqueelHelper
+end
+
+RSpec::Matchers.define :be_like do |expected|
+  match do |actual|
+    actual.gsub(/^\s+|\s+$/, '').gsub(/\s+/, ' ').strip ==
+      expected.gsub(/^\s+|\s+$/, '').gsub(/\s+/, ' ').strip
+  end
 end
 
 require 'squeel'

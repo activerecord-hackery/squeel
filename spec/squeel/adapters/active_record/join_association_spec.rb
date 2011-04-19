@@ -3,7 +3,7 @@ module Squeel
     module ActiveRecord
       describe JoinAssociation do
         before do
-          @jd = ::ActiveRecord::Associations::JoinDependency.new(Note, {}, [])
+          @jd = new_join_dependency(Note, {}, [])
           @notable = Note.reflect_on_association(:notable)
         end
 

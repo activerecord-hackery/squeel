@@ -30,8 +30,8 @@ you're feeling especially appreciative. It'd help me justify this
 
   s.rubyforge_project = "squeel"
 
-  s.add_dependency 'activerecord', '~> 3.1.0.alpha'
-  s.add_dependency 'activesupport', '~> 3.1.0.alpha'
+  s.add_dependency 'activerecord', '~> 3.0'
+  s.add_dependency 'activesupport', '~> 3.0'
   s.add_development_dependency 'rspec', '~> 2.5.0'
   s.add_development_dependency 'machinist', '~> 1.0.6'
   s.add_development_dependency 'faker', '~> 0.9.5'
