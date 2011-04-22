@@ -156,15 +156,15 @@ used in `WHERE` or `HAVING` clauses.
     <td>not_like</td>
   </tr>
   <tr>
-    <td><</td>
+    <td>&lt;</td>
     <td>lt</td>
-    <td><</td>
+    <td>&lt;</td>
     <td></td>
   </tr>
   <tr>
-    <td><=</td>
+    <td>&lt;=</td>
     <td>lteq</td>
-    <td><=</td>
+    <td>&lt;=</td>
     <td>lte</td>
   </tr>
   <tr>
@@ -188,7 +188,7 @@ used in `WHERE` or `HAVING` clauses.
   <tr>
     <td>NOT IN</td>
     <td>not_in</td>
-    <td><<</td>
+    <td>&lt;&lt;</td>
     <td></td>
   </tr>
 </table>
