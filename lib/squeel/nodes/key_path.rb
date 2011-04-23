@@ -95,6 +95,7 @@ module Squeel
       def to_s
         path.map(&:to_s).join('.') << ".#{endpoint}"
       end
+      alias :to_str :to_s
 
       def method_missing(method_id, *args)
         super if method_id == :to_ary

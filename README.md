@@ -30,6 +30,10 @@ Squeel enhances the normal ActiveRecord query methods by enabling them to accept
 blocks. Inside a block, the Squeel query DSL can be used. Note the use of curly braces
 in these examples instead of parentheses. `{}` denotes a Squeel DSL query.
 
+Stubs and keypaths are the two primary building blocks used in a Squeel DSL query, so
+before we go on, let's take a look at them. Most of the other examples that follow will
+be based on this "symbol-less" syntax, so it might look a bit foreign otherwise.
+
 ### Stubs
 
 Stubs are, for most intents and purposes, just like Symbols in a normal call to
@@ -67,56 +71,6 @@ a ~, like:
 
 This isn't quite so useful in the typical hash context, but can be very useful when it comes
 to interpreting functions and the like. We'll cover those later.
-
-### Joins
-
-As you saw above, keypaths can be used as shorthand for joins. Additionally, you can
-specify join types (or join classes, in the case of polymorphic belongs_to joins):
-
-    Person.joins{articles.outer}
-    => SELECT "people".* FROM "people"
-       LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
-    Note.joins{notable(Person).outer}
-    => SELECT "notes".* FROM "notes"
-       LEFT OUTER JOIN "people"
-         ON "people"."id" = "notes"."notable_id"
-         AND "notes"."notable_type" = 'Person'
-
-These can also be used inside keypaths:
-
-    Note.joins{notable(Person).articles}
-    => SELECT "notes".* FROM "notes"
-       INNER JOIN "people" ON "people"."id" = "notes"."notable_id"
-         AND "notes"."notable_type" = 'Person'
-       INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
-
-### Functions
-
-You can call SQL functions just like you would call a method in Ruby...
-
-    Person.select{coalesce(name, '<no name given>')}
-    => SELECT coalesce("people"."name", '<no name given>') FROM "people"
-
-...and you can easily give it an alias:
-
-    person = Person.select{
-      coalesce(name, '<no name given>').as(name_with_default)
-    }.first
-    person.name_with_default # name or <no name given>, depending on data
-
-Symbols 
-
-### SQL Operators
-
-You can use the standard mathematical operators (`+`, `-`, `*`, `/`) inside the Squeel DSL to
-specify operators in the resulting SQL, or the `op` method to specify another
-custom operator, such as the standard SQL concatenation operator, `||`:
-
-    p = Person.select{name.op('||', '-diddly').as(flanderized_name)}.first
-    p.flanderized_name
-    => "Aric Smith-diddly" 
-
-As you can see, just like functions, these operations can be given aliases.
 
 ### Predicates
 
@@ -247,9 +201,9 @@ both of them have to do with *context*.
 
 That last bit is important. We can mix and match predicate methods with operators
 and take advantage of Ruby's operator precedence or parenthetical grouping to make
-our intentions more clear, *on the first read-through*. And if we don't like the
+our intentions more clear, on the first read-through. And if we don't like the
 way that the existing predications read, we can create our own aliases in a Squeel
-initializer:
+configure block:
 
     Squeel.configure do |config|
       config.alias_predicate :is_less_than, :lt
@@ -292,4 +246,123 @@ a subquery. So, for example:
     # => SELECT "articles".* FROM "articles"  
          WHERE "articles"."author_id" IN (SELECT "people"."id" FROM "people"  WHERE "people"."awesome" = 't')
 
-...more docs to come...
+### Joins
+
+Squeel adds a couple of enhancements to joins. First, keypaths can be used as shorthand for
+nested association joins. Second, you can specify join types (inner and outer), and a class
+in the case of a polymorphic belongs_to relationship.
+
+    Person.joins{articles.outer}
+    => SELECT "people".* FROM "people"
+       LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+    Note.joins{notable(Person).outer}
+    => SELECT "notes".* FROM "notes"
+       LEFT OUTER JOIN "people"
+         ON "people"."id" = "notes"."notable_id"
+         AND "notes"."notable_type" = 'Person'
+
+These can also be used inside keypaths:
+
+    Note.joins{notable(Person).articles}
+    => SELECT "notes".* FROM "notes"
+       INNER JOIN "people" ON "people"."id" = "notes"."notable_id"
+         AND "notes"."notable_type" = 'Person'
+       INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+       
+You can refer to these associations when constructing other parts of your query, and
+they'll be automatically mapped to the proper table or table alias This is most noticeable
+when using self-referential associations:
+
+    Person.joins{children.parent.children}.
+           where{
+             (children.name.like 'Ernie%') |
+             (children.parent.name.like 'Ernie%') |
+             (children.parent.children.name.like 'Ernie%')
+           }
+    => SELECT "people".* FROM "people" 
+       INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id" 
+       INNER JOIN "people" "parents_people" ON "parents_people"."id" = "children_people"."parent_id" 
+       INNER JOIN "people" "children_people_2" ON "children_people_2"."parent_id" = "parents_people"."id" 
+       WHERE ((("children_people"."name" LIKE 'Ernie%' 
+             OR "parents_people"."name" LIKE 'Ernie%') 
+             OR "children_people_2"."name" LIKE 'Ernie%'))
+
+Keypaths were used here for clarity, but nested hashes would work just as well.
+
+### Functions
+
+You can call SQL functions just like you would call a method in Ruby...
+
+    Person.select{coalesce(name, '<no name given>')}
+    => SELECT coalesce("people"."name", '<no name given>') FROM "people"
+
+...and you can easily give it an alias:
+
+    person = Person.select{
+      coalesce(name, '<no name given>').as(name_with_default)
+    }.first
+    person.name_with_default # name or <no name given>, depending on data
+
+When you use a stub, symbol, or keypath inside a function call, it'll be interpreted relative to
+its place inside any nested associations:
+
+    Person.joins{articles}.group{articles.title}.having{{articles => {max(id) => id}}}
+    => SELECT "people".* FROM "people" 
+       INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
+       GROUP BY "articles"."title" 
+       HAVING max("articles"."id") = "articles"."id"
+       
+If you want to use an attribute from a different branch of the hierarchy, use an absolute
+keypath (~) as done here:
+
+    Person.joins{articles}.group{articles.title}.having{{articles => {max(~id) => id}}}
+    => SELECT "people".* FROM "people" 
+       INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
+       GROUP BY "articles"."title" 
+       HAVING max("people"."id") = "articles"."id"
+
+### SQL Operators
+
+You can use the standard mathematical operators (`+`, `-`, `*`, `/`) inside the Squeel DSL to
+specify operators in the resulting SQL, or the `op` method to specify another
+custom operator, such as the standard SQL concatenation operator, `||`:
+
+    p = Person.select{name.op('||', '-diddly').as(flanderized_name)}.first
+    p.flanderized_name
+    => "Aric Smith-diddly" 
+
+As you can see, just like functions, these operations can be given aliases.
+
+## Legacy compatibility
+
+While the Squeel DSL is the preferred way to access advanced query functionality, you can
+still enable methods on symbols to access ARel predications in a similar manner to MetaWhere:
+
+    Squeel.configure do |config|
+      config.load_core_extensions :symbol
+    end
+    
+    Person.joins(:articles => :comments).
+           where(:articles => {:comments => {:body.matches => 'Hello!'}})
+    SELECT "people".* FROM "people" 
+    INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
+    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id" 
+    WHERE "comments"."body" LIKE 'Hello!'
+
+This should help to smooth over the transition to the new DSL.
+
+## Contributions
+
+If you'd like to support the continued development of Squeel, please consider
+[making a donation](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=N7QP5N3UB76ME).
+
+To support the project in other ways:
+
+* Use Squeel in your apps, and let me know if you encounter anything that's broken or missing.
+  A failing spec is awesome. A pull request is even better!
+* Spread the word on Twitter, Facebook, and elsewhere if Squeel's been useful to you. The more
+  people who are using the project, the quicker we can find and fix bugs!
+
+## Copyright
+
+Copyright &copy; 2011 [Ernie Miller](http://twitter.com/erniemiller)
