@@ -1,4 +1,4 @@
-module Arel #:nodoc: all
+module Arel # @private
 
   class Table
     alias :table_name :name
