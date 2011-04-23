@@ -75,6 +75,12 @@ module Squeel
         keypath.to_sql.should eq standard.to_sql
       end
 
+      it 'honors absolute keypaths with only an endpoint' do
+        standard = @v.accept({:name => 'Joe'})
+        keypath = @v.accept(dsl{{children => {children => {~name => 'Joe'}}}})
+        keypath.to_sql.should eq standard.to_sql
+      end
+
       it 'allows incomplete predicates (missing value) as keys' do
         standard = @v.accept({
           :children => {

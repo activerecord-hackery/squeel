@@ -40,6 +40,10 @@ module Squeel
         end
       end
 
+      def ~
+        KeyPath.new [], self.symbol, true
+      end
+
       def ==(value)
         Predicate.new self.symbol, :eq, value
       end

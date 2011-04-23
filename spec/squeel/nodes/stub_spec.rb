@@ -39,6 +39,13 @@ module Squeel
         keypath.path_with_endpoint.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
       end
 
+      it 'creates an absolute keypath with just an endpoint with ~' do
+        node = ~@s
+        node.should be_a KeyPath
+        node.path.should eq []
+        node.endpoint.should eq @s
+      end
+
       Squeel::Constants::PREDICATES.each do |method_name|
         it "creates #{method_name} predicates with no value" do
           predicate = @s.send(method_name)
