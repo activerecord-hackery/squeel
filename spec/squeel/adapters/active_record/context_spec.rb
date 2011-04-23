@@ -15,13 +15,6 @@ module Squeel
           @c = Context.new(@jd)
         end
 
-        it 'finds associations' do
-          last_association = @jd.join_parts.last
-          next_to_last_association = @jd.join_parts[-2]
-
-          @c.find(:parent, next_to_last_association).should eq last_association
-        end
-
         it 'contextualizes join parts with the proper alias' do
           table = @c.contextualize @jd.join_parts.last
           table.table_alias.should eq 'parents_people_2'

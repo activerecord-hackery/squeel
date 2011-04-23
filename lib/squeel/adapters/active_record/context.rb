@@ -8,9 +8,28 @@ module Squeel
         JoinPart = ::ActiveRecord::Associations::JoinDependency::JoinPart
 
         def initialize(object)
-          @base = object.join_base
           super
+          @base = object.join_base
+          @engine = @base.arel_engine
+          @arel_visitor = Arel::Visitors.visitor_for @engine
+          @default_table = Arel::Table.new(@base.table_name, :as => @base.aliased_table_name, :engine => @engine)
         end
+
+        def traverse(keypath, parent = @base, include_endpoint = false)
+          parent = @base if keypath.absolute?
+          keypath.path.each do |key|
+            parent = find(key, parent) || key
+          end
+          parent = find(keypath.endpoint, parent) if include_endpoint
+
+          parent
+        end
+
+        def sanitize_sql(conditions, parent)
+          parent.active_record.send(:sanitize_sql, conditions, parent.aliased_table_name)
+        end
+
+        private
 
         def find(object, parent = @base)
           if JoinPart === parent
@@ -32,22 +51,6 @@ module Squeel
             end
           end
         end
-
-        def traverse(keypath, parent = @base, include_endpoint = false)
-          parent = @base if keypath.absolute?
-          keypath.path.each do |key|
-            parent = find(key, parent) || key
-          end
-          parent = find(keypath.endpoint, parent) if include_endpoint
-
-          parent
-        end
-
-        def sanitize_sql(conditions, parent)
-          parent.active_record.send(:sanitize_sql, conditions, parent.aliased_table_name)
-        end
-
-        private
 
         def get_table(object)
           if [Symbol, Nodes::Stub].include?(object.class)
