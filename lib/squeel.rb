@@ -4,6 +4,7 @@ module Squeel
 
   extend Configuration
 
+  # Prevent warnings on the console when doing things some might describe as "evil"
   def self.evil_things
     original_verbosity = $VERBOSE
     $VERBOSE = nil
@@ -12,6 +13,7 @@ module Squeel
     $VERBOSE = original_verbosity
   end
 
+  # Set up initial predicate aliases
   Constants::PREDICATE_ALIASES.each do |original, aliases|
     aliases.each do |aliaz|
       alias_predicate aliaz, original

@@ -1,4 +1,5 @@
 module Squeel
+  # Defines the default list of ARel predicates and predicate aliases
   module Constants
     PREDICATES = [
        :eq, :eq_any, :eq_all,

@@ -1,12 +1,13 @@
 require 'squeel/predicate_methods'
 
+# These extensions to Symbol are loaded optionally, mostly to provide
+# a small amount of backwards compatibility with MetaWhere.
+#
+# @example Load Symbol extensions
+#   Squeel.configure do |config|
+#     config.load_core_extensions :symbol
+#   end
 class Symbol
-  # These extensions to Symbol are loaded optionally, with:
-  #
-  #   Squeel.configure do |config|
-  #     config.load_core_extensions :symbol
-  #   end
-
   include Squeel::PredicateMethods
 
   def asc

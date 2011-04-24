@@ -1,16 +1,8 @@
 require 'arel'
 
 module Squeel
-  # This is an abstract base class for Squeel contexts.
-  #
-  # Contexts convert various parts of the Squeel DSL into ARel
-  # tables, based on some context object. In the case of
-  # ActiveRecord, this is a JoinDependency, which tracks all of
-  # the joins that have been made and handles table aliases.
-  #
-  # The Context works in cooperation with visitors in order to
-  # return ARel attributes and predicates that will map to
-  # tables (or table aliases) that exist in the query.
+  # @abstract Subclass and implement {#traverse}, {#sanitize_sql}, and {#get_table}
+  #   to create a Context that supports a given ORM.
   class Context
     attr_reader :base, :engine, :arel_visitor
 
