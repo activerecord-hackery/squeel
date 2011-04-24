@@ -1,4 +1,4 @@
-module Arel # @private
+module Arel
 
   class Table
     alias :table_name :name
