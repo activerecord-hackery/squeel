@@ -93,10 +93,9 @@ module Arel
         column_cache[table][name]
       end
 
-      # This isn't really very cachey at all. Good enough for now.
       def column_cache
         @column_cache ||= Hash.new do |hash, key|
-          Hash[
+          hash[key] = Hash[
             @engine.connection.columns(key, "#{key} Columns").map do |c|
               [c.name, c]
             end
