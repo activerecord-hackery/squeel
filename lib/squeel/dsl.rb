@@ -1,4 +1,5 @@
 module Squeel
+  # Interprets DSL blocks, generating various Squeel nodes as appropriate.
   class DSL
 
     # We're creating a BlankSlate-type class here, since we want most
@@ -11,12 +12,18 @@ module Squeel
       end
     end
 
-    # Evaluate a block. If the block accepts a parameter, yield the DSL
-    # object instead of doing an instance_eval. Useful if you need access
-    # to methods in the calling scope that would otherwise be unavailable,
-    # but it makes for more verbose code in the block, such as:
+    # Called from an adapter, not directly.
+    # Evaluates a block of Squeel DSL code.
     #
+    # @example A DSL block that uses instance_eval
+    #   Post.where{title == 'Hello world!'}
+    #
+    # @example A DSL block with access to methods from the closure
     #   Post.where{|dsl| dsl.title == local_method(local_var)}
+    #
+    # @yield [dsl] A block of Squeel DSL code, with an optional argument if
+    #   access to closure methods is desired.
+    # @return The results of the interpreted DSL code.
     def self.eval(&block)
       if block.arity > 0
         yield self.new
@@ -25,9 +32,21 @@ module Squeel
       end
     end
 
-    # If no args are given, we'll just return a Stub of an appropriate name.
-    # If a Class arg is given, we'll assume it's a polymorphic belongs_to join.
-    # If other args are given, it's an SQL function call.
+    # Node generation inside DSL blocks.
+    #
+    # @overload node_name
+    #   Creates a Stub. Method calls chained from this Stub will determine
+    #   what type of node we eventually end up with.
+    #   @return [Nodes::Stub] A stub with the name of the method
+    # @overload node_name(klass)
+    #   Creates a Join with a polymorphic class matching the given parameter
+    #   @param [Class] klass The polymorphic class of the join node
+    #   @return [Nodes::Join] A join node with the name of the method and the given class
+    # @overload node_name(first_arg, *other_args)
+    #   Creates a Function with the given arguments becoming the function's arguments
+    #   @param first_arg The first argument
+    #   @param *other_args Optional additional arguments
+    #   @return [Nodes::Function] A function node for the given method name with the given arguments
     def method_missing(method_id, *args)
       if args.empty?
         Nodes::Stub.new method_id

@@ -25,10 +25,6 @@ module Squeel
           parent
         end
 
-        def sanitize_sql(conditions, parent)
-          parent.active_record.send(:sanitize_sql, conditions, parent.aliased_table_name)
-        end
-
         private
 
         def find(object, parent = @base)

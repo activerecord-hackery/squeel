@@ -5,7 +5,7 @@ module Squeel
   module Visitors
     class Base
       attr_accessor :context
-      delegate :contextualize, :find, :traverse, :sanitize_sql, :engine, :arel_visitor, :to => :context
+      delegate :contextualize, :find, :traverse, :engine, :arel_visitor, :to => :context
 
       def initialize(context = nil)
         @context = context

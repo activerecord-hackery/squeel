@@ -2,6 +2,8 @@ require 'squeel/constants'
 require 'squeel/predicate_methods'
 
 module Squeel
+  # The Squeel configuration module. The Squeel module extends this to provide its
+  # configuration capability.
   module Configuration
 
     # Start a Squeel configuration block in an initializer.

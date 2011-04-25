@@ -1,3 +1,9 @@
+module Squeel
+  # Namespace for the nodes created by Squeel::DSL, and
+  # evaluated by Squeel::Visitors classes
+  module Nodes
+  end
+end
 require 'squeel/nodes/stub'
 require 'squeel/nodes/key_path'
 require 'squeel/nodes/predicate'
