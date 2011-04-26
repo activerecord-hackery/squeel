@@ -31,13 +31,13 @@ module Squeel
       end
 
       # Whether or not this node represents an ascending order
-      # @return [TrueClass, FalseClass] True if the order is ascending
+      # @return [Boolean] True if the order is ascending
       def ascending?
         @direction == 1
       end
 
       # Whether or not this node represents a descending order
-      # @return [TrueClass, FalseClass] True if the order is descending
+      # @return [Boolean] True if the order is descending
       def descending?
         @direction == -1
       end

@@ -36,13 +36,13 @@ module Squeel
           case associations
           when Nodes::Join
             parent ||= join_parts.last
-            reflection = parent.reflections[associations.name] or
-              raise ::ActiveRecord::ConfigurationError, "Association named '#{ associations.name }' was not found; perhaps you misspelled it?"
+            reflection = parent.reflections[associations._name] or
+              raise ::ActiveRecord::ConfigurationError, "Association named '#{ associations._name }' was not found; perhaps you misspelled it?"
 
-            unless join_association = find_join_association_respecting_polymorphism(reflection, parent, associations.klass)
+            unless join_association = find_join_association_respecting_polymorphism(reflection, parent, associations._klass)
               @reflections << reflection
-              join_association = build_join_association_respecting_polymorphism(reflection, parent, associations.klass)
-              join_association.join_type = associations.type
+              join_association = build_join_association_respecting_polymorphism(reflection, parent, associations._klass)
+              join_association.join_type = associations._type
               @join_parts << join_association
               cache_joined_association(join_association)
             end

@@ -172,24 +172,18 @@ module Squeel
       it 'creates inner joins' do
         join = @s.inner
         join.should be_a Join
-        join.type.should eq Arel::InnerJoin
+        join._type.should eq Arel::InnerJoin
       end
 
       it 'creates outer joins' do
         join = @s.outer
         join.should be_a Join
-        join.type.should eq Arel::OuterJoin
+        join._type.should eq Arel::OuterJoin
       end
 
       it 'creates functions with #func' do
         function = @s.func
         function.should be_a Function
-      end
-
-      it 'creates functions with #[]' do
-        function = @s[1, 2, 3]
-        function.should be_a Function
-        function.args.should eq [1, 2, 3]
       end
 
     end

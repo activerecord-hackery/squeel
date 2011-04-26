@@ -9,18 +9,18 @@ module Squeel
       end
 
       it 'defaults to Arel::InnerJoin' do
-        @j.type.should eq Arel::InnerJoin
+        @j._type.should eq Arel::InnerJoin
       end
 
       it 'allows setting join type' do
         @j.outer
-        @j.type.should eq Arel::OuterJoin
+        @j._type.should eq Arel::OuterJoin
       end
 
       it 'allows setting polymorphic class' do
-        @j.klass = Person
+        @j._klass = Person
         @j.should be_polymorphic
-        @j.klass.should eq Person
+        @j._klass.should eq Person
       end
 
       it 'creates a KeyPath when sent an unknown method' do
@@ -33,6 +33,13 @@ module Squeel
         keypath = @j.another(Person)
         keypath.should be_a KeyPath
         keypath.path_with_endpoint.should eq [@j, Join.new(:another, Arel::InnerJoin, Person)]
+      end
+
+      it 'creates an absolute keypath with just an endpoint with ~' do
+        node = ~@j
+        node.should be_a KeyPath
+        node.path.should eq []
+        node.endpoint.should eq @j
       end
 
     end

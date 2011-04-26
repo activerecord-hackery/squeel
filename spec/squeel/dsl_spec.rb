@@ -18,7 +18,7 @@ module Squeel
     it 'creates polymorphic join nodes when a method has a single class argument' do
       result = DSL.eval { association(Person) }
       result.should be_a Nodes::Join
-      result.klass.should eq Person
+      result._klass.should eq Person
     end
 
     it 'handles OR between predicates' do

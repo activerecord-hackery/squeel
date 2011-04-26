@@ -8,6 +8,18 @@ module Squeel
       include PredicateMethods
       include Operators
 
+      alias :== :eq
+      alias :'^' :not_eq
+      alias :'!=' :not_eq if respond_to?(:'!=')
+      alias :>> :in
+      alias :<< :not_in
+      alias :=~ :matches
+      alias :'!~' :does_not_match if respond_to?(:'!~')
+      alias :> :gt
+      alias :>= :gteq
+      alias :< :lt
+      alias :<= :lteq
+
       # @return [Symbol] The name of the SQL function to be called
       attr_reader :name
 
@@ -41,55 +53,10 @@ module Squeel
         Order.new self, -1
       end
 
-      def ==(value)
-        Predicate.new self, :eq, value
-      end
-
-      # Won't work on Ruby 1.8.x so need to do this conditionally
-      define_method('!=') do |value|
-        Predicate.new(self, :not_eq, value)
-      end if respond_to?('!=')
-
-      def ^(value)
-        Predicate.new self, :not_eq, value
-      end
-
-      def >>(value)
-        Predicate.new self, :in, value
-      end
-
-      def <<(value)
-        Predicate.new self, :not_in, value
-      end
-
-      def =~(value)
-        Predicate.new self, :matches, value
-      end
-
-      # Won't work on Ruby 1.8.x so need to do this conditionally
-      define_method('!~') do |value|
-        Predicate.new(self, :does_not_match, value)
-      end if respond_to?('!~')
-
-      def >(value)
-        Predicate.new self, :gt, value
-      end
-
-      def >=(value)
-        Predicate.new self, :gteq, value
-      end
-
-      def <(value)
-        Predicate.new self, :lt, value
-      end
-
-      def <=(value)
-        Predicate.new self, :lteq, value
-      end
-
       # expand_hash_conditions_for_aggregates assumes our hash keys can be
       # converted to symbols, so this has to be implemented, but it doesn't
       # really have to do anything useful.
+      # @return [NilClass] Just to avoid bombing out on expand_hash_conditions_for_aggregates
       def to_sym
         nil
       end

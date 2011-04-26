@@ -4,6 +4,8 @@ module Squeel
   module Visitors
     class PredicateVisitor < Base
 
+      private
+
       def visit_Hash(o, parent)
         predicates = o.map do |k, v|
           if implies_context_change?(v)
@@ -43,7 +45,9 @@ module Squeel
         else
           value = accept(value, parent) if can_accept?(value)
         end
-        if Nodes::Function === o.expr
+
+        case o.expr
+        when Nodes::Function, Nodes::Stub
           accept(o.expr, parent).send(o.method_name, value)
         else
           contextualize(parent)[o.expr].send(o.method_name, value)

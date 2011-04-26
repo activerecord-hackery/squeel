@@ -20,7 +20,7 @@ module Squeel
 
       it 'stops appending once its endpoint is not a Stub' do
         @k.third.fourth.fifth == 'cinco'
-        @k.endpoint.should eq Predicate.new(:fifth, :eq, 'cinco')
+        @k.endpoint.should eq Predicate.new(Stub.new(:fifth), :eq, 'cinco')
         expect { @k.another }.to raise_error NoMethodError
       end
 

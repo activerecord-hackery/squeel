@@ -2,8 +2,18 @@ require 'squeel/visitors/base'
 
 module Squeel
   module Visitors
+    # A visitor that tries to convert visited nodes into Arel::Attributes
+    # or other nodes that can be used for grouping, ordering, and the like.
     class AttributeVisitor < Base
 
+      private
+
+      # Visit a Hash. This entails iterating through each key and value and
+      # visiting each value in turn.
+      #
+      # @param [Hash] o The Hash to visit
+      # @param parent The current parent object in the context
+      # @return [Array] An array of values for use in an ordering, grouping, etc.
       def visit_Hash(o, parent)
         o.map do |k, v|
           if implies_context_change?(v)
@@ -14,11 +24,19 @@ module Squeel
         end.flatten
       end
 
+      # @return [Boolean] Whether the given value implies a context change
+      # @param v The value to consider
       def implies_context_change?(v)
-        Hash === v || can_accept?(v) ||
-        (Array === v && !v.empty? && v.all? {|val| can_accept?(val)})
+        can_accept?(v)
       end
 
+      # Change context (by setting the new parent to the result of a #find or
+      # #traverse on the key), then accept the given value.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return The visited value
       def visit_with_context_change(k, v, parent)
         parent = case k
           when Nodes::KeyPath
@@ -34,6 +52,15 @@ module Squeel
         end
       end
 
+      # If there is no context change, we'll just return the value unchanged,
+      # currently. Is this really the right behavior? I don't think so, but
+      # it works in this case.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return The same value we just received. Yeah, this method's pretty pointless,
+      #   and only here for consistency's sake.
       def visit_without_context_change(k, v, parent)
         v
       end

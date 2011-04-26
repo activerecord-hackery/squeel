@@ -9,6 +9,8 @@ module Squeel
       include PredicateOperators
       include Operators
 
+      undef_method :id if method_defined?(:id)
+
       # @return [Array<Symbol, Stub, Join>] The path
       attr_reader :path
 
@@ -18,7 +20,7 @@ module Squeel
       # Create a new KeyPath.
       # @param [Array, Object] path The intial path. Will be converted to an array if it isn't already.
       # @param endpoint the endpoint of the KeyPath
-      # @param [TrueClass, FalseClass] absolute If the KeyPath should start from the base
+      # @param [Boolean] absolute If the KeyPath should start from the base
       #   or remain relative to whatever location it's found.
       def initialize(path, endpoint, absolute = false)
         @path, @endpoint = path, endpoint
@@ -29,7 +31,7 @@ module Squeel
 
       # Whether or not the KeyPath should be interpreted relative to its current location
       #   (if nested in a Hash, for instance) or as though it's at the base.
-      # @return [TrueClass, FalseClass] The flag's value
+      # @return [Boolean] The flag's value
       def absolute?
         @absolute
       end

@@ -15,6 +15,27 @@ module Squeel
           @default_table = Arel::Table.new(@base.table_name, :as => @base.aliased_table_name, :engine => @engine)
         end
 
+        def find(object, parent = @base)
+          if JoinBase === parent
+            object = object.to_sym if String === object
+            case object
+            when Symbol, Nodes::Stub
+              @object.join_associations.detect { |j|
+                j.reflection.name == object.to_sym && j.parent == parent
+              }
+            when Nodes::Join
+              @object.join_associations.detect { |j|
+                j.reflection.name == object.name && j.parent == parent &&
+                (object.polymorphic? ? j.reflection.klass == object._klass : true)
+              }
+            else
+              @object.join_associations.detect { |j|
+                j.reflection == object && j.parent == parent
+              }
+            end
+          end
+        end
+
         def traverse(keypath, parent = @base, include_endpoint = false)
           parent = @base if keypath.absolute?
           keypath.path.each do |key|
@@ -27,32 +48,11 @@ module Squeel
 
         private
 
-        def find(object, parent = @base)
-          if JoinBase === parent
-            object = object.to_sym if String === object
-            case object
-            when Symbol, Nodes::Stub
-              @object.join_associations.detect { |j|
-                j.reflection.name == object.to_sym && j.parent == parent
-              }
-            when Nodes::Join
-              @object.join_associations.detect { |j|
-                j.reflection.name == object.name && j.parent == parent &&
-                (object.polymorphic? ? j.reflection.klass == object.klass : true)
-              }
-            else
-              @object.join_associations.detect { |j|
-                j.reflection == object && j.parent == parent
-              }
-            end
-          end
-        end
-
         def get_table(object)
           if [Symbol, Nodes::Stub].include?(object.class)
             Arel::Table.new(object.to_sym, :engine => @engine)
           elsif Nodes::Join === object
-            object.klass ? object.klass.arel_table : Arel::Table.new(object.name, :engine => @engine)
+            object._klass ? object._klass.arel_table : Arel::Table.new(object._name, :engine => @engine)
           elsif object.respond_to?(:aliased_table_name)
             Arel::Table.new(object.table_name, :as => object.aliased_table_name, :engine => @engine)
           else

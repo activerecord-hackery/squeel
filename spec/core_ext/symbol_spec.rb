@@ -56,13 +56,13 @@ describe Symbol do
   it 'creates inner joins' do
     join = :join.inner
     join.should be_a Squeel::Nodes::Join
-    join.type.should eq Arel::InnerJoin
+    join._type.should eq Arel::InnerJoin
   end
 
   it 'creates outer joins' do
     join = :join.outer
     join.should be_a Squeel::Nodes::Join
-    join.type.should eq Arel::OuterJoin
+    join._type.should eq Arel::OuterJoin
   end
 
 end

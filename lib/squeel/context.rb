@@ -1,7 +1,7 @@
 require 'arel'
 
 module Squeel
-  # @abstract Subclass and implement {#traverse} and {#get_table}
+  # @abstract Subclass and implement {#traverse}, #{find} and {#get_table}
   #   to create a Context that supports a given ORM.
   class Context
     attr_reader :base, :engine, :arel_visitor
@@ -20,8 +20,17 @@ module Squeel
       @tables = Hash.new {|hash, key| hash[key] = get_table(key)}
     end
 
+    # This method should find a given object inside the context.
+    #
+    # @param object The object to find
+    # @param parent The parent object, if applicable
+    # @return a valid "parent" or contextualizable object
+    def find(object, parent = @base)
+      raise NotImplementedError, "Subclasses must implement public method find"
+    end
+
     # This method should traverse a keypath and return an object for use
-    # in future calls to traverse of contextualize.
+    # in future calls to #traverse, #find, or #contextualize.
     #
     # @param [Nodes::KeyPath] keypath The keypath to traverse
     # @param parent The parent object from which traversal should start.

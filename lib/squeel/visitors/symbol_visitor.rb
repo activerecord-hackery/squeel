@@ -40,7 +40,7 @@ module Squeel
       end
 
       def visit_Squeel_Nodes_Join(o, parent)
-        o.name
+        o._name
       end
 
     end

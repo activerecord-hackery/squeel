@@ -10,7 +10,6 @@ module Squeel
     # columns.
     class Predicate
 
-      include PredicateMethods
       include PredicateOperators
 
       # @return The right-hand value being considered in this predicate.
@@ -46,7 +45,7 @@ module Squeel
       end
 
       # Whether the value has been assigned yet.
-      # @return [TrueClass, FalseClass] Has the value been set?
+      # @return [Boolean] Has the value been set?
       def value?
         @value != :__undefined__
       end
