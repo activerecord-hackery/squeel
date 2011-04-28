@@ -139,7 +139,7 @@ module Squeel
       def %(val)
         case endpoint
         when Stub, Function
-          eq(val)
+          Array === val ? self.in(val) : self.eq(val)
           self
         else
           endpoint % val

@@ -65,10 +65,12 @@ module Squeel
       #   @return [KeyPath] The new keypath
       def method_missing(method_id, *args)
         super if method_id == :to_ary
-        if (args.size == 1) && (Class === args[0])
+        if args.empty?
+          KeyPath.new(self, method_id)
+        elsif (args.size == 1) && (Class === args[0])
           KeyPath.new(self, Join.new(method_id, Arel::InnerJoin, args[0]))
         else
-          KeyPath.new(self, method_id)
+          KeyPath.new(self, Nodes::Function.new(method_id, args))
         end
       end
 

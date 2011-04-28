@@ -45,7 +45,7 @@ module Squeel
       end
 
       # Important to avoid accidentally allowing the default ARel visitor's
-      # @last_column quoting behavior (where a value is quoted as though it
+      # last_column quoting behavior (where a value is quoted as though it
       # is of the type of the last visited column). This can wreak havoc with
       # Functions and Operations.
       #
@@ -61,8 +61,22 @@ module Squeel
         end
       end
 
+      # Quote a value based on its type, not on the last column used by the
+      # ARel visitor. This is occasionally necessary to avoid having ARel
+      # quote a value according to an integer column, converting 'My String' to 0.
+      #
+      # @param value The value to quote
+      # @return [Arel::Nodes::SqlLiteral] if the value needs to be pre-quoted
+      # @return the unquoted value, if default quoting won't hurt.
+      def quote(value)
+        quoted?(value) ? Arel.sql(arel_visitor.accept value) : value
+      end
+
       # Visit the object. This is not called directly, but instead via the public
       # #accept method.
+      #
+      # @param object The object to visit
+      # @param parent The object's parent within the context
       def visit(object, parent)
         send(DISPATCH[object.class], object, parent)
       end

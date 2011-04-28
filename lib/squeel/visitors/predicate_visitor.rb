@@ -64,7 +64,7 @@ module Squeel
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
-            quoted?(arg) ? Arel.sql(arel_visitor.accept arg) : arg
+            quote arg
           end
         end
         Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
@@ -84,7 +84,7 @@ module Squeel
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
-            quoted?(arg) ? Arel.sql(arel_visitor.accept arg) : arg
+            quote arg
           end
         end
 
@@ -160,11 +160,11 @@ module Squeel
 
         case k
         when Nodes::Predicate
-          accept(k % v, parent)
+          accept(k % quote_for_node(k.expr, v), parent)
         when Nodes::Function
-          arel_predicate_for(accept(k, parent), v, parent)
+          arel_predicate_for(accept(k, parent), quote(v), parent)
         when Nodes::KeyPath
-          accept(k % v, parent)
+          accept(k % quote_for_node(k.endpoint, v), parent)
         else
           attribute = contextualize(parent)[k.to_sym]
           arel_predicate_for(attribute, v, parent)
@@ -177,6 +177,17 @@ module Squeel
         else
           value = can_accept?(value) ? accept(value, parent) : value
           attribute.eq(value)
+        end
+      end
+
+      def quote_for_node(node, v)
+        case node
+        when Nodes::Function
+          quote(v)
+        when Nodes::Predicate
+          Nodes::Function === node.expr ? quote(v) : v
+        else
+          v
         end
       end
 

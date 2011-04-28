@@ -189,6 +189,28 @@ module Squeel
 
         end
 
+        describe '#to_sql' do
+          it 'casts a non-acceptable value for a Function properly' do
+            relation = Person.joins(:children).where(:children => {:coalesce.func(:name, 'Mr. No-name') => 'Ernie'})
+            relation.to_sql.should match /'Ernie'/
+          end
+
+          it 'casts a non-acceptable value for a Predicate containing a Function expr properly' do
+            relation = Person.joins(:children).where(:children => {:coalesce.func(:name, 'Mr. No-name').eq => 'Ernie'})
+            relation.to_sql.should match /'Ernie'/
+          end
+
+          it 'casts a non-acceptable value for a KeyPath with a Function endpoint properly' do
+            relation = Person.joins(:children).where{{children.coalesce(:name, 'Mr. No-name') => 'Ernie'}}
+            relation.to_sql.should match /'Ernie'/
+          end
+
+          it 'casts a non-acceptable value for a KeyPath with a Predicate endpoint containing a Function expr properly' do
+            relation = Person.joins(:children).where{{children.coalesce(:name, 'Mr. No-name').eq => 'Ernie'}}
+            relation.to_sql.should match /'Ernie'/
+          end
+        end
+
         describe '#includes' do
 
           it 'builds options with a block' do

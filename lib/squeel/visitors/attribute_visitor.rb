@@ -60,33 +60,66 @@ module Squeel
       # @param v The hash value
       # @param parent The current parent object in the context
       # @return The same value we just received. Yeah, this method's pretty pointless,
-      #   and only here for consistency's sake.
+      #   for now, and only here for consistency's sake.
       def visit_without_context_change(k, v, parent)
         v
       end
 
+      # Visit elements of an array that it's possible to visit -- leave other
+      # elements untouched.
+      #
+      # @param [Array] o The array to visit
+      # @param parent The array's parent within the context
+      # @return [Array] The flattened array with elements visited
       def visit_Array(o, parent)
         o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
       end
 
+      # Visit a symbol. This will return an attribute named after the symbol against
+      # the current parent's contextualized table.
+      #
+      # @param [Symbol] o The symbol to visit
+      # @param parent The symbol's parent within the context
+      # @return [Arel::Attribute] An attribute on the contextualized parent table
       def visit_Symbol(o, parent)
         contextualize(parent)[o]
       end
 
+      # Visit a stub. This will return an attribute named after the stub against
+      # the current parent's contextualized table.
+      #
+      # @param [Nodes::Stub] o The stub to visit
+      # @param parent The stub's parent within the context
+      # @return [Arel::Attribute] An attribute on the contextualized parent table
       def visit_Squeel_Nodes_Stub(o, parent)
         contextualize(parent)[o.symbol]
       end
 
+      # Visit a keypath. This will traverse the keypath's "path", setting a new
+      # parent as though the keypath's endpoint was in a deeply-nested hash,
+      # then visit the endpoint with the new parent.
+      #
+      # @param [Nodes::KeyPath] o The keypath to visit
+      # @param parent The keypath's parent within the context
+      # @return The visited endpoint, with the parent from the KeyPath's path.
       def visit_Squeel_Nodes_KeyPath(o, parent)
         parent = traverse(o, parent)
 
         accept(o.endpoint, parent)
       end
 
+      # Visit an Order node.
+      #
+      # @param [Nodes::Order] o The order node to visit
+      # @param parent The node's parent within the context
+      # @return [Arel::Nodes::Ordering] An ascending or desending ordering
       def visit_Squeel_Nodes_Order(o, parent)
         accept(o.expr, parent).send(o.descending? ? :desc : :asc)
       end
 
+      # Visit a Function node. Each function argument will be accepted or
+      # contextualized if appropriate. Keep in mind that this occurs with
+      # the current parent within the context.
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
@@ -95,7 +128,7 @@ module Squeel
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
-            quoted?(arg) ? Arel.sql(arel_visitor.accept arg) : arg
+            quote arg
           end
         end
         Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
@@ -109,7 +142,7 @@ module Squeel
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
-            quoted?(arg) ? Arel.sql(arel_visitor.accept arg) : arg
+            quote arg
           end
         end
 
