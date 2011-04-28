@@ -69,5 +69,24 @@ module Squeel
       result.value.should eq 'test'
     end
 
+    describe '#my' do
+      it 'allows access to caller instance variables' do
+        @test_var = "test"
+        result = DSL.eval{my{@test_var}}
+        result.should be_a String
+        result.should eq @test_var
+      end
+
+      it 'allows access to caller methods' do
+        def test_scoped_method
+          :name
+        end
+
+        result = DSL.eval{my{test_scoped_method}}
+        result.should be_a Symbol
+        result.should eq :name
+      end
+    end
+
   end
 end

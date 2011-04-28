@@ -26,10 +26,20 @@ module Squeel
     # @return The results of the interpreted DSL code.
     def self.eval(&block)
       if block.arity > 0
-        yield self.new
+        yield self.new(block.binding)
       else
-        self.new.instance_eval(&block)
+        self.new(block.binding).instance_eval(&block)
       end
+    end
+
+    private
+
+    def initialize(caller_binding)
+      @caller = caller_binding.eval 'self'
+    end
+
+    def my(&block)
+      @caller.instance_eval &block
     end
 
     # Node generation inside DSL blocks.
@@ -48,6 +58,8 @@ module Squeel
     #   @param *other_args Optional additional arguments
     #   @return [Nodes::Function] A function node for the given method name with the given arguments
     def method_missing(method_id, *args)
+      super if method_id == :to_ary
+
       if args.empty?
         Nodes::Stub.new method_id
       elsif (args.size == 1) && (Class === args[0])
