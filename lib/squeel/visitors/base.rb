@@ -70,7 +70,18 @@ module Squeel
       # @return [Arel::Nodes::SqlLiteral] if the value needs to be pre-quoted
       # @return the unquoted value, if default quoting won't hurt.
       def quote(value)
-        quoted?(value) ? Arel.sql(arel_visitor.accept value) : value
+        if quoted? value
+          case value
+          when Array
+            value.map {|v| quote(v)}
+          when Range
+            Range.new(quote(value.begin), quote(value.end), value.exclude_end?)
+          else
+            Arel.sql(arel_visitor.accept value)
+          end
+        else
+          value
+        end
       end
 
       # Visit the object. This is not called directly, but instead via the public
