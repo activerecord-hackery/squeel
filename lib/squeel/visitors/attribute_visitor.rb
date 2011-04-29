@@ -120,6 +120,16 @@ module Squeel
       # Visit a Function node. Each function argument will be accepted or
       # contextualized if appropriate. Keep in mind that this occurs with
       # the current parent within the context.
+      #
+      # @example A function as the endpoint of a keypath
+      #   Person.joins{children}.order{children.coalesce(name, '<no name>')}
+      #   # => SELECT "people".* FROM "people"
+      #          INNER JOIN "people" "children_people"
+      #            ON "children_people"."parent_id" = "people"."id"
+      #          ORDER BY coalesce("children_people"."name", '<no name>')
+      #
+      # @param [Nodes::Function] o The function node to visit
+      # @param parent The node's parent within the context
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
@@ -134,6 +144,12 @@ module Squeel
         Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
       end
 
+      # Visit an Operation node. Each operand will be accepted or
+      # contextualized if appropriate. Keep in mind that this occurs with
+      # the current parent within the context.
+      #
+      # @param [Nodes::Operation] o The operation node to visit
+      # @param parent The node's parent within the context
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg

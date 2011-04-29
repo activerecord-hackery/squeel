@@ -34,10 +34,23 @@ module Squeel
 
     private
 
+    # This isn't normally called directly, but via DSL.eval, which will
+    # pass the block's binding to the new instance, for use with #my.
+    #
+    # @param [Binding] The block's binding.
     def initialize(caller_binding)
       @caller = caller_binding.eval 'self'
     end
 
+    # If you really need to get at an instance variable or method inside
+    # a DSL block, this method will let you do it. It passes a block back
+    # to the DSL's caller for instance_eval.
+    #
+    # It's also pretty evil, so I hope you enjoy using it while I'm burning in
+    # programmer hell.
+    #
+    # @param &block A block to instance_eval against the DSL's caller.
+    # @return
     def my(&block)
       @caller.instance_eval &block
     end

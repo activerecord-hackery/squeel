@@ -47,8 +47,10 @@ module Squeel
         end
 
         case o.expr
-        when Nodes::Function, Nodes::Stub
+        when Nodes::Stub
           accept(o.expr, parent).send(o.method_name, value)
+        when Nodes::Function
+          accept(o.expr, parent).send(o.method_name, quote(value))
         else
           contextualize(parent)[o.expr].send(o.method_name, value)
         end

@@ -40,6 +40,7 @@ module Squeel
 
       private
 
+      # A hash that caches the method name to use for a visitor for a given class
       DISPATCH = Hash.new do |hash, klass|
         hash[klass] = "visit_#{klass.name.gsub('::', '_')}"
       end
