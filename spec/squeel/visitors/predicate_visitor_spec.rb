@@ -30,6 +30,34 @@ module Squeel
         predicate.right.should eq ['Joe', 'Bob']
       end
 
+      it 'allows a subquery on the value side of an explicit predicate' do
+        predicate = @v.accept dsl{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
+        predicate.should be_a Arel::Nodes::In
+        predicate.left.name.should eq :name
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+      end
+
+      it 'allows a subquery on the value side of an implicit predicate' do
+        predicate = @v.accept(:name => Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})
+        predicate.should be_a Arel::Nodes::In
+        predicate.left.name.should eq :name
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+      end
+
+      it 'converts ActiveRecord::Base objects to their id' do
+        predicate = @v.accept(:id => Person.first)
+        predicate.should be_a Arel::Nodes::Equality
+        predicate.left.name.should eq :id
+        predicate.right.should eq 1
+      end
+
+      it 'converts arrays of ActiveRecord::Base objects to their ids' do
+        predicate = @v.accept(:id => [Person.first, Person.last])
+        predicate.should be_a Arel::Nodes::In
+        predicate.left.name.should eq :id
+        predicate.right.should eq [1, 332]
+      end
+
       it 'creates the node against the proper table for nested hashes' do
         predicate = @v.accept({
           :children => {
@@ -160,15 +188,6 @@ module Squeel
         predicate.should be_a Arel::Nodes::Matches
         predicate.left.name.should eq :name
         predicate.right.should eq 'Joe%'
-      end
-
-      it 'treats hash keys as an association when there is an array of "acceptables" on the value side' do
-        predicate = @v.accept(:children => [:name.matches % 'Joe%', :name.eq % 'Bob'])
-        predicate.should be_a Arel::Nodes::Grouping
-        predicate.expr.should be_a Arel::Nodes::And
-        predicate.expr.children.should have(2).items
-        predicate.expr.children.first.should be_a Arel::Nodes::Matches
-        predicate.expr.children.first.left.relation.table_alias.should eq 'children_people'
       end
 
       it 'treats hash keys as an association when there is an Or on the value side' do

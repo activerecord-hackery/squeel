@@ -29,20 +29,25 @@ module Squeel
       # @param object The object to check
       # @return [Boolean] Whether or not the visitor can accept the given object
       def can_accept?(object)
-        respond_to? DISPATCH[object.class], true
+        self.class.can_accept? object
       end
 
       # @param object The object to check
       # @return [Boolean] Whether or not visitors of this class can accept the given object
       def self.can_accept?(object)
-        private_method_defined? DISPATCH[object.class]
+        @can_accept ||= Hash.new do |hash, klass|
+          hash[klass] = klass.ancestors.detect { |ancestor|
+            private_method_defined? DISPATCH[ancestor]
+          } ? true : false
+        end
+        @can_accept[object.class]
       end
 
       private
 
       # A hash that caches the method name to use for a visitor for a given class
       DISPATCH = Hash.new do |hash, klass|
-        hash[klass] = "visit_#{klass.name.gsub('::', '_')}"
+        hash[klass] = "visit_#{(klass.name || '').gsub('::', '_')}"
       end
 
       # Important to avoid accidentally allowing the default ARel visitor's
@@ -91,7 +96,17 @@ module Squeel
       # @param parent The object's parent within the context
       def visit(object, parent)
         send(DISPATCH[object.class], object, parent)
+      rescue NoMethodError => e
+        raise e if respond_to?(DISPATCH[object.class], true)
+
+        superklass = object.class.ancestors.find { |klass|
+          respond_to?(DISPATCH[klass], true)
+        }
+        raise(TypeError, "Cannot visit #{object.class}") unless superklass
+        DISPATCH[object.class] = DISPATCH[superklass]
+        retry
       end
+
     end
   end
 end

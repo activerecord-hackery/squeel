@@ -28,6 +28,10 @@ module Squeel
         o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
       end
 
+      def visit_ActiveRecord_Base(o, parent)
+        o.id
+      end
+
       def visit_Squeel_Nodes_KeyPath(o, parent)
         parent = traverse(o, parent)
 
@@ -123,8 +127,6 @@ module Squeel
           true
         when Nodes::KeyPath
           can_accept?(v.endpoint) && !(Nodes::Stub === v.endpoint)
-        when Array
-          (!v.empty? && v.all? {|val| can_accept?(val)})
         else
           false
         end
@@ -174,10 +176,10 @@ module Squeel
       end
 
       def arel_predicate_for(attribute, value, parent)
+        value = can_accept?(value) ? accept(value, parent) : value
         if [Array, Range, Arel::SelectManager].include?(value.class)
           attribute.in(value)
         else
-          value = can_accept?(value) ? accept(value, parent) : value
           attribute.eq(value)
         end
       end
