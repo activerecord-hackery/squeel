@@ -9,20 +9,17 @@ Gem::Specification.new do |s|
   s.authors     = ["Ernie Miller"]
   s.email       = ["ernie@metautonomo.us"]
   s.homepage    = "http://metautonomo.us/projects/squeel"
-  s.summary     = %q{ActiveRecord 3 query syntax on steroids.}
+  s.summary     = %q{ActiveRecord 3, improved.}
   s.description = %q{
-      Squeel offers the ability to call any Arel predicate methods
-      (with a few convenient aliases) on your model's attributes instead
-      of the ones normally offered by ActiveRecord's hash parameters. It also
-      adds convenient syntax for order clauses, smarter mapping of nested hash
-      conditions, and a debug_sql method to see the real SQL your code is
-      generating without running it against the database. If you like the new
-      AR 3.0 query interface, you'll love it with Squeel.
+      Squeel unlocks the power of ARel in your Rails 3 application with
+      a handy block-based syntax. You can write subqueries, access named
+      functions provided by your RDBMS, and more, all without writing
+      SQL strings.
     }
   s.post_install_message = %q{
 *** Thanks for installing Squeel! ***
 Be sure to check out http://metautonomo.us/projects/squeel/ for a
-walkthrough of Squeel's features, and click the donate button if
+walkthrough of Squeel's features, and click the donate link if
 you're feeling especially appreciative. It'd help me justify this
 "open source" stuff to my lovely wife. :)
 
