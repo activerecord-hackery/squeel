@@ -60,7 +60,7 @@ module Squeel
       #   not passed as an SqlLiteral.
       def quoted?(object)
         case object
-        when Arel::Nodes::SqlLiteral, Bignum, Fixnum
+        when Arel::Nodes::SqlLiteral, Bignum, Fixnum, Arel::SelectManager
           false
         else
           true

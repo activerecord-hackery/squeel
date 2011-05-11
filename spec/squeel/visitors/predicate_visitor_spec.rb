@@ -16,6 +16,13 @@ module Squeel
         @v = PredicateVisitor.new(@c)
       end
 
+      it 'does not quote Arel::SelectManager values in Predicate nodes' do
+        predicate = Nodes::Predicate.new(Nodes::Function.new(:blah, [1, 2]), :in, Person.select(:id).arel)
+        node = @v.accept(predicate)
+        node.should be_a Arel::Nodes::In
+        node.right.should be_a Arel::Nodes::SelectStatement
+      end
+
       it 'creates Equality nodes for simple hashes' do
         predicate = @v.accept(:name => 'Joe')
         predicate.should be_a Arel::Nodes::Equality
