@@ -14,6 +14,12 @@ module Squeel
           end
         end
 
+        it 'joins has_many :through associations' do
+          @jd.send(:build, :authored_article_comments)
+          @jd.join_associations.should have(1).association
+          @jd.join_associations.first.table_name.should eq 'comments'
+        end
+
         it 'joins with stubs' do
           @jd.send(:build, Nodes::Stub.new(:articles) => Nodes::Stub.new(:comments))
           @jd.join_associations.should have(2).associations

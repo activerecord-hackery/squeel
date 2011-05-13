@@ -11,7 +11,7 @@ class Person < ActiveRecord::Base
   has_many   :articles
   has_many   :comments
   has_many   :authored_article_comments, :through => :articles,
-             :class_name => 'Comment', :foreign_key => :person_id
+             :source => :comments
   has_many   :notes, :as => :notable
 end
 

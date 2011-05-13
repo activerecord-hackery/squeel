@@ -444,6 +444,15 @@ module Squeel
             block.to_sql.should eq standard.to_sql
           end
 
+          it 'joins has_many :through associations' do
+            relation = Person.joins(:authored_article_comments)
+            relation.to_sql.should be_like %q{
+              SELECT "people".* FROM "people"
+              INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+              INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+            }
+          end
+
           it 'joins polymorphic belongs_to associations' do
             relation = Note.joins{notable(Article)}
             relation.to_sql.should match /"notes"."notable_type" = 'Article'/
