@@ -45,7 +45,6 @@ module Squeel
             r = r.clone
             association_name ||= infer_association_for_relation_merge(r)
             prepare_relation_for_association_merge!(r, association_name)
-            self.joins_values += [association_name] if reflect_on_association(association_name)
           end
 
           super(r)
