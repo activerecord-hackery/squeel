@@ -6,6 +6,12 @@ module Squeel
 
       private
 
+      # Visit a Hash. This entails iterating through each key and value and
+      # visiting each value in turn.
+      #
+      # @param [Hash] o The Hash to visit
+      # @param parent The current parent object in the context
+      # @return [Array] An array of values for use in a where or having clause
       def visit_Hash(o, parent)
         predicates = o.map do |k, v|
           if implies_context_change?(v)
@@ -24,20 +30,43 @@ module Squeel
         end
       end
 
+      # Visit an array, which involves accepting any values we know how to
+      # accept, and skipping the rest.
+      #
+      # @param [Array] o The Array to visit
+      # @param parent The current parent object in the context
+      # @return [Array] The visited array
       def visit_Array(o, parent)
         o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
       end
 
+      # Visit ActiveRecord::Base objects. These should be converted to their
+      # id before being used in a comparison.
+      #
+      # @param [ActiveRecord::Base] o The AR::Base object to visit
+      # @param parent The current parent object in the context
+      # @return [Fixnum] The id of the object
       def visit_ActiveRecord_Base(o, parent)
         o.id
       end
 
+      # Visit a KeyPath by traversing the path and then visiting the endpoint.
+      #
+      # @param [Nodes::KeyPath] o The KeyPath to visit
+      # @param parent The parent object in the context
+      # @return The visited endpoint, in the context of the KeyPath's path
       def visit_Squeel_Nodes_KeyPath(o, parent)
         parent = traverse(o, parent)
 
         accept(o.endpoint, parent)
       end
 
+      # Visit a Stub by converting it to an ARel attribute
+      #
+      # @param [Nodes::Stub] o The Stub to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Attribute] An attribute of the parent table with the
+      #   Stub's column
       def visit_Squeel_Nodes_Stub(o, parent)
         contextualize(parent)[o.symbol]
       end
@@ -121,6 +150,8 @@ module Squeel
         accept(o.expr, parent).not
       end
 
+      # @return [Boolean] Whether the given value implies a context change
+      # @param v The value to consider
       def implies_context_change?(v)
         case v
         when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
@@ -132,6 +163,13 @@ module Squeel
         end
       end
 
+      # Change context (by setting the new parent to the result of a #find or
+      # #traverse on the key), then accept the given value.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return The visited value
       def visit_with_context_change(k, v, parent)
         parent = case k
           when Nodes::KeyPath
@@ -154,6 +192,14 @@ module Squeel
         end
       end
 
+      # Create a predicate for a given key/value pair. If the value is
+      # a Symbol, Stub, or KeyPath, it's converted to a table.column for
+      # the predicate value.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return An ARel predicate
       def visit_without_context_change(k, v, parent)
         case v
         when Nodes::Stub, Symbol
@@ -175,6 +221,13 @@ module Squeel
         end
       end
 
+      # Determine whether to use IN or equality testing for a predicate,
+      # based on its value class, then return the appropriate predicate.
+      #
+      # @param attribute The ARel attribute (or function/operation) the
+      #   predicate will be created for
+      # @param value The value to be compared against
+      # @return [Arel::Nodes::Node] An ARel predicate node
       def arel_predicate_for(attribute, value, parent)
         value = can_accept?(value) ? accept(value, parent) : value
         if [Array, Range, Arel::SelectManager].include?(value.class)
@@ -184,6 +237,14 @@ module Squeel
         end
       end
 
+      # Function nodes require us to do the quoting before the ARel
+      # visitor gets a chance to try, because we want to avoid having our
+      # values quoted as a type of the last visited column. Otherwise, we
+      # can end up with annoyances like having "joe" quoted to 0, if the
+      # last visited column was of an integer type.
+      #
+      # @param node The node we (might) be quoting for
+      # @param v The value to (possibly) quote
       def quote_for_node(node, v)
         case node
         when Nodes::Function

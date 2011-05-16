@@ -24,47 +24,6 @@ module Squeel
         end.flatten
       end
 
-      # @return [Boolean] Whether the given value implies a context change
-      # @param v The value to consider
-      def implies_context_change?(v)
-        can_accept?(v)
-      end
-
-      # Change context (by setting the new parent to the result of a #find or
-      # #traverse on the key), then accept the given value.
-      #
-      # @param k The hash key
-      # @param v The hash value
-      # @param parent The current parent object in the context
-      # @return The visited value
-      def visit_with_context_change(k, v, parent)
-        parent = case k
-          when Nodes::KeyPath
-            traverse(k, parent, true)
-          else
-            find(k, parent)
-          end
-
-        if Array === v
-          v.map {|val| accept(val, parent || k)}
-        else
-          can_accept?(v) ? accept(v, parent || k) : v
-        end
-      end
-
-      # If there is no context change, we'll just return the value unchanged,
-      # currently. Is this really the right behavior? I don't think so, but
-      # it works in this case.
-      #
-      # @param k The hash key
-      # @param v The hash value
-      # @param parent The current parent object in the context
-      # @return The same value we just received. Yeah, this method's pretty pointless,
-      #   for now, and only here for consistency's sake.
-      def visit_without_context_change(k, v, parent)
-        v
-      end
-
       # Visit elements of an array that it's possible to visit -- leave other
       # elements untouched.
       #
@@ -175,6 +134,47 @@ module Squeel
           Arel.sql("#{arel_visitor.accept(args[0])} #{o.operator} #{arel_visitor.accept(args[1])}")
         end
         o.alias ? op.as(o.alias) : op
+      end
+
+      # @return [Boolean] Whether the given value implies a context change
+      # @param v The value to consider
+      def implies_context_change?(v)
+        can_accept?(v)
+      end
+
+      # Change context (by setting the new parent to the result of a #find or
+      # #traverse on the key), then accept the given value.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return The visited value
+      def visit_with_context_change(k, v, parent)
+        parent = case k
+          when Nodes::KeyPath
+            traverse(k, parent, true)
+          else
+            find(k, parent)
+          end
+
+        if Array === v
+          v.map {|val| accept(val, parent || k)}
+        else
+          can_accept?(v) ? accept(v, parent || k) : v
+        end
+      end
+
+      # If there is no context change, we'll just return the value unchanged,
+      # currently. Is this really the right behavior? I don't think so, but
+      # it works in this case.
+      #
+      # @param k The hash key
+      # @param v The hash value
+      # @param parent The current parent object in the context
+      # @return The same value we just received. Yeah, this method's pretty pointless,
+      #   for now, and only here for consistency's sake.
+      def visit_without_context_change(k, v, parent)
+        v
       end
 
     end
