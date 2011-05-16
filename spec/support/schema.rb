@@ -9,7 +9,9 @@ class Person < ActiveRecord::Base
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :children, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :articles
+  has_many   :articles_with_condition, :class_name => 'Article', :conditions => {:title => 'Condition'}
   has_many   :comments
+  has_many   :condition_article_comments, :through => :articles_with_condition, :source => :comments
   has_many   :authored_article_comments, :through => :articles,
              :source => :comments
   has_many   :notes, :as => :notable

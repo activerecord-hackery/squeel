@@ -49,7 +49,7 @@ module Squeel
         private
 
         def get_table(object)
-          if [Symbol, Nodes::Stub].include?(object.class)
+          if [Symbol, String, Nodes::Stub].include?(object.class)
             Arel::Table.new(object.to_sym, :engine => @engine)
           elsif Nodes::Join === object
             object._klass ? object._klass.arel_table : Arel::Table.new(object._name, :engine => @engine)

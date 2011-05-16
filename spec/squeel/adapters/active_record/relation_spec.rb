@@ -589,6 +589,12 @@ module Squeel
             sql.should match /"articles"."title" = 'Hello world!'/
           end
 
+          it 'does not break hm:t with conditions' do
+            relation = Person.first.condition_article_comments
+            sql = relation.to_sql
+            sql.should match /"articles"."title" = 'Condition'/
+          end
+
         end
 
         describe '#to_a' do

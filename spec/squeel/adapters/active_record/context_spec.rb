@@ -37,6 +37,7 @@ module Squeel
           table.name.should eq 'notes'
           table.table_alias.should be_nil
         end
+
       end
     end
   end

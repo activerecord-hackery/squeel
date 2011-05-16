@@ -71,6 +71,12 @@ module Squeel
         contextualize(parent)[o.symbol]
       end
 
+      # Visit a Squeel predicate, converting it into an ARel predicate
+      #
+      # @param [Nodes::Predicate] o The predicate to visit
+      # @param parent The parent object in the context
+      # @return An ARel predicate node
+      #   (Arel::Nodes::Equality, Arel::Nodes::Matches, etc)
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
         if Nodes::KeyPath === value
@@ -89,6 +95,12 @@ module Squeel
         end
       end
 
+      # Visit a Squeel function, returning an ARel NamedFunction node.
+      #
+      # @param [Nodes::Function] o The function node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::NamedFunction] A named function node. Function
+      #   arguments are visited, if necessary, before being passed to the NamedFunction.
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
@@ -105,10 +117,22 @@ module Squeel
         Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
       end
 
+      # Visit an ActiveRecord Relation, returning an Arel::SelectManager
+      # @param [ActiveRecord::Relation] o The Relation to visit
+      # @param parent The parent object in the context
+      # @return [Arel::SelectManager] The ARel select manager that represents
+      #   the relation's query
       def visit_ActiveRecord_Relation(o, parent)
         o.arel
       end
 
+      # Visit a Squeel operation node, convering it to an ARel InfixOperation
+      # (or subclass, as appropriate)
+      #
+      # @param [Nodes::Operation] o The Operation node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::InfixOperation] The InfixOperation (or Addition,
+      #   Multiplication, etc) node, with both operands visited, if needed.
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
@@ -138,10 +162,23 @@ module Squeel
         o.alias ? op.as(o.alias) : op
       end
 
+      # Visit a Squeel And node, returning an ARel Grouping containing an
+      # ARel And node.
+      #
+      # @param [Nodes::And] The And node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::Grouping] A grouping node, containnig an ARel
+      #   And node as its expression. All children will be visited before
+      #   being passed to the And.
       def visit_Squeel_Nodes_And(o, parent)
         Arel::Nodes::Grouping.new(Arel::Nodes::And.new(accept(o.children, parent)))
       end
 
+      # Visit a Squeel Or node, returning an ARel Or node.
+      #
+      # @param [Nodes::Or] The Or node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::Or] An ARel Or node, with left and ride sides visited
       def visit_Squeel_Nodes_Or(o, parent)
         accept(o.left, parent).or(accept(o.right, parent))
       end
