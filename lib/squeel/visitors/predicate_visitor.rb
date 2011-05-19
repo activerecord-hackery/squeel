@@ -253,7 +253,13 @@ module Squeel
         when Nodes::KeyPath
           accept(k % quote_for_node(k.endpoint, v), parent)
         else
-          attribute = contextualize(parent)[k.to_sym]
+          attr_name = k.to_s
+          attribute = if attr_name.include?('.')
+              table_name, attr_name = attr_name.split(/\./, 2)
+              Arel::Table.new(table_name.to_sym, :engine => engine)[attr_name.to_sym]
+            else
+              contextualize(parent)[k.to_sym]
+            end
           arel_predicate_for(attribute, v, parent)
         end
       end

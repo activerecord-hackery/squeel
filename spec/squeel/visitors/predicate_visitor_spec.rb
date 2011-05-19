@@ -176,6 +176,12 @@ module Squeel
         predicate.to_sql.should match /"people"."name" = "children_people"."name"/
       end
 
+      it 'honors an explicit table in string keys' do
+        predicate = @v.accept('things.attribute' => 'retro')
+        predicate.should be_a Arel::Nodes::Equality
+        predicate.to_sql.should match /"things"."attribute" = 'retro'/
+      end
+
       it 'visits ActiveRecord::Relation values in predicates' do
         predicate = @v.accept(dsl{id >> Person.select{id}.limit(3).order{id.desc}})
         predicate.should be_a Arel::Nodes::In
