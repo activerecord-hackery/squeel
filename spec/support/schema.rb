@@ -22,6 +22,7 @@ class Article < ActiveRecord::Base
   has_many                :comments
   has_and_belongs_to_many :tags
   has_many   :notes, :as => :notable
+  has_many :commenters, :through => :comments, :source => :person
 end
 
 class Comment < ActiveRecord::Base

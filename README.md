@@ -30,9 +30,27 @@ Squeel enhances the normal ActiveRecord query methods by enabling them to accept
 blocks. Inside a block, the Squeel query DSL can be used. Note the use of curly braces
 in these examples instead of parentheses. `{}` denotes a Squeel DSL query.
 
-Stubs and keypaths are the two primary building blocks used in a Squeel DSL query, so
-before we go on, let's take a look at them. Most of the other examples that follow will
-be based on this "symbol-less" syntax, so it might look a bit foreign otherwise.
+Stubs and keypaths are the two primary building blocks used in a Squeel DSL query, so we'll
+start by taking a look at them. Most of the other examples that follow will be based on
+this "symbol-less" block syntax.
+
+*An important gotcha, before we begin:* The Squeel DSL works its magic using `instance_eval`.
+If you've been working with Ruby for a while, you'll know immediately that this means that
+_inside_ a Squeel DSL block, `self` isn't the same thing that it is _outside_ the block.
+
+This carries with it an important implication: <strong>Instance variables and instance methods
+inside the block won't refer to your object's variables/methods.</strong>
+
+Don't worry, Squeel's got you covered. Use one of the following methods to get access
+to your object's methods and variables:
+
+  1. Assign the variable locally before the DSL block, and access it as you would
+     normally.
+  2. Supply and arity to the DSL block, as in `Person.where{|dsl| dsl.name == @my_name}`
+     Downside: You'll need to prefix stubs, keypaths, and functions (explained below)
+     with the DSL object.
+  3. Wrap the method or instance variable inside the block with `my{}`.
+     `Person.where{name == my{some_method_to_return_a_name}}`
 
 ### Stubs
 

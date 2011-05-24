@@ -570,6 +570,17 @@ module Squeel
             @person.name.should eq 'joe'
           end
 
+          it 'creates through a join model' do
+            Article.transaction do
+              article = Article.first
+              person = article.commenters.create(:name => 'Ernie Miller')
+              person.should be_persisted
+              person.comments.should have(1).comment
+              person.comments.first.article.should eq article
+              raise ::ActiveRecord::Rollback
+            end
+          end
+
         end
 
         describe '#merge' do
@@ -591,7 +602,7 @@ module Squeel
 
           it 'does not break hm:t with conditions' do
             relation = Person.first.condition_article_comments
-            sql = relation.to_sql
+            sql = relation.scoped.to_sql
             sql.should match /"articles"."title" = 'Condition'/
           end
 

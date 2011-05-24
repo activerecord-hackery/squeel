@@ -258,7 +258,7 @@ module Squeel
           nodes.map { |node|
             case node
             when Arel::Nodes::Equality
-              node
+              node if node.left.relation.name == table_name
             when Arel::Nodes::Grouping
               find_equality_predicates([node.expr])
             when Arel::Nodes::And
