@@ -46,7 +46,7 @@ to your object's methods and variables:
 
   1. Assign the variable locally before the DSL block, and access it as you would
      normally.
-  2. Supply and arity to the DSL block, as in `Person.where{|dsl| dsl.name == @my_name}`
+  2. Supply an arity to the DSL block, as in `Person.where{|dsl| dsl.name == @my_name}`
      Downside: You'll need to prefix stubs, keypaths, and functions (explained below)
      with the DSL object.
   3. Wrap the method or instance variable inside the block with `my{}`.
