@@ -9,7 +9,11 @@ module Squeel
       include PredicateOperators
       include Operators
 
-      undef_method :id if method_defined?(:id)
+      # We need some methods to fall through to the endpoint or create a new
+      # stub of the given name
+      %w(id == != =~ !~).each do |method_name|
+        undef_method method_name if method_defined?(method_name)
+      end
 
       # @return [Array<Symbol, Stub, Join>] The path
       attr_reader :path
@@ -113,11 +117,6 @@ module Squeel
       def ~
         @absolute = true
         self
-      end
-
-      # To let these fall through to the endpoint via method_missing
-      instance_methods.grep(/^(==|=~|!~)$/) do |operator|
-        undef_method operator
       end
 
       # For use with equality tests
