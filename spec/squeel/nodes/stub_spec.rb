@@ -186,6 +186,13 @@ module Squeel
         function.should be_a Function
       end
 
+      it 'creates as nodes with #as' do
+        as = @s.as('other_name')
+        as.should be_a Squeel::Nodes::As
+        as.left.should eq @s
+        as.right.should eq 'other_name'
+      end
+
     end
   end
 end

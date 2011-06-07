@@ -1,5 +1,6 @@
 require 'squeel/predicate_methods'
 require 'squeel/nodes/operators'
+require 'squeel/nodes/aliasing'
 
 module Squeel
   module Nodes
@@ -7,9 +8,9 @@ module Squeel
     # methods and operators defined on it since doing so on Symbol will incur the
     # nerdrage of many.
     class Stub
-
       include PredicateMethods
       include Operators
+      include Aliasing
 
       alias :== :eq
       alias :'^' :not_eq

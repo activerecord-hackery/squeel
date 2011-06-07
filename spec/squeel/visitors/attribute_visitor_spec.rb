@@ -92,6 +92,21 @@ module Squeel
         function.to_sql.should match /newname/
       end
 
+      it 'accepts As nodes containing symbols' do
+        as = @v.accept(:name.as('other_name'))
+        as.to_sql.should match /"people"."name" AS other_name/
+      end
+
+      it 'accepts As nodes containing stubs' do
+        as = @v.accept(dsl{name.as(other_name)})
+        as.to_sql.should match /"people"."name" AS other_name/
+      end
+
+      it 'accepts As nodes containing keypaths' do
+        as = @v.accept(dsl{children.name.as(other_name)})
+        as.to_sql.should match /"children_people"."name" AS other_name/
+      end
+
       it 'creates an ARel Addition node for an Operation node with + as operator' do
         operation = @v.accept(dsl{id + 1})
         operation.should be_a Arel::Nodes::Addition

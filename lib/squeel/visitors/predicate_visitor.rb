@@ -165,7 +165,7 @@ module Squeel
       # Visit a Squeel And node, returning an ARel Grouping containing an
       # ARel And node.
       #
-      # @param [Nodes::And] The And node to visit
+      # @param [Nodes::And] o The And node to visit
       # @param parent The parent object in the context
       # @return [Arel::Nodes::Grouping] A grouping node, containnig an ARel
       #   And node as its expression. All children will be visited before
@@ -176,9 +176,9 @@ module Squeel
 
       # Visit a Squeel Or node, returning an ARel Or node.
       #
-      # @param [Nodes::Or] The Or node to visit
+      # @param [Nodes::Or] o The Or node to visit
       # @param parent The parent object in the context
-      # @return [Arel::Nodes::Or] An ARel Or node, with left and ride sides visited
+      # @return [Arel::Nodes::Or] An ARel Or node, with left and right sides visited
       def visit_Squeel_Nodes_Or(o, parent)
         accept(o.left, parent).or(accept(o.right, parent))
       end

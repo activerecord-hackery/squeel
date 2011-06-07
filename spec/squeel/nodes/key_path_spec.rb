@@ -45,6 +45,14 @@ module Squeel
         @k.endpoint.args.should eq [1,2,3]
       end
 
+      it 'creates as nodes with #as' do
+        @k.as('other_name')
+        as = @k.endpoint
+        as.should be_a Squeel::Nodes::As
+        as.left.should eq Stub.new(:fourth)
+        as.right.should eq 'other_name'
+      end
+
       it 'creates AND nodes with & if the endpoint responds to &' do
         node = @k.third.fourth.eq('Bob') & Stub.new(:attr).eq('Joe')
         node.should be_a And

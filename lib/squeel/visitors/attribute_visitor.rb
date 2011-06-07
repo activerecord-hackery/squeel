@@ -136,6 +136,15 @@ module Squeel
         o.alias ? op.as(o.alias) : op
       end
 
+      # Visit a Squeel As node, resulting in am ARel As node.
+      #
+      # @param [Nodes::As] The As node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::As] The resulting as node.
+      def visit_Squeel_Nodes_As(o, parent)
+        accept(o.left, parent).as(o.right)
+      end
+
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider
       def implies_context_change?(v)

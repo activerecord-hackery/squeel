@@ -65,4 +65,11 @@ describe Symbol do
     join._type.should eq Arel::OuterJoin
   end
 
+  it 'creates as nodes' do
+    as = :column.as('other_name')
+    as.should be_a Squeel::Nodes::As
+    as.left.should eq :column
+    as.right.should eq 'other_name'
+  end
+
 end

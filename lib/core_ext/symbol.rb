@@ -1,4 +1,5 @@
 require 'squeel/predicate_methods'
+require 'squeel/nodes/aliasing'
 
 # These extensions to Symbol are loaded optionally, mostly to provide
 # a small amount of backwards compatibility with MetaWhere.
@@ -9,6 +10,7 @@ require 'squeel/predicate_methods'
 #   end
 class Symbol
   include Squeel::PredicateMethods
+  include Squeel::Nodes::Aliasing
 
   def asc
     Squeel::Nodes::Order.new self, 1
