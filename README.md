@@ -112,7 +112,7 @@ used in `WHERE` or `HAVING` clauses.
   <tr>
     <td>!=</td>
     <td>not_eq</td>
-    <td>!=</td>
+    <td>!= (1.9 only), ^ (1.8)</td>
     <td></td>
   </tr>
   <tr>
@@ -124,7 +124,7 @@ used in `WHERE` or `HAVING` clauses.
   <tr>
     <td>NOT LIKE</td>
     <td>does_not_match</td>
-    <td>!~</td>
+    <td>!~ (1.9 only)</td>
     <td>not_like</td>
   </tr>
   <tr>
