@@ -4,6 +4,9 @@ module Squeel
   module Visitors
     class PredicateVisitor < Base
 
+      TRUE_SQL = Arel.sql('1=1').freeze
+      FALSE_SQL = Arel.sql('1=0').freeze
+
       private
 
       # Visit a Hash. This entails iterating through each key and value and
@@ -79,6 +82,12 @@ module Squeel
       #   (Arel::Nodes::Equality, Arel::Nodes::Matches, etc)
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
+
+        if Array === value && value.empty? && [:in, :not_in].include?(o.method_name)
+          # Special case, in/not_in with empty arrays should be false/true respectively
+          return o.method_name == :in ? FALSE_SQL : TRUE_SQL
+        end
+
         if Nodes::KeyPath === value
           value = can_accept?(value.endpoint) ? accept(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
         else
@@ -274,7 +283,11 @@ module Squeel
       def arel_predicate_for(attribute, value, parent)
         value = can_accept?(value) ? accept(value, parent) : value
         if [Array, Range, Arel::SelectManager].include?(value.class)
-          attribute.in(value)
+          if Array === value && value.empty?
+            FALSE_SQL
+          else
+            attribute.in(value)
+          end
         else
           attribute.eq(value)
         end

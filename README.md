@@ -1,6 +1,18 @@
 # Squeel
 
-Squeel is a rewrite of [MetaWhere](http://metautonomo.us/projects/metawhere).
+Squeel lets you write your ActiveRecord queries with with fewer strings, and more Ruby,
+by making the ARel awesomeness that lies beneath ActiveRecord more accessible.
+
+Squeel lets you rewrite...
+
+    Article.where ['created_at >= ?', 2.weeks.ago]
+
+...as...
+
+    Article.where{created_at >= 2.weeks.ago}
+
+This is a _good thing_. If you don't agree, Squeel might not be for you. The above is
+just a simple example -- Squeel's capable of a whole lot more. Keep reading.
 
 ## Getting started
 
@@ -9,7 +21,7 @@ In your Gemfile:
     gem "squeel"  # Last officially released gem
     # gem "squeel", :git => "git://github.com/ernie/squeel.git" # Track git repo
 
-In an intitializer:
+In an initializer:
 
     Squeel.configure do |config|
       # To load hash extensions (to allow for AND (&), OR (|), and NOT (-) against
@@ -34,7 +46,7 @@ Stubs and keypaths are the two primary building blocks used in a Squeel DSL quer
 start by taking a look at them. Most of the other examples that follow will be based on
 this "symbol-less" block syntax.
 
-*An important gotcha, before we begin:* The Squeel DSL works its magic using `instance_eval`.
+**An important gotcha, before we begin:** The Squeel DSL works its magic using `instance_eval`.
 If you've been working with Ruby for a while, you'll know immediately that this means that
 _inside_ a Squeel DSL block, `self` isn't the same thing that it is _outside_ the block.
 
@@ -46,7 +58,7 @@ to your object's methods and variables:
 
   1. Assign the variable locally before the DSL block, and access it as you would
      normally.
-  2. Supply an arity to the DSL block, as in `Person.where{|dsl| dsl.name == @my_name}`
+  2. Supply an arity to the DSL block, as in `Person.where{|q| q.name == @my_name}`
      Downside: You'll need to prefix stubs, keypaths, and functions (explained below)
      with the DSL object.
   3. Wrap the method or instance variable inside the block with `my{}`.

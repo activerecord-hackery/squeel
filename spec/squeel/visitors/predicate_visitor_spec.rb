@@ -37,6 +37,24 @@ module Squeel
         predicate.right.should eq ['Joe', 'Bob']
       end
 
+      it 'generates "1=0" when given an empty array value in a hash' do
+        predicate = @v.accept(:id => [])
+        predicate.should be_a Arel::Nodes::SqlLiteral
+        predicate.should eq '1=0'
+      end
+
+      it 'generates "1=0" for in predicates when given an empty array value' do
+        predicate = @v.accept(:id.in => [])
+        predicate.should be_a Arel::Nodes::SqlLiteral
+        predicate.should eq '1=0'
+      end
+
+      it 'generates "1=1" for not_in predicates when given an empty array value' do
+        predicate = @v.accept(:id.not_in => [])
+        predicate.should be_a Arel::Nodes::SqlLiteral
+        predicate.should eq '1=1'
+      end
+
       it 'allows a subquery on the value side of an explicit predicate' do
         predicate = @v.accept dsl{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
         predicate.should be_a Arel::Nodes::In
