@@ -88,7 +88,9 @@ module Squeel
           arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
           order = @reorder_value ? @reorder_value : @order_values
-          arel.order(*attribute_viz.accept(order.uniq.reject{|o| o.blank?})) unless order.empty?
+          order = attribute_viz.accept(order.uniq.reject{|o| o.blank?})
+          order = reverse_sql_order(sqlify_order(order)) if @reverse_order_value
+          arel.order(*order) unless order.empty?
 
           build_select(arel, attribute_viz.accept(@select_values.uniq))
 
@@ -96,6 +98,14 @@ module Squeel
           arel.lock(@lock_value) if @lock_value
 
           arel
+        end
+
+        # reverse_sql_order doesn't understand ARel ordering nodes, so we
+        # need to convert them to their corresponding SQL
+        def sqlify_order(order)
+          order.map do |o|
+            o.respond_to?(:to_sql) ? o.to_sql : o
+          end
         end
 
         def build_join_dependency(manager, joins)
