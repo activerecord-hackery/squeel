@@ -115,6 +115,8 @@ module Squeel
           case arg
           when Nodes::Function
             accept(arg, parent)
+          when ActiveRecord::Relation
+            arg.arel.ast
           when Nodes::KeyPath
             can_accept?(arg.endpoint) ? accept(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
           when Symbol, Nodes::Stub

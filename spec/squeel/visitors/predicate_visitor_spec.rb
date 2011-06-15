@@ -207,6 +207,13 @@ module Squeel
         predicate.to_sql.should be_like '"people"."id" IN (SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3)'
       end
 
+      it 'converts ActiveRecord::Relation values in function arguments to their ARel AST' do
+        predicate = @v.accept(dsl{exists(Person.where{name == 'Aric Smith'})})
+        predicate.should be_a Arel::Nodes::NamedFunction
+        predicate.expressions.first.should be_a Arel::Nodes::SelectStatement
+        predicate.to_sql.should be_like "exists(SELECT \"people\".* FROM \"people\"  WHERE \"people\".\"name\" = 'Aric Smith')"
+      end
+
       it "doesn't try to sanitize_sql an array of strings in the value of a Predicate" do
         predicate = @v.accept(dsl{name >> ['Aric Smith', 'Gladyce Kulas']})
         predicate.should be_a Arel::Nodes::In
