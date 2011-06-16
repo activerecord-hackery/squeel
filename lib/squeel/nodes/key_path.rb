@@ -11,8 +11,8 @@ module Squeel
 
       # We need some methods to fall through to the endpoint or create a new
       # stub of the given name
-      %w(id == != =~ !~).each do |method_name|
-        undef_method method_name if method_defined?(method_name)
+      %w(id == != =~ !~ desc).each do |method_name|
+        undef_method method_name if method_defined?(method_name) || private_method_defined?(method_name)
       end
 
       # @return [Array<Symbol, Stub, Join>] The path
