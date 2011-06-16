@@ -145,6 +145,15 @@ module Squeel
         accept(o.left, parent).as(o.right)
       end
 
+      # Visit an ActiveRecord Relation, returning an Arel::SelectManager
+      # @param [ActiveRecord::Relation] o The Relation to visit
+      # @param parent The parent object in the context
+      # @return [Arel::SelectManager] The ARel select manager that represents
+      #   the relation's query
+      def visit_ActiveRecord_Relation(o, parent)
+        o.arel
+      end
+
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider
       def implies_context_change?(v)

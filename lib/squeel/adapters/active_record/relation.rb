@@ -101,7 +101,7 @@ module Squeel
         end
 
         # reverse_sql_order doesn't understand ARel ordering nodes, so we
-        # need to convert them to their corresponding SQL
+        # need to convert them to their corresponding SQL (for now)
         def sqlify_order(order)
           order.map do |o|
             o.respond_to?(:to_sql) ? o.to_sql : o

@@ -1,5 +1,11 @@
 module Arel
 
+  class SelectManager
+    def as other
+      Nodes::TableAlias.new Nodes::SqlLiteral.new(other), Nodes::Grouping.new(@ast)
+    end
+  end
+
   class Table
     alias :table_name :name
 
@@ -129,6 +135,11 @@ module Arel
             quote(value, attr && column_for(attr))
           end
         }.join ', '})"
+      end
+
+      def quote_table_name name
+        return name if Arel::Nodes::SqlLiteral === name
+        @quoted_tables[name] ||= @connection.quote_table_name(name)
       end
     end
   end

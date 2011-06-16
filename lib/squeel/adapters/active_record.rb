@@ -1,3 +1,5 @@
+ActiveRecord::Relation.send :include, Squeel::Nodes::Aliasing
+
 case ActiveRecord::VERSION::MAJOR
 when 3
   case ActiveRecord::VERSION::MINOR

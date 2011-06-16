@@ -366,6 +366,13 @@ module Squeel
             relation.first.flanderized_name.should eq 'Aric Smith-diddly'
           end
 
+          it 'allows a subquery in the select values' do
+            subquery = Article.where(:person_id => 1).select(:id).order{id.desc}.limit(1)
+            relation = Person.where(:id => 1).select{[id, name, subquery.as('last_article_id')]}
+            aric = relation.first
+            aric.last_article_id.should eq Article.where(:person_id => 1).last.id
+          end
+
         end
 
         describe '#group' do
@@ -579,6 +586,18 @@ module Squeel
               person.comments.first.article.should eq article
               raise ::ActiveRecord::Rollback
             end
+          end
+
+        end
+
+        describe '#as' do
+
+          it 'aliases the relation in an As node' do
+            relation = Person.where{name == 'ernie'}
+            node = relation.as('ernie')
+            node.should be_a Squeel::Nodes::As
+            node.expr.should eq relation
+            node.alias.should eq 'ernie'
           end
 
         end

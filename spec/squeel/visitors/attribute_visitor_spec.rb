@@ -67,6 +67,12 @@ module Squeel
         ordering.direction.should eq :asc
       end
 
+      it 'allows a subquery as a selection' do
+        relation = Person.where(:name => 'Aric Smith').select(:id)
+        node = @v.accept(relation.as('aric'))
+        node.to_sql.should be_like "(SELECT \"people\".\"id\" FROM \"people\"  WHERE \"people\".\"name\" = 'Aric Smith') aric"
+      end
+
       it 'creates an ARel NamedFunction node for a Function node' do
         function = @v.accept(:find_in_set.func())
         function.should be_a Arel::Nodes::NamedFunction
