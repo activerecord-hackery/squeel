@@ -125,7 +125,9 @@ module Squeel
             quote arg
           end
         end
-        Arel::Nodes::NamedFunction.new(o.name, args, o.alias)
+        func = Arel::Nodes::NamedFunction.new(o.name, args)
+
+        o.alias ? func.as(o.alias) : func
       end
 
       # Visit an ActiveRecord Relation, returning an Arel::SelectManager

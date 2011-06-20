@@ -41,10 +41,17 @@ module Arel
       end
     end
 
+    class Function < Arel::Nodes::Node
+      include Arel::Predications
+
+      def as aliaz
+        self.alias = SqlLiteral.new(aliaz)
+        self
+      end
+    end
+
     class NamedFunction < Arel::Nodes::Function
       attr_accessor :name, :distinct
-
-      include Arel::Predications
 
       def initialize name, expr, aliaz = nil
         super(expr, aliaz)
