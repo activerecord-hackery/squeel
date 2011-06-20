@@ -5,7 +5,7 @@ module Squeel
     module Aliasing
 
       def as(name)
-        As.new(self, name.to_s)
+        As.new(self, Arel.sql(name))
       end
 
     end

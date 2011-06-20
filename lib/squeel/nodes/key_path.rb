@@ -151,7 +151,7 @@ module Squeel
         path + [endpoint]
       end
 
-      # Impleneted (and aliased to :to_str) to play nicely with ActiveRecord grouped calculations
+      # Implement (and alias to :to_str) to play nicely with ActiveRecord grouped calculations
       def to_s
         path.map(&:to_s).join('.') << ".#{endpoint}"
       end

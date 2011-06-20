@@ -190,6 +190,7 @@ module Squeel
         as = @s.as('other_name')
         as.should be_a Squeel::Nodes::As
         as.left.should eq @s
+        as.right.should be_a Arel::Nodes::SqlLiteral
         as.right.should eq 'other_name'
       end
 

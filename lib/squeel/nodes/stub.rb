@@ -55,6 +55,7 @@ module Squeel
       def to_s
         symbol.to_s
       end
+      alias :to_str :to_s
 
       # Create a KeyPath when any undefined method is called on a Stub.
       # @overload node_name

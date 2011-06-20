@@ -597,6 +597,7 @@ module Squeel
             node = relation.as('ernie')
             node.should be_a Squeel::Nodes::As
             node.expr.should eq relation
+            node.alias.should be_a Arel::Nodes::SqlLiteral
             node.alias.should eq 'ernie'
           end
 
