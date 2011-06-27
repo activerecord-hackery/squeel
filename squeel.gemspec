@@ -29,7 +29,7 @@ you're feeling especially appreciative. It'd help me justify this
 
   s.add_dependency 'activerecord', '~> 3.0'
   s.add_dependency 'activesupport', '~> 3.0'
-  s.add_development_dependency 'rspec', '~> 2.5.0'
+  s.add_development_dependency 'rspec', '~> 2.6.0'
   s.add_development_dependency 'machinist', '~> 1.0.6'
   s.add_development_dependency 'faker', '~> 0.9.5'
   s.add_development_dependency 'sqlite3', '~> 1.3.3'
