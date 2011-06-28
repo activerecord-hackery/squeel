@@ -55,6 +55,36 @@ module Squeel
         predicate.should eq '1=1'
       end
 
+      it 'generates IS NULL for hash keys with a value of [nil]' do
+        predicate = @v.accept(:id => [nil])
+        predicate.to_sql.should be_like '"people"."id" IS NULL'
+      end
+
+      it 'generates IS NULL for in predicates with a value of [nil]' do
+        predicate = @v.accept(:id.in => [nil])
+        predicate.to_sql.should be_like '"people"."id" IS NULL'
+      end
+
+      it 'generates IS NOT NULL for not_in predicates with a value of [nil]' do
+        predicate = @v.accept(:id.not_in => [nil])
+        predicate.to_sql.should be_like '"people"."id" IS NOT NULL'
+      end
+
+      it 'generates IN OR IS NULL for hash keys with a value of [1, 2, 3, nil]' do
+        predicate = @v.accept(:id => [1, 2, 3, nil])
+        predicate.to_sql.should be_like '("people"."id" IN (1, 2, 3) OR "people"."id" IS NULL)'
+      end
+
+      it 'generates IN OR IS NULL for in predicates with a value of [1, 2, 3, nil]' do
+        predicate = @v.accept(:id.in => [1, 2, 3, nil])
+        predicate.to_sql.should be_like '("people"."id" IN (1, 2, 3) OR "people"."id" IS NULL)'
+      end
+
+      it 'generates IN AND IS NOT NULL for not_in predicates with a value of [1, 2, 3, nil]' do
+        predicate = @v.accept(:id.not_in => [1, 2, 3, nil])
+        predicate.to_sql.should be_like '"people"."id" NOT IN (1, 2, 3) AND "people"."id" IS NOT NULL'
+      end
+
       it 'allows a subquery on the value side of an explicit predicate' do
         predicate = @v.accept dsl{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
         predicate.should be_a Arel::Nodes::In

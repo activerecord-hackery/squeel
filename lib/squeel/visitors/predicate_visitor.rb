@@ -83,24 +83,25 @@ module Squeel
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
 
-        if Array === value && value.empty? && [:in, :not_in].include?(o.method_name)
-          # Special case, in/not_in with empty arrays should be false/true respectively
-          return o.method_name == :in ? FALSE_SQL : TRUE_SQL
-        end
-
         if Nodes::KeyPath === value
           value = can_accept?(value.endpoint) ? accept(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
         else
           value = accept(value, parent) if can_accept?(value)
         end
 
-        case o.expr
-        when Nodes::Stub
-          accept(o.expr, parent).send(o.method_name, value)
-        when Nodes::Function
-          accept(o.expr, parent).send(o.method_name, quote(value))
+        value = quote_for_node(o.expr, value)
+
+        attribute = case o.expr
+        when Nodes::Stub, Nodes::Function
+          accept(o.expr, parent)
         else
-          contextualize(parent)[o.expr].send(o.method_name, value)
+          contextualize(parent)[o.expr]
+        end
+
+        if Array === value && [:in, :not_in].include?(o.method_name)
+          o.method_name == :in ? attribute_in_array(attribute, value) : attribute_not_in_array(attribute, value)
+        else
+          attribute.send(o.method_name, value)
         end
       end
 
@@ -286,14 +287,35 @@ module Squeel
       # @return [Arel::Nodes::Node] An ARel predicate node
       def arel_predicate_for(attribute, value, parent)
         value = can_accept?(value) ? accept(value, parent) : value
-        if [Array, Range, Arel::SelectManager].include?(value.class)
-          if Array === value && value.empty?
-            FALSE_SQL
-          else
-            attribute.in(value)
-          end
+        case value
+        when Array
+          attribute_in_array(attribute, value)
+        when Range, Arel::SelectManager
+          attribute.in(value)
         else
           attribute.eq(value)
+        end
+      end
+
+      def attribute_in_array(attribute, array)
+        if array.empty?
+          FALSE_SQL
+        elsif array.include? nil
+          array = array.compact
+          array.empty? ? attribute.eq(nil) : attribute.in(array).or(attribute.eq nil)
+        else
+          attribute.in array
+        end
+      end
+
+      def attribute_not_in_array(attribute, array)
+        if array.empty?
+          TRUE_SQL
+        elsif array.include? nil
+          array = array.compact
+          array.empty? ? attribute.not_eq(nil) : attribute.not_in(array).and(attribute.not_eq nil)
+        else
+          attribute.not_in array
         end
       end
 

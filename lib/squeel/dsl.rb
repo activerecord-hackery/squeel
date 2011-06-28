@@ -50,9 +50,17 @@ module Squeel
     # programmer hell.
     #
     # @param &block A block to instance_eval against the DSL's caller.
-    # @return
+    # @return The results of evaluating the block in the instance of the DSL's caller.
     def my(&block)
       @caller.instance_eval &block
+    end
+
+    # Shorthand for creating ARel SqlLiteral nodes.
+    #
+    # @param [String] string The string to convert to an SQL literal.
+    # @return [Arel::Nodes::SqlLiteral] The SQL literal.
+    def `(string)
+      Arel.sql(string)
     end
 
     # Node generation inside DSL blocks.

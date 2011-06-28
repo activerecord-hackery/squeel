@@ -88,5 +88,13 @@ module Squeel
       end
     end
 
+    describe '`string`' do
+      it 'creates an SqlLiteral' do
+        result = dsl{`blah`}
+        result.should be_a Arel::Nodes::SqlLiteral
+        result.should eq 'blah'
+      end
+    end
+
   end
 end
