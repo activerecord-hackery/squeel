@@ -114,7 +114,7 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function
+          when Nodes::Function, Nodes::As
             accept(arg, parent)
           when ActiveRecord::Relation
             arg.arel.ast
@@ -150,7 +150,7 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function
+          when Nodes::Function, Nodes::As
             accept(arg, parent)
           when Nodes::KeyPath
             can_accept?(arg.endpoint) ? accept(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]

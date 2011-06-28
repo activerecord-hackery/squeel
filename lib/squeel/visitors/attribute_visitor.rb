@@ -92,7 +92,7 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::KeyPath
+          when Nodes::Function, Nodes::KeyPath, Nodes::As
             accept(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
@@ -114,7 +114,7 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function
+          when Nodes::Function, Nodes::KeyPath, Nodes::As
             accept(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
