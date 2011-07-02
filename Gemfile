@@ -1,6 +1,8 @@
 source "http://rubygems.org"
 gemspec
 
+gem 'rake'
+
 if ENV['RAILS_VERSION'] == 'release'
   gem 'activesupport'
   gem 'activerecord'
