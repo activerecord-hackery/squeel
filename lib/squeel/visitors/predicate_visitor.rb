@@ -40,7 +40,7 @@ module Squeel
       # @param parent The current parent object in the context
       # @return [Array] The visited array
       def visit_Array(o, parent)
-        o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
+        o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
       end
 
       # Visit ActiveRecord::Base objects. These should be converted to their
@@ -61,7 +61,7 @@ module Squeel
       def visit_Squeel_Nodes_KeyPath(o, parent)
         parent = traverse(o, parent)
 
-        accept(o.endpoint, parent)
+        visit(o.endpoint, parent)
       end
 
       # Visit a Stub by converting it to an ARel attribute
@@ -74,6 +74,15 @@ module Squeel
         contextualize(parent)[o.symbol]
       end
 
+      # Visit a Literal by converting it to an ARel SqlLiteral
+      #
+      # @param [Nodes::Literal] o The Literal to visit
+      # @param parent The parent object in the context (unused)
+      # @return [Arel::Nodes::SqlLiteral] An SqlLiteral
+      def visit_Squeel_Nodes_Literal(o, parent)
+        Arel.sql(o.expr)
+      end
+
       # Visit a Squeel predicate, converting it into an ARel predicate
       #
       # @param [Nodes::Predicate] o The predicate to visit
@@ -84,16 +93,16 @@ module Squeel
         value = o.value
 
         if Nodes::KeyPath === value
-          value = can_accept?(value.endpoint) ? accept(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
+          value = can_visit?(value.endpoint) ? visit(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
         else
-          value = accept(value, parent) if can_accept?(value)
+          value = visit(value, parent) if can_visit?(value)
         end
 
         value = quote_for_node(o.expr, value)
 
         attribute = case o.expr
-        when Nodes::Stub, Nodes::Function
-          accept(o.expr, parent)
+        when Nodes::Stub, Nodes::Function, Nodes::Literal
+          visit(o.expr, parent)
         else
           contextualize(parent)[o.expr]
         end
@@ -114,12 +123,12 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::As
-            accept(arg, parent)
+          when Nodes::Function, Nodes::As, Nodes::Literal
+            visit(arg, parent)
           when ActiveRecord::Relation
             arg.arel.ast
           when Nodes::KeyPath
-            can_accept?(arg.endpoint) ? accept(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
+            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
@@ -150,10 +159,10 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::As
-            accept(arg, parent)
+          when Nodes::Function, Nodes::As, Nodes::Literal
+            visit(arg, parent)
           when Nodes::KeyPath
-            can_accept?(arg.endpoint) ? accept(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
+            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
@@ -185,7 +194,7 @@ module Squeel
       #   And node as its expression. All children will be visited before
       #   being passed to the And.
       def visit_Squeel_Nodes_And(o, parent)
-        Arel::Nodes::Grouping.new(Arel::Nodes::And.new(accept(o.children, parent)))
+        Arel::Nodes::Grouping.new(Arel::Nodes::And.new(visit(o.children, parent)))
       end
 
       # Visit a Squeel Or node, returning an ARel Or node.
@@ -194,11 +203,11 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::Or] An ARel Or node, with left and right sides visited
       def visit_Squeel_Nodes_Or(o, parent)
-        accept(o.left, parent).or(accept(o.right, parent))
+        visit(o.left, parent).or(visit(o.right, parent))
       end
 
       def visit_Squeel_Nodes_Not(o, parent)
-        accept(o.expr, parent).not
+        visit(o.expr, parent).not
       end
 
       # @return [Boolean] Whether the given value implies a context change
@@ -208,7 +217,7 @@ module Squeel
         when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
           true
         when Nodes::KeyPath
-          can_accept?(v.endpoint) && !(Nodes::Stub === v.endpoint)
+          can_visit?(v.endpoint) && !(Nodes::Stub === v.endpoint)
         else
           false
         end
@@ -231,9 +240,9 @@ module Squeel
 
         case v
         when Hash, Nodes::KeyPath, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
-          accept(v, parent || k)
+          visit(v, parent || k)
         when Array
-          v.map {|val| accept(val, parent || k)}
+          v.map {|val| visit(val, parent || k)}
         else
           raise ArgumentError, <<-END
           Hashes, Predicates, and arrays of visitables as values imply that their
@@ -255,17 +264,17 @@ module Squeel
         case v
         when Nodes::Stub, Symbol
           v = contextualize(parent)[v.to_sym]
-        when Nodes::KeyPath # If we could accept the endpoint, we wouldn't be here
+        when Nodes::KeyPath # If we could visit the endpoint, we wouldn't be here
           v = contextualize(traverse(v, parent))[v.endpoint.to_sym]
         end
 
         case k
         when Nodes::Predicate
-          accept(k % quote_for_node(k.expr, v), parent)
-        when Nodes::Function
-          arel_predicate_for(accept(k, parent), quote(v), parent)
+          visit(k % quote_for_node(k.expr, v), parent)
+        when Nodes::Function, Nodes::Literal
+          arel_predicate_for(visit(k, parent), quote(v), parent)
         when Nodes::KeyPath
-          accept(k % quote_for_node(k.endpoint, v), parent)
+          visit(k % quote_for_node(k.endpoint, v), parent)
         else
           attr_name = k.to_s
           attribute = if attr_name.include?('.')
@@ -286,7 +295,7 @@ module Squeel
       # @param value The value to be compared against
       # @return [Arel::Nodes::Node] An ARel predicate node
       def arel_predicate_for(attribute, value, parent)
-        value = can_accept?(value) ? accept(value, parent) : value
+        value = can_visit?(value) ? visit(value, parent) : value
         case value
         when Array
           attribute_in_array(attribute, value)
@@ -319,7 +328,7 @@ module Squeel
         end
       end
 
-      # Function nodes require us to do the quoting before the ARel
+      # Certain nodes require us to do the quoting before the ARel
       # visitor gets a chance to try, because we want to avoid having our
       # values quoted as a type of the last visited column. Otherwise, we
       # can end up with annoyances like having "joe" quoted to 0, if the
@@ -329,10 +338,10 @@ module Squeel
       # @param v The value to (possibly) quote
       def quote_for_node(node, v)
         case node
-        when Nodes::Function
+        when Nodes::Function, Nodes::Literal
           quote(v)
         when Nodes::Predicate
-          Nodes::Function === node.expr ? quote(v) : v
+          quote_for_node(node.expr, v)
         else
           v
         end

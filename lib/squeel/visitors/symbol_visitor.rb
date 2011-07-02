@@ -14,13 +14,13 @@ module Squeel
       private
 
       def visit_Array(o, parent)
-        o.map {|e| accept(e, parent)}.flatten
+        o.map {|e| visit(e, parent)}.flatten
       end
 
       def visit_Hash(o, parent)
         {}.tap do |hash|
           o.each do |key, value|
-            hash[accept(key, parent)] = accept(value, parent)
+            hash[visit(key, parent)] = visit(value, parent)
           end
         end
       end

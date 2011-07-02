@@ -60,7 +60,7 @@ module Squeel
     # @param [String] string The string to convert to an SQL literal.
     # @return [Arel::Nodes::SqlLiteral] The SQL literal.
     def `(string)
-      Arel.sql(string)
+      Nodes::Literal.new(string)
     end
 
     # Node generation inside DSL blocks.

@@ -62,8 +62,8 @@ module Squeel
         end
 
         def prepare_relation_for_association_merge!(r, association_name)
-          r.where_values.map! {|w| Squeel::Visitors::PredicateVisitor.can_accept?(w) ? {association_name => w} : w}
-          r.having_values.map! {|h| Squeel::Visitors::PredicateVisitor.can_accept?(h) ? {association_name => h} : h}
+          r.where_values.map! {|w| Squeel::Visitors::PredicateVisitor.can_visit?(w) ? {association_name => w} : w}
+          r.having_values.map! {|h| Squeel::Visitors::PredicateVisitor.can_visit?(h) ? {association_name => h} : h}
           r.joins_values.map! {|j| [Symbol, Hash, Nodes::Stub, Nodes::Join].include?(j.class) ? {association_name => j} : j}
         end
 

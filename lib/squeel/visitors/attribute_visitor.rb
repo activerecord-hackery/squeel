@@ -31,7 +31,7 @@ module Squeel
       # @param parent The array's parent within the context
       # @return [Array] The flattened array with elements visited
       def visit_Array(o, parent)
-        o.map { |v| can_accept?(v) ? accept(v, parent) : v }.flatten
+        o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
       end
 
       # Visit a symbol. This will return an attribute named after the symbol against
@@ -54,6 +54,15 @@ module Squeel
         contextualize(parent)[o.symbol]
       end
 
+      # Visit a Literal by converting it to an ARel SqlLiteral
+      #
+      # @param [Nodes::Literal] o The Literal to visit
+      # @param parent The parent object in the context (unused)
+      # @return [Arel::Nodes::SqlLiteral] An SqlLiteral
+      def visit_Squeel_Nodes_Literal(o, parent)
+        Arel.sql(o.expr)
+      end
+
       # Visit a keypath. This will traverse the keypath's "path", setting a new
       # parent as though the keypath's endpoint was in a deeply-nested hash,
       # then visit the endpoint with the new parent.
@@ -64,7 +73,7 @@ module Squeel
       def visit_Squeel_Nodes_KeyPath(o, parent)
         parent = traverse(o, parent)
 
-        accept(o.endpoint, parent)
+        visit(o.endpoint, parent)
       end
 
       # Visit an Order node.
@@ -73,10 +82,10 @@ module Squeel
       # @param parent The node's parent within the context
       # @return [Arel::Nodes::Ordering] An ascending or desending ordering
       def visit_Squeel_Nodes_Order(o, parent)
-        accept(o.expr, parent).send(o.descending? ? :desc : :asc)
+        visit(o.expr, parent).send(o.descending? ? :desc : :asc)
       end
 
-      # Visit a Function node. Each function argument will be accepted or
+      # Visit a Function node. Each function argument will be visiteded or
       # contextualized if appropriate. Keep in mind that this occurs with
       # the current parent within the context.
       #
@@ -92,8 +101,8 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::KeyPath, Nodes::As
-            accept(arg, parent)
+          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal
+            visit(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
@@ -114,8 +123,8 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::KeyPath, Nodes::As
-            accept(arg, parent)
+          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal
+            visit(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
           else
@@ -144,7 +153,7 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::As] The resulting as node.
       def visit_Squeel_Nodes_As(o, parent)
-        accept(o.left, parent).as(o.right)
+        visit(o.left, parent).as(o.right)
       end
 
       # Visit an ActiveRecord Relation, returning an Arel::SelectManager
@@ -159,7 +168,7 @@ module Squeel
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider
       def implies_context_change?(v)
-        can_accept?(v)
+        can_visit?(v)
       end
 
       # Change context (by setting the new parent to the result of a #find or
@@ -178,9 +187,9 @@ module Squeel
           end
 
         if Array === v
-          v.map {|val| accept(val, parent || k)}
+          v.map {|val| visit(val, parent || k)}
         else
-          can_accept?(v) ? accept(v, parent || k) : v
+          can_visit?(v) ? visit(v, parent || k) : v
         end
       end
 

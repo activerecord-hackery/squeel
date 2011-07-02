@@ -27,20 +27,20 @@ module Squeel
       end
 
       # @param object The object to check
-      # @return [Boolean] Whether or not the visitor can accept the given object
-      def can_accept?(object)
-        self.class.can_accept? object
+      # @return [Boolean] Whether or not the visitor can visit the given object
+      def can_visit?(object)
+        self.class.can_visit? object
       end
 
       # @param object The object to check
-      # @return [Boolean] Whether or not visitors of this class can accept the given object
-      def self.can_accept?(object)
-        @can_accept ||= Hash.new do |hash, klass|
+      # @return [Boolean] Whether or not visitors of this class can visit the given object
+      def self.can_visit?(object)
+        @can_visit ||= Hash.new do |hash, klass|
           hash[klass] = klass.ancestors.detect { |ancestor|
             private_method_defined? DISPATCH[ancestor]
           } ? true : false
         end
-        @can_accept[object.class]
+        @can_visit[object.class]
       end
 
       private
@@ -89,8 +89,7 @@ module Squeel
         end
       end
 
-      # Visit the object. This is not called directly, but instead via the public
-      # #accept method.
+      # Visit the object.
       #
       # @param object The object to visit
       # @param parent The object's parent within the context

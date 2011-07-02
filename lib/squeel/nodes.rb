@@ -4,6 +4,7 @@ module Squeel
   module Nodes
   end
 end
+require 'squeel/nodes/literal'
 require 'squeel/nodes/stub'
 require 'squeel/nodes/key_path'
 require 'squeel/nodes/predicate'
