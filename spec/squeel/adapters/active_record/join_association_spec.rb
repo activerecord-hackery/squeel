@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 module Squeel
   module Adapters
     module ActiveRecord

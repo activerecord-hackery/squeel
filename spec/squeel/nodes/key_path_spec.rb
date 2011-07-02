@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 module Squeel
   module Nodes
     describe KeyPath do
