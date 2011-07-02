@@ -3,3 +3,6 @@ rvm:
   - 1.9.2
   - ree
   - jruby
+  - rbx
+  - rbx-2.0
+  - ruby-head
