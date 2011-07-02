@@ -1,4 +1,4 @@
-# Squeel
+# Squeel [![Build Status](http://travis-ci.org/ernie/squeel.png)](http://travis-ci.org/ernie/squeel)
 
 Squeel lets you write your ActiveRecord queries with with fewer strings, and more Ruby,
 by making the ARel awesomeness that lies beneath ActiveRecord more accessible.
