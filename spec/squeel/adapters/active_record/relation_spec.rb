@@ -337,9 +337,9 @@ module Squeel
           end
 
           it 'falls back to Array#select behavior with a block that has an arity' do
-            people = Person.select{|p| p.name =~ /John/}
+            people = Person.select{|p| p.id == 1}
             people.should have(1).person
-            people.first.name.should eq 'Miss Cameron Johnson'
+            people.first.id.should eq 1
           end
 
           it 'behaves as normal with standard parameters' do
@@ -365,7 +365,7 @@ module Squeel
 
           it 'allows custom operators in the select values via block' do
             relation = Person.select{name.op('||', '-diddly').as(flanderized_name)}
-            relation.first.flanderized_name.should eq 'Aric Smith-diddly'
+            relation.first.flanderized_name.should eq Person.first.name + '-diddly'
           end
 
           it 'allows a subquery in the select values' do
@@ -431,8 +431,9 @@ module Squeel
           end
 
           it 'allows a subquery on the value side of a predicate' do
-            old_and_busted = Person.where(:name => ['Aric Smith', 'Gladyce Kulas'])
-            new_hotness = Person.where{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
+            names = [Person.first.name, Person.last.name]
+            old_and_busted = Person.where(:name => names)
+            new_hotness = Person.where{name.in(Person.select{name}.where{name.in(names)})}
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
           end
@@ -491,7 +492,7 @@ module Squeel
 
           it 'allows complex conditions on aggregate columns' do
             relation = Person.group(:parent_id).having{salary == max(salary)}
-            relation.first.name.should eq 'Gladyce Kulas'
+            relation.first.name.should eq Person.last.name
           end
 
           it 'allows a condition on a function via block' do
@@ -637,7 +638,7 @@ module Squeel
               where{{comments => {body => 'First post!'}}}
             relation.size.should be 1
             person = relation.first
-            person.name.should eq 'Gladyce Kulas'
+            person.should eq Person.last
             person.comments.loaded?.should be true
           end
 
