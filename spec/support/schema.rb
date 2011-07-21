@@ -15,6 +15,11 @@ class Person < ActiveRecord::Base
   has_many   :authored_article_comments, :through => :articles,
              :source => :comments
   has_many   :notes, :as => :notable
+  has_many   :unidentified_objects
+end
+
+class UnidentifiedObject < ActiveRecord::Base
+  belongs_to :person
 end
 
 class Article < ActiveRecord::Base
@@ -50,6 +55,11 @@ module Schema
           t.integer  :salary
         end
 
+        create_table :unidentified_objects, :id => false, :force => true do |t|
+          t.integer  :person_id
+          t.string   :name
+        end
+
         create_table :articles, :force => true do |t|
           t.integer :person_id
           t.string  :title
@@ -82,6 +92,9 @@ module Schema
 
     10.times do
       person = Person.make
+      2.times do
+        UnidentifiedObject.create(:person => person, :name => Sham.object_name)
+      end
       Note.make(:notable => person)
       3.times do
         article = Article.make(:person => person)

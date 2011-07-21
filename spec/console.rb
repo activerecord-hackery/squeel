@@ -8,12 +8,13 @@ Dir[File.expand_path('../../spec/{helpers,support,blueprints}/*.rb', __FILE__)].
 end
 
 Sham.define do
-  name     { Faker::Name.name }
-  title    { Faker::Lorem.sentence }
-  body     { Faker::Lorem.paragraph }
-  salary   {|index| 30000 + (index * 1000)}
-  tag_name { Faker::Lorem.words(3).join(' ') }
-  note     { Faker::Lorem.words(7).join(' ') }
+  name        { Faker::Name.name }
+  title       { Faker::Lorem.sentence }
+  body        { Faker::Lorem.paragraph }
+  salary      {|index| 30000 + (index * 1000)}
+  tag_name    { Faker::Lorem.words(3).join(' ') }
+  note        { Faker::Lorem.words(7).join(' ') }
+  object_name { Faker::Lorem.words(1).first }
 end
 
 Schema.create

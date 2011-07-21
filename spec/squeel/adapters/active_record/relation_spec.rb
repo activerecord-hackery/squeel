@@ -642,6 +642,18 @@ module Squeel
             person.comments.loaded?.should be true
           end
 
+          it 'includes a belongs_to association even if the child model has no primary key' do
+            relation = UnidentifiedObject.where{person_id < 120}.includes(:person)
+            queries = queries_for do
+              vals = relation.to_a
+              vals.should have(8).items
+            end
+
+            queries.should have(2).queries
+
+            queries.last.should match /IN \(1, 34, 67, 100\)/
+          end
+
         end
 
       end

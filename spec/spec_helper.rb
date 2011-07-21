@@ -4,7 +4,7 @@ require 'faker'
 
 module ActiveRecord
   class SQLCounter
-    IGNORED_SQL = [/^PRAGMA (?!(table_info))/, /^SELECT currval/, /^SELECT CAST/, /^SELECT @@IDENTITY/, /^SELECT @@ROWCOUNT/, /^SAVEPOINT/, /^ROLLBACK TO SAVEPOINT/, /^RELEASE SAVEPOINT/, /^SHOW max_identifier_length/,
+    IGNORED_SQL = [/^PRAGMA /, /^SELECT currval/, /^SELECT CAST/, /^SELECT @@IDENTITY/, /^SELECT @@ROWCOUNT/, /^SAVEPOINT/, /^ROLLBACK TO SAVEPOINT/, /^RELEASE SAVEPOINT/, /^SHOW max_identifier_length/,
       /SELECT name\s+FROM sqlite_master\s+WHERE type = 'table' AND NOT name = 'sqlite_sequence'/]
 
     # FIXME: this needs to be refactored so specific database can add their own
@@ -37,6 +37,7 @@ Sham.define do
   salary   {|index| 30000 + (index * 1000)}
   tag_name { Faker::Lorem.words(3).join(' ') }
   note     { Faker::Lorem.words(7).join(' ') }
+  object_name { Faker::Lorem.words(1).first }
 end
 
 RSpec.configure do |config|
