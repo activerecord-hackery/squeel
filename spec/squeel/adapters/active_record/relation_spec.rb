@@ -651,7 +651,7 @@ module Squeel
 
             queries.should have(2).queries
 
-            queries.last.should match /IN \(1, 34, 67, 100\)/
+            queries.last.should match /IN \(1, ?34, ?67, ?100\)/
           end
 
         end
