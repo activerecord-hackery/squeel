@@ -38,14 +38,14 @@ module Squeel
         # already bound to the proper table.
         #
         # Squeel, on the other hand, needs to do its best to ensure the predicates are still
-        # winding up against the proper table. Merging relations is a really nifty shortcut
-        # but another little corner of ActiveRecord where the magic quickly fades. :(
-        def merge(r, association_name = nil)
-          if association_name || relation_with_different_base?(r)
-            r = r.clone
-            association_name ||= infer_association_for_relation_merge(r)
-            prepare_relation_for_association_merge!(r, association_name)
-            self.joins_values += [association_name] if reflect_on_association(association_name)
+        # winding up against the proper table. The most "correct" way I can think of to do
+        # this is to try to emulate the default AR behavior -- that is, de-squeelifying
+        # the *_values, erm... values by visiting them and converting them to ARel nodes
+        # before merging. Merging relations is a nifty little trick, but it's another
+        # little corner of ActiveRecord where the magic quickly fades. :(
+        def merge(r)
+          if relation_with_different_base?(r)
+            r = r.clone.visit!
           end
 
           super(r)
@@ -56,11 +56,6 @@ module Squeel
           base_class.name != r.klass.base_class.name
         end
 
-        def infer_association_for_relation_merge(r)
-          default_association = reflect_on_all_associations.detect {|a| a.class_name == r.klass.name}
-          default_association ? default_association.name : r.table_name.to_sym
-        end
-
         def prepare_relation_for_association_merge!(r, association_name)
           r.where_values.map! {|w| Squeel::Visitors::PredicateVisitor.can_visit?(w) ? {association_name => w} : w}
           r.having_values.map! {|h| Squeel::Visitors::PredicateVisitor.can_visit?(h) ? {association_name => h} : h}
@@ -69,6 +64,19 @@ module Squeel
           r.select_values.map! {|s| Squeel::Visitors::AttributeVisitor.can_visit?(s) ? {association_name => s} : s}
           r.joins_values.map! {|j| [Symbol, Hash, Nodes::Stub, Nodes::Join, Nodes::KeyPath].include?(j.class) ? {association_name => j} : j}
           r.includes_values.map! {|i| [Symbol, Hash, Nodes::Stub, Nodes::Join, Nodes::KeyPath].include?(i.class) ? {association_name => i} : i}
+        end
+
+        def visit!
+          predicate_viz = predicate_visitor
+          attribute_viz = attribute_visitor
+
+          @where_values = predicate_viz.accept((@where_values - ['']).uniq)
+          @having_values = predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})
+          @group_values = attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})
+          @order_values = attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?})
+          @select_values = attribute_viz.accept(@select_values.uniq)
+
+          self
         end
 
         def build_arel

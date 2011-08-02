@@ -616,7 +616,7 @@ module Squeel
           end
 
           it 'merges relations with a different base' do
-            relation = Person.where{name == 'bob'}.joins(:articles).merge(Article.where{title == 'Hello world!'}, :articles)
+            relation = Person.where{name == 'bob'}.joins(:articles).merge(Article.where{title == 'Hello world!'})
             sql = relation.to_sql
             sql.should match /INNER JOIN "articles" ON "articles"."person_id" = "people"."id"/
             sql.should match /"people"."name" = 'bob'/
