@@ -52,10 +52,10 @@ module Squeel
 
       # Compare with other objects
       def eql?(other)
-        self.class == other.class &&
-        self._name  == other._name &&
-        self._type == other._type &&
-        self._klass == other._klass
+        self.class.eql?(other.class) &&
+        self._name.eql?(other._name) &&
+        self._type.eql?(other._type) &&
+        self._klass.eql?(other._klass)
       end
       alias :== :eql?
 

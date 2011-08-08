@@ -21,9 +21,9 @@ module Squeel
 
       # Comparison with other nodes
       def eql?(other)
-        self.class == other.class &&
-        self.left  == other.left &&
-        self.right == other.right
+        self.class.eql?(other.class) &&
+        self.left.eql?(other.left) &&
+        self.right.eql?(other.right)
       end
       alias :== :eql?
 

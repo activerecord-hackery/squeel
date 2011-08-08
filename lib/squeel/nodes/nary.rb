@@ -33,10 +33,15 @@ module Squeel
         self
       end
 
+      # Implemented for equality testing
+      def hash
+        [self.class].concat(self.children).hash
+      end
+
       # Object comparison
       def eql?(other)
-        self.class     == other.class &&
-        self.children  == other.children
+        self.class.eql?(other.class) &&
+        self.children.eql?(other.children)
       end
       alias :== :eql?
 
