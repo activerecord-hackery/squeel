@@ -42,8 +42,8 @@ module Squeel
 
       # Object comparison
       def eql?(other)
-        self.class == other.class &&
-        self.expr == other.expr
+        self.class.eql?(other.class) &&
+        self.expr.eql?(other.expr)
       end
 
       # To support object equality tests

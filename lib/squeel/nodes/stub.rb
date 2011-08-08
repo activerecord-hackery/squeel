@@ -37,8 +37,8 @@ module Squeel
 
       # Object comparison
       def eql?(other)
-        self.class == other.class &&
-        self.symbol == other.symbol
+        self.class.eql?(other.class) &&
+        self.symbol.eql?(other.symbol)
       end
 
       # To support object equality tests

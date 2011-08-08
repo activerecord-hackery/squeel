@@ -42,10 +42,10 @@ module Squeel
 
       # Object comparison
       def eql?(other)
-        self.class == other.class &&
-        self.path == other.path &&
+        self.class.eql?(other.class) &&
+        self.path.eql?(other.path) &&
         self.endpoint.eql?(other.endpoint) &&
-        self.absolute? == other.absolute?
+        self.absolute?.eql?(other.absolute?)
       end
 
       # Allow KeyPath to function like its endpoint, in the case where its endpoint
@@ -161,6 +161,7 @@ module Squeel
       # @return [KeyPath] The updated KeyPath
       def method_missing(method_id, *args)
         super if method_id == :to_ary
+
         if endpoint.respond_to? method_id
           @endpoint = @endpoint.send(method_id, *args)
           self

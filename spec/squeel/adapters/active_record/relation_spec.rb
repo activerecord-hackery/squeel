@@ -189,6 +189,15 @@ module Squeel
             arel.to_sql.should match /ORDER BY "parents_people_2"."id" ASC/
           end
 
+          it 'does not inadvertently convert KeyPaths to booleans when uniqing where_values' do
+            100.times do # Doesn't happen reliably because of #hash behavior
+              persons = Person.joins{[outgoing_messages.outer, incoming_messages.outer]}
+              persons = persons.where { (outgoing_messages.author_id.not_eq 7) & (incoming_messages.author_id.not_eq 7) }
+              persons = persons.where{(outgoing_messages.recipient_id.not_eq 7) & (incoming_messages.recipient_id.not_eq 7)}
+              expect { persons.to_sql }.not_to raise_error TypeError
+            end
+          end
+
         end
 
         describe '#to_sql' do

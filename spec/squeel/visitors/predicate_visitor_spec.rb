@@ -367,20 +367,6 @@ module Squeel
         end
       end
 
-      context 'with multiple joins to the same table' do
-
-        it 'should not raise an exception' do
-          expect do
-            100.times do
-              persons = Person.joins{[outgoing_messages.outer, incoming_messages.outer]}
-              persons = persons.where { (outgoing_messages.author_id.not_eq 7) & (incoming_messages.author_id.not_eq 7) }
-              persons.where{(outgoing_messages.recipient_id.not_eq 7) & (incoming_messages.recipient_id.not_eq 7)}.to_sql
-            end
-          end.to_not raise_exception
-        end
-
-      end
-
     end
   end
 end
