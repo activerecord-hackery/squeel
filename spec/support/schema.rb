@@ -16,6 +16,15 @@ class Person < ActiveRecord::Base
              :source => :comments
   has_many   :notes, :as => :notable
   has_many   :unidentified_objects
+
+  has_many   :outgoing_messages, :class_name => 'Message', :foreign_key => :author_id
+  has_many   :incoming_messages, :class_name => 'Message', :foreign_key => :recipient_id
+
+end
+
+class Message < ActiveRecord::Base
+  belongs_to :author, :class_name => 'Person'
+  belongs_to :recipient, :class_name => 'Person'
 end
 
 class UnidentifiedObject < ActiveRecord::Base
@@ -53,6 +62,11 @@ module Schema
           t.integer  :parent_id
           t.string   :name
           t.integer  :salary
+        end
+
+        create_table :messages, :force => true do |t|
+          t.integer :author_id
+          t.integer :recipient_id
         end
 
         create_table :unidentified_objects, :id => false, :force => true do |t|
