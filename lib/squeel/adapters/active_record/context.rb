@@ -11,7 +11,7 @@ module Squeel
           super
           @base = object.join_base
           @engine = @base.arel_engine
-          @arel_visitor = Arel::Visitors.visitor_for @engine
+          @arel_visitor = @engine.connection.visitor
           @default_table = Arel::Table.new(@base.table_name, :as => @base.aliased_table_name, :engine => @engine)
         end
 
