@@ -19,7 +19,13 @@ class Person < ActiveRecord::Base
 
   has_many   :outgoing_messages, :class_name => 'Message', :foreign_key => :author_id
   has_many   :incoming_messages, :class_name => 'Message', :foreign_key => :recipient_id
+end
 
+class PersonWithNamePrimaryKey < ActiveRecord::Base
+  set_primary_key 'name'
+  # Set this second, because I'm lazy and don't want to populate another table,
+  # and also don't want to clobber the AR connection's primary_key cache.
+  set_table_name 'people'
 end
 
 class Message < ActiveRecord::Base

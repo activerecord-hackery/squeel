@@ -92,8 +92,14 @@ module Squeel
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
 
-        if Nodes::KeyPath === value
+        case value
+        when Nodes::KeyPath
           value = can_visit?(value.endpoint) ? visit(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
+        when ActiveRecord::Relation
+          value = visit(
+            value.select_values.empty? ? value.select(value.klass.arel_table[value.klass.primary_key]) : value,
+            parent
+          )
         else
           value = visit(value, parent) if can_visit?(value)
         end
@@ -295,7 +301,12 @@ module Squeel
       # @param value The value to be compared against
       # @return [Arel::Nodes::Node] An ARel predicate node
       def arel_predicate_for(attribute, value, parent)
-        value = can_visit?(value) ? visit(value, parent) : value
+        if ActiveRecord::Relation === value && value.select_values.empty?
+          value = visit(value.select(value.klass.arel_table[value.klass.primary_key]), parent)
+        else
+          value = can_visit?(value) ? visit(value, parent) : value
+        end
+
         case value
         when Array
           attribute_in_array(attribute, value)

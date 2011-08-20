@@ -99,6 +99,30 @@ module Squeel
         predicate.right.should be_a Arel::Nodes::SelectStatement
       end
 
+      it 'selects the primary key of a relation with no select_values with an explicit predicate' do
+        predicate = @v.accept dsl{name.in(PersonWithNamePrimaryKey.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+        predicate.right.to_sql.should match /SELECT "people"."name"/
+      end
+
+      it 'selects the primary key of a relation with no select_values with an implicit predicate' do
+        predicate = @v.accept(:name => PersonWithNamePrimaryKey.where{name.in(['Aric Smith', 'Gladyce Kulas'])})
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+        predicate.right.to_sql.should match /SELECT "people"."name"/
+      end
+
+      it "doesn't clobber a relation value's existing select_values if present with an explicit predicate" do
+        predicate = @v.accept dsl{name.in(Person.select{name})}
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+        predicate.right.to_sql.should match /SELECT "people"."name"/
+      end
+
+      it "doesn't clobber a relation value's existing select_values if present with an implicit predicate" do
+        predicate = @v.accept(:name => Person.select{name})
+        predicate.right.should be_a Arel::Nodes::SelectStatement
+        predicate.right.to_sql.should match /SELECT "people"."name"/
+      end
+
       it 'converts ActiveRecord::Base objects to their id' do
         predicate = @v.accept(:id => Person.first)
         predicate.should be_a Arel::Nodes::Equality
