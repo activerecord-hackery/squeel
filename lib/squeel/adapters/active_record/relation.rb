@@ -98,7 +98,7 @@ module Squeel
 
           order = @reorder_value ? @reorder_value : @order_values
           order = attribute_viz.accept(order.uniq.reject{|o| o.blank?})
-          order = reverse_sql_order(sqlify_order(order)) if @reverse_order_value
+          order = reverse_sql_order(attrs_to_orderings(order)) if @reverse_order_value
           arel.order(*order) unless order.empty?
 
           build_select(arel, attribute_viz.accept(@select_values.uniq))
@@ -109,11 +109,11 @@ module Squeel
           arel
         end
 
-        # reverse_sql_order doesn't understand ARel ordering nodes, so we
-        # need to convert them to their corresponding SQL (for now)
-        def sqlify_order(order)
+        # reverse_sql_order will reverse the order of strings or Orderings,
+        # but not attributes
+        def attrs_to_orderings(order)
           order.map do |o|
-            o.respond_to?(:to_sql) ? o.to_sql : o
+            Arel::Attribute === o ? o.asc : o
           end
         end
 

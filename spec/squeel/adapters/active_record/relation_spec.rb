@@ -198,6 +198,12 @@ module Squeel
             end
           end
 
+          it 'reverses order of Arel::Attributes when #last is called' do
+            sorted_people = Person.all.sort {|a, b| a.name.downcase <=> b.name.downcase}
+
+            Person.order{name}.last.should eq sorted_people.last
+          end
+
         end
 
         describe '#to_sql' do
