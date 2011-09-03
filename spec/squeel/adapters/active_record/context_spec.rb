@@ -16,7 +16,7 @@ module Squeel
         end
 
         it 'contextualizes join parts with the proper alias' do
-          table = @c.contextualize @jd.join_parts.last
+          table = @c.contextualize @jd._join_parts.last
           table.table_alias.should eq 'parents_people_2'
         end
 

@@ -4,50 +4,34 @@ module Squeel
     class Join
       undef_method :id if method_defined?(:id)
 
-      # @return [Symbol] The join's association name
-      attr_reader :_name
+      attr_reader :_join
 
-      # @return [Arel::InnerJoin, Arel::OuterJoin] The ARel join type
-      attr_reader :_type
-
-      # @return [Class] The polymorphic belongs_to join class
-      # @return [NilClass] If the join is not a polymorphic belongs_to join
-      attr_reader :_klass
+      delegate :name, :type, :klass, :name=, :type=, :klass=, :to => :_join, :prefix => ''
 
       # Create a new Join node
       # @param [Symbol] name The association name
       # @param [Arel::InnerJoin, Arel::OuterJoin] type The ARel join class
       # @param [Class, String, Symbol] klass The polymorphic belongs_to class or class name
       def initialize(name, type = Arel::InnerJoin, klass = nil)
-        @_name, @_type = name, type
-        @_klass = convert_to_class(klass) if klass
+        @_join = Polyamorous::Join.new(name, type, klass)
       end
 
       # Set the join type to an inner join
       # @return [Join] The join, with an updated join type.
       def inner
-        @_type = Arel::InnerJoin
+        self._type = Arel::InnerJoin
         self
       end
 
       # Set the join type to an outer join
       # @return [Join] The join, with an updated join type.
       def outer
-        @_type = Arel::OuterJoin
+        self._type = Arel::OuterJoin
         self
       end
 
-      # Set the polymorphic belongs_to class
-      # @param [Class, String, Symbol] class_or_class_name The polymorphic belongs_to class or class name
-      # @return [Class] The class that's just been set
-      def _klass=(class_or_class_name)
-        @_klass = convert_to_class(class_or_class_name)
-      end
-
-      # Returns a true value (the class itself) if a polymorphic belongs_to class has been set
-      # @return [NilClass, Class] The class, if present.
       def polymorphic?
-        @_klass
+        _klass
       end
 
       # Compare with other objects
@@ -90,22 +74,6 @@ module Squeel
       # @return [NilClass] Just to avoid bombing out on expand_hash_conditions_for_aggregates
       def to_sym
         nil
-      end
-
-      private
-
-      # Convert the given value into a class.
-      # @param [Class, String, Symbol] value The value to be converted
-      # @return [Class] The class after conversion
-      def convert_to_class(value)
-        case value
-        when String, Symbol
-          Kernel.const_get(value)
-        when Class
-          value
-        else
-          raise ArgumentError, "#{value} cannot be converted to a Class"
-        end
       end
 
     end

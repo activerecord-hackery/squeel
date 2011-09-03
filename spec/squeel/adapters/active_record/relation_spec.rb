@@ -19,7 +19,7 @@ module Squeel
             visitor = relation.predicate_visitor
 
             visitor.should be_a Visitors::PredicateVisitor
-            table = visitor.contextualize(relation.join_dependency.join_parts.last)
+            table = visitor.contextualize(relation.join_dependency._join_parts.last)
             table.table_alias.should eq 'parents_people_2'
           end
 
@@ -39,7 +39,7 @@ module Squeel
             visitor = relation.attribute_visitor
 
             visitor.should be_a Visitors::AttributeVisitor
-            table = visitor.contextualize(relation.join_dependency.join_parts.last)
+            table = visitor.contextualize(relation.join_dependency._join_parts.last)
             table.table_alias.should eq 'parents_people_2'
           end
 
