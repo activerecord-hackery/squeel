@@ -1,7 +1,7 @@
 module Squeel
   module Adapters
     module ActiveRecord
-      module Preloader
+      module PreloaderExtensions
 
         def self.included(base)
           base.class_eval do

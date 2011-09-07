@@ -248,6 +248,24 @@ module Squeel
         predicate.to_sql.should match /"people"."name" = "children_people"."name"/
       end
 
+      it 'visits Squeel Sifters at top level' do
+        predicate = @v.accept(dsl {sift :name_starts_or_ends_with, 'smith'})
+        predicate.should be_a Arel::Nodes::Grouping
+        expr = predicate.expr
+        expr.should be_a Arel::Nodes::Or
+        expr.left.to_sql.should match /"people"."name" LIKE 'smith%'/
+        expr.right.to_sql.should match /"people"."name" LIKE '%smith'/
+      end
+
+      it 'visits nested Squeel sifters' do
+        predicate = @v.accept(dsl {{:children => sift(:name_starts_or_ends_with, 'smith')}})
+        predicate.should be_a Arel::Nodes::Grouping
+        expr = predicate.expr
+        expr.should be_a Arel::Nodes::Or
+        expr.left.to_sql.should match /"children_people"."name" LIKE 'smith%'/
+        expr.right.to_sql.should match /"children_people"."name" LIKE '%smith'/
+      end
+
       it 'honors an explicit table in string keys' do
         predicate = @v.accept('things.attribute' => 'retro')
         predicate.should be_a Arel::Nodes::Equality

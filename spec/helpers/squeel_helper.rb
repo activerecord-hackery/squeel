@@ -3,6 +3,10 @@ module SqueelHelper
     Squeel::DSL.eval(&block)
   end
 
+  def dsl_exec(*args, &block)
+    Squeel::DSL.exec(*args, &block)
+  end
+
   def queries_for
     $queries_executed = []
     yield

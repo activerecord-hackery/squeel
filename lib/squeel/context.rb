@@ -1,7 +1,7 @@
 require 'arel'
 
 module Squeel
-  # @abstract Subclass and implement {#traverse}, #{find} and {#get_table}
+  # @abstract Subclass and implement {#traverse}, {#find} and {#get_table}
   #   to create a Context that supports a given ORM.
   class Context
     attr_reader :base, :engine, :arel_visitor
@@ -61,6 +61,14 @@ module Squeel
     # @return [Arel::Table] A table corresponding to the object param.
     def get_table(object)
       raise NotImplementedError, "Subclasses must implement private method get_table"
+    end
+
+    # Returns a class for the corresponding object.
+    #
+    # @param object A classifiable object (this will depend on the subclass's implementation)
+    # @return [Class] The class corresponding to the object
+    def classify(object)
+      raise NotImplementedError, "Subclasses must implement private method classify"
     end
 
   end

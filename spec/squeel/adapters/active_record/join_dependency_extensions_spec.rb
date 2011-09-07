@@ -3,7 +3,7 @@ require 'spec_helper'
 module Squeel
   module Adapters
     module ActiveRecord
-      describe JoinDependency do
+      describe JoinDependencyExtensions do
         before do
           @jd = new_join_dependency(Person, {}, [])
         end

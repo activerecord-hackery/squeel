@@ -1,8 +1,8 @@
-require 'squeel/visitors/base'
+require 'squeel/visitors/visitor'
 
 module Squeel
   module Visitors
-    class PredicateVisitor < Base
+    class PredicateVisitor < Visitor
 
       TRUE_SQL = Arel.sql('1=1').freeze
       FALSE_SQL = Arel.sql('1=0').freeze
@@ -81,6 +81,17 @@ module Squeel
       # @return [Arel::Nodes::SqlLiteral] An SqlLiteral
       def visit_Squeel_Nodes_Literal(o, parent)
         Arel.sql(o.expr)
+      end
+
+      # Visit a Squeel sifter by executing its corresponding constraint block
+      # in the parent's class, with its given arguments, then visiting the result.
+      #
+      # @param [Nodes::Sifter] o The Sifter to visit
+      # @param parent The parent object in the context
+      # @return The result of visiting the executed block's return value
+      def visit_Squeel_Nodes_Sifter(o, parent)
+        klass = classify(parent)
+        visit(klass.send(o.name, *o.args), parent)
       end
 
       # Visit a Squeel predicate, converting it into an ARel predicate
@@ -220,7 +231,7 @@ module Squeel
       # @param v The value to consider
       def implies_context_change?(v)
         case v
-        when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
+        when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary, Nodes::Sifter
           true
         when Nodes::KeyPath
           can_visit?(v.endpoint) && !(Nodes::Stub === v.endpoint)
@@ -245,7 +256,7 @@ module Squeel
           end
 
         case v
-        when Hash, Nodes::KeyPath, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary
+        when Hash, Nodes::KeyPath, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary, Nodes::Sifter
           visit(v, parent || k)
         when Array
           v.map {|val| visit(val, parent || k)}

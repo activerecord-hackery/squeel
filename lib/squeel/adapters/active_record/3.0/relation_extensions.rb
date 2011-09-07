@@ -3,10 +3,10 @@ require 'active_record'
 module Squeel
   module Adapters
     module ActiveRecord
-      module Relation
+      module RelationExtensions
 
-        JoinAssociation = ::ActiveRecord::Associations::JoinDependency::JoinAssociation
-        JoinDependency = ::ActiveRecord::Associations::JoinDependency
+        JoinAssociation = ::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinAssociation
+        JoinDependency = ::ActiveRecord::Associations::ClassMethods::JoinDependency
 
         attr_writer :join_dependency
         private :join_dependency=
@@ -17,7 +17,7 @@ module Squeel
         # the default #reset already does this, despite never setting it anywhere that
         # I can find. Serendipity, I say!
         def join_dependency
-          @join_dependency ||= (build_join_dependency(table.from(table), @joins_values) && @join_dependency)
+          @join_dependency ||= (build_join_dependency(table, @joins_values) && @join_dependency)
         end
 
         def predicate_visitor
@@ -80,91 +80,68 @@ module Squeel
         end
 
         def build_arel
-          arel = table.from table
+          arel = table
 
-          build_join_dependency(arel, @joins_values) unless @joins_values.empty?
+          arel = build_join_dependency(arel, @joins_values) unless @joins_values.empty?
 
           predicate_viz = predicate_visitor
           attribute_viz = attribute_visitor
 
-          collapse_wheres(arel, predicate_viz.accept((@where_values - ['']).uniq))
+          arel = collapse_wheres(arel, predicate_viz.accept((@where_values - ['']).uniq))
 
-          arel.having(*predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
+          arel = arel.having(*predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
 
-          arel.take(connection.sanitize_limit(@limit_value)) if @limit_value
-          arel.skip(@offset_value) if @offset_value
+          arel = arel.take(connection.sanitize_limit(@limit_value)) if @limit_value
+          arel = arel.skip(@offset_value) if @offset_value
 
-          arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
+          arel = arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
-          order = @reorder_value ? @reorder_value : @order_values
-          order = attribute_viz.accept(order.uniq.reject{|o| o.blank?})
-          order = reverse_sql_order(attrs_to_orderings(order)) if @reverse_order_value
-          arel.order(*order) unless order.empty?
+          arel = arel.order(*attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?})) unless @order_values.empty?
 
-          build_select(arel, attribute_viz.accept(@select_values.uniq))
+          arel = build_select(arel, attribute_viz.accept(@select_values.uniq))
 
-          arel.from(@from_value) if @from_value
-          arel.lock(@lock_value) if @lock_value
+          arel = arel.from(@from_value) if @from_value
+          arel = arel.lock(@lock_value) if @lock_value
 
           arel
         end
 
-        # reverse_sql_order will reverse the order of strings or Orderings,
-        # but not attributes
-        def attrs_to_orderings(order)
-          order.map do |o|
-            Arel::Attribute === o ? o.asc : o
-          end
-        end
+        def build_join_dependency(relation, joins)
+          association_joins = []
 
-        def build_join_dependency(manager, joins)
-          buckets = joins.group_by do |join|
-            case join
-            when String
-              'string_join'
-            when Hash, Symbol, Array, Nodes::Stub, Nodes::Join, Nodes::KeyPath
-              'association_join'
-            when JoinAssociation
-              'stashed_join'
-            when Arel::Nodes::Join
-              'join_node'
-            else
-              raise 'unknown class: %s' % join.class.name
-            end
+          joins = joins.map {|j| j.respond_to?(:strip) ? j.strip : j}.uniq
+
+          joins.each do |join|
+            association_joins << join if [Hash, Array, Symbol, Nodes::Stub, Nodes::Join, Nodes::KeyPath].include?(join.class) && !array_of_strings?(join)
           end
 
-          association_joins         = buckets['association_join'] || []
-          stashed_association_joins = buckets['stashed_join'] || []
-          join_nodes                = buckets['join_node'] || []
-          string_joins              = (buckets['string_join'] || []).map { |x|
-            x.strip
-          }.uniq
+          stashed_association_joins = joins.grep(::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinAssociation)
 
-          join_list = custom_join_ast(manager, string_joins)
+          non_association_joins = (joins - association_joins - stashed_association_joins)
+          custom_joins = custom_join_sql(*non_association_joins)
 
-          # All of this duplication just to add
-          self.join_dependency = JoinDependency.new(
-            @klass,
-            association_joins,
-            join_list
-          )
-
-          join_nodes.each do |join|
-            join_dependency.alias_tracker.aliased_name_for(join.left.name.downcase)
-          end
+          self.join_dependency = JoinDependency.new(@klass, association_joins, custom_joins)
 
           join_dependency.graft(*stashed_association_joins)
 
           @implicit_readonly = true unless association_joins.empty? && stashed_association_joins.empty?
 
+          to_join = []
+
           join_dependency.join_associations.each do |association|
-            association.join_to(manager)
+            if (association_relation = association.relation).is_a?(Array)
+              to_join << [association_relation.first, association.join_type, association.association_join.first]
+              to_join << [association_relation.last, association.join_type, association.association_join.last]
+            else
+              to_join << [association_relation, association.join_type, association.association_join]
+            end
           end
 
-          manager.join_sources.concat join_nodes.uniq
-          manager.join_sources.concat join_list
+          to_join.uniq.each do |left, join_type, right|
+            relation = relation.join(left, join_type).on(*right)
+          end
 
-          manager
+          relation = relation.join(custom_joins)
         end
 
         def includes(*args)
@@ -272,19 +249,21 @@ module Squeel
         end
 
         def collapse_wheres(arel, wheres)
-          wheres = Array(wheres)
+          wheres = [wheres] unless Array === wheres
           binaries = wheres.grep(Arel::Nodes::Binary)
 
           groups = binaries.group_by {|b| [b.class, b.left]}
 
           groups.each do |_, bins|
-            arel.where(Arel::Nodes::And.new(bins))
+            arel = arel.where(bins.inject(&:and))
           end
 
           (wheres - binaries).each do |where|
             where = Arel.sql(where) if String === where
-            arel.where(Arel::Nodes::Grouping.new(where))
+            arel = arel.where(Arel::Nodes::Grouping.new(where))
           end
+
+          arel
         end
 
         def find_equality_predicates(nodes)
@@ -309,7 +288,7 @@ module Squeel
         def debug_sql
           if eager_loading?
             including = (@eager_load_values + @includes_values).uniq
-            join_dependency = JoinDependency.new(@klass, including, [])
+            join_dependency = JoinDependency.new(@klass, including, nil)
             construct_relation_for_association_find(join_dependency).to_sql
           else
             arel.to_sql

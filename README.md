@@ -266,6 +266,54 @@ I'm not sure about you, but I much prefer the latter. In short, you can add `_an
 `_all` to any predicate method, and it would do what you expect, when given an array of
 possibilities to compare against.
 
+### Sifters
+
+Sifters are like little snippets of conditions that take parameters. Let's say that you
+have a model called Article, and you often want to query for articles that contain a
+string in the title or body. So you write a scope:
+
+    def self.title_or_body_contains(string)
+      where{title.matches("%#{string}%") | body.matches("%#{string}%")}
+    end
+
+But then you want to query for people who wrote an article that matches these conditions,
+but the scope only works against the model where it was defined. So instead, you write a
+sifter:
+
+    class Article < ActiveRecord::Base
+      sifter :title_or_body_contains do |string|
+        title.matches("%#{string}%") | body.matches("%#{string}%")
+      end
+    end
+
+Now you can write...
+
+    Article.where{sift :title_or_body_contains, 'awesome'}
+    => SELECT "articles".* FROM "articles"  
+       WHERE ((
+         "articles"."title" LIKE '%awesome%' 
+         OR "articles"."body" LIKE '%awesome%'
+       ))
+
+... or ...
+
+    Person.joins(:articles).
+           where{
+             {articles => sift(:title_or_body_contains, 'awesome')}
+           }
+    # => SELECT "people".* FROM "people" 
+         INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
+         WHERE ((
+           "articles"."title" LIKE '%awesome%' 
+           OR "articles"."body" LIKE '%awesome%'
+         ))
+
+Or, you can just modify your previous scope, changing `where` to `squeel`:
+
+    def self.title_or_body_contains(string)
+      squeel{title.matches("%#{string}%") | body.matches("%#{string}%")}
+    end
+
 ### Subqueries
 
 You can supply an `ActiveRecord::Relation` as a value for a predicate in order to use

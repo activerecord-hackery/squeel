@@ -6,7 +6,7 @@ module Squeel
     # method calls to fall through to method_missing.
     Squeel.evil_things do
       (instance_methods + private_instance_methods).each do |method|
-        unless method.to_s =~ /^(__|instance_eval)/
+        unless method.to_s =~ /^(__|instance_eval|instance_exec)/
           undef_method method
         end
       end
@@ -30,6 +30,14 @@ module Squeel
       else
         self.new(block.binding).instance_eval(&block)
       end
+    end
+
+    # Called from an adapter, not directly.
+    # Executes a block of Squeel DSL code, possibly with arguments.
+    #
+    # @return The results of the executed DSL code.
+    def self.exec(*args, &block)
+      self.new(block.binding).instance_exec(*args, &block)
     end
 
     private
@@ -61,6 +69,16 @@ module Squeel
     # @return [Arel::Nodes::SqlLiteral] The SQL literal.
     def `(string)
       Nodes::Literal.new(string)
+    end
+
+    # Create a Squeel Sifter node. This essentially substitutes the
+    # sifter block of the supplied name from the model.
+    #
+    # @param [Symbol, Nodes::Stub] name The name of the sifter defined in the model.
+    # @return [Nodes::Sifter] The sifter node
+    def sift(name, *args)
+      name = name.to_sym if Nodes::Stub === name
+      Nodes::Sifter.new name, args
     end
 
     # Node generation inside DSL blocks.

@@ -96,5 +96,19 @@ module Squeel
       end
     end
 
+    describe '#sift' do
+      it 'creates a Sifter' do
+        result = dsl{sift :blah}
+        result.should be_a Nodes::Sifter
+        result.name.should eq :blah
+      end
+
+      it 'casts Stubs to Symbols for sifter names' do
+        result = dsl{sift blah}
+        result.should be_a Nodes::Sifter
+        result.name.should eq :blah
+      end
+    end
+
   end
 end

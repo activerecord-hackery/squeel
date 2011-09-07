@@ -3,7 +3,7 @@ require 'spec_helper'
 module Squeel
   module Adapters
     module ActiveRecord
-      describe Relation do
+      describe RelationExtensions do
 
         describe '#predicate_visitor' do
 

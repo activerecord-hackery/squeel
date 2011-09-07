@@ -1,26 +1,28 @@
 case ActiveRecord::VERSION::MAJOR
 when 3
   ActiveRecord::Relation.send :include, Squeel::Nodes::Aliasing
-  require 'squeel/adapters/active_record/join_dependency'
+  require 'squeel/adapters/active_record/join_dependency_extensions'
+  require 'squeel/adapters/active_record/base_extensions'
+  ActiveRecord::Base.extend Squeel::Adapters::ActiveRecord::BaseExtensions
 
   case ActiveRecord::VERSION::MINOR
   when 0
     require 'squeel/adapters/active_record/3.0/compat'
-    require 'squeel/adapters/active_record/3.0/relation'
-    require 'squeel/adapters/active_record/3.0/association_preload'
+    require 'squeel/adapters/active_record/3.0/relation_extensions'
+    require 'squeel/adapters/active_record/3.0/association_preload_extensions'
     require 'squeel/adapters/active_record/3.0/context'
 
-    ActiveRecord::Relation.send :include, Squeel::Adapters::ActiveRecord::Relation
-    ActiveRecord::Associations::ClassMethods::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependency
-    ActiveRecord::Base.extend Squeel::Adapters::ActiveRecord::AssociationPreload
+    ActiveRecord::Relation.send :include, Squeel::Adapters::ActiveRecord::RelationExtensions
+    ActiveRecord::Associations::ClassMethods::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependencyExtensions
+    ActiveRecord::Base.extend Squeel::Adapters::ActiveRecord::AssociationPreloadExtensions
   else
-    require 'squeel/adapters/active_record/relation'
-    require 'squeel/adapters/active_record/preloader'
+    require 'squeel/adapters/active_record/relation_extensions'
+    require 'squeel/adapters/active_record/preloader_extensions'
     require 'squeel/adapters/active_record/context'
 
-    ActiveRecord::Relation.send :include, Squeel::Adapters::ActiveRecord::Relation
-    ActiveRecord::Associations::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependency
-    ActiveRecord::Associations::Preloader.send :include, Squeel::Adapters::ActiveRecord::Preloader
+    ActiveRecord::Relation.send :include, Squeel::Adapters::ActiveRecord::RelationExtensions
+    ActiveRecord::Associations::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependencyExtensions
+    ActiveRecord::Associations::Preloader.send :include, Squeel::Adapters::ActiveRecord::PreloaderExtensions
   end
 else
   raise NotImplementedError, "Squeel does not support ActiveRecord version #{ActiveRecord::VERSION::STRING}"

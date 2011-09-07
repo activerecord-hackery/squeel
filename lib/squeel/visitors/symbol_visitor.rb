@@ -1,8 +1,8 @@
-require 'squeel/visitors/base'
+require 'squeel/visitors/visitor'
 
 module Squeel
   module Visitors
-    class SymbolVisitor < Base
+    class SymbolVisitor < Visitor
 
       def initialize
       end

@@ -60,6 +60,16 @@ module Squeel
           end
         end
 
+        def classify(object)
+          if Class === object
+            object
+          elsif object.respond_to? :active_record
+            object.active_record
+          else
+            raise ArgumentError, "#{object} can't be converted to a class"
+          end
+        end
+
       end
     end
   end

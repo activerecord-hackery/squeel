@@ -4,9 +4,9 @@ require 'squeel/nodes'
 module Squeel
   module Visitors
     # The Base visitor class, containing the default behavior common to subclasses.
-    class Base
+    class Visitor
       attr_accessor :context
-      delegate :contextualize, :find, :traverse, :engine, :arel_visitor, :to => :context
+      delegate :contextualize, :classify, :find, :traverse, :engine, :arel_visitor, :to => :context
 
       # Create a new Visitor that uses the supplied context object to contextualize
       # visited nodes.

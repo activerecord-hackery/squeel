@@ -1,10 +1,10 @@
-require 'squeel/visitors/base'
+require 'squeel/visitors/visitor'
 
 module Squeel
   module Visitors
     # A visitor that tries to convert visited nodes into Arel::Attributes
     # or other nodes that can be used for grouping, ordering, and the like.
-    class AttributeVisitor < Base
+    class AttributeVisitor < Visitor
 
       private
 

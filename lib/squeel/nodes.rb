@@ -7,6 +7,7 @@ end
 require 'squeel/nodes/literal'
 require 'squeel/nodes/stub'
 require 'squeel/nodes/key_path'
+require 'squeel/nodes/sifter'
 require 'squeel/nodes/predicate'
 require 'squeel/nodes/function'
 require 'squeel/nodes/operation'

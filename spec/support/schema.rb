@@ -1,4 +1,5 @@
 require 'active_record'
+require 'squeel'
 
 ActiveRecord::Base.establish_connection(
   :adapter  => 'sqlite3',
@@ -19,6 +20,10 @@ class Person < ActiveRecord::Base
 
   has_many   :outgoing_messages, :class_name => 'Message', :foreign_key => :author_id
   has_many   :incoming_messages, :class_name => 'Message', :foreign_key => :recipient_id
+
+  sifter :name_starts_or_ends_with do |value|
+    (name =~ "#{value}%") | (name =~ "%#{value}")
+  end
 end
 
 class PersonWithNamePrimaryKey < ActiveRecord::Base

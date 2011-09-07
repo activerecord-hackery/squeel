@@ -3,7 +3,7 @@ require 'polyamorous'
 module Squeel
   module Adapters
     module ActiveRecord
-      module JoinDependency
+      module JoinDependencyExtensions
 
         def self.included(base)
           base.class_eval do
