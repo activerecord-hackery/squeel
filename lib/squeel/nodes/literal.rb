@@ -7,6 +7,7 @@ module Squeel
     # Literal nodes are a container for raw SQL.
     class Literal
       include PredicateMethods
+      include PredicateOperators
       include Operators
       include Aliasing
 

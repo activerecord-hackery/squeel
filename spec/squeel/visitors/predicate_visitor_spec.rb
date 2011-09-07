@@ -55,6 +55,12 @@ module Squeel
         predicate.should eq '1=1'
       end
 
+      it 'creates OR nodes against a Literal' do
+        predicate = @v.accept(dsl{`blah` | `blah`})
+        predicate.should be_a Arel::Nodes::Grouping
+        predicate.to_sql.should eq '(blah OR blah)'
+      end
+
       it 'generates IS NULL for hash keys with a value of [nil]' do
         predicate = @v.accept(:id => [nil])
         predicate.to_sql.should be_like '"people"."id" IS NULL'

@@ -220,7 +220,7 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::Or] An ARel Or node, with left and right sides visited
       def visit_Squeel_Nodes_Or(o, parent)
-        visit(o.left, parent).or(visit(o.right, parent))
+        Arel::Nodes::Grouping.new(Arel::Nodes::Or.new(visit(o.left, parent), (visit(o.right, parent))))
       end
 
       def visit_Squeel_Nodes_Not(o, parent)
