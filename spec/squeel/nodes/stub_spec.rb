@@ -39,6 +39,12 @@ module Squeel
         keypath.path_with_endpoint.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
       end
 
+      it 'creates a KeyPath with a sifter endpoint when sent #sift' do
+        keypath = @s.sift(:blah, 1)
+        keypath.should be_a KeyPath
+        keypath.path_with_endpoint.should eq [@s, Sifter.new(:blah, [1])]
+      end
+
       it 'creates an absolute keypath with just an endpoint with ~' do
         node = ~@s
         node.should be_a KeyPath

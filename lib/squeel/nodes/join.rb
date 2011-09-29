@@ -34,6 +34,11 @@ module Squeel
         _klass
       end
 
+      # Implemented for equality testing
+      def hash
+        [_name, _type, _klass].hash
+      end
+
       # Compare with other objects
       def eql?(other)
         self.class.eql?(other.class) &&

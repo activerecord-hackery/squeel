@@ -109,7 +109,21 @@ module Squeel
       # @param other The right hand side of the operation
       # @return [Operation] An operation with the given custom operator, the KeyPath on its left and the other object on the right.
       def op(operator, other)
-        endpoint.respond_to?(:op) ? super : no_method_error(:/)
+        endpoint.respond_to?(:op) ? super : no_method_error(:op)
+      end
+
+      # Allow KeyPath to have a sifter as its endpoint, if the endpoint is a
+      # chainable node (Stub or Join)
+      # @param [Symbol] name The name of the sifter
+      # @return [KeyPath] This keypath, with a sifter as its endpoint
+      def sift(name, *args)
+        if Stub === endpoint || Join === endpoint
+          @path << endpoint
+          @endpoint = Sifter.new(name, args)
+          self
+        else
+          no_method_error :sift
+        end
       end
 
       # Set the absolute flag on this KeyPath

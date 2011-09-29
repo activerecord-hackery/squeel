@@ -272,6 +272,15 @@ module Squeel
         expr.right.to_sql.should match /"children_people"."name" LIKE '%smith'/
       end
 
+      it 'visits sifters in a keypath' do
+        predicate = @v.accept(dsl {children.sift(:name_starts_or_ends_with, 'smith')})
+        predicate.should be_a Arel::Nodes::Grouping
+        expr = predicate.expr
+        expr.should be_a Arel::Nodes::Or
+        expr.left.to_sql.should match /"children_people"."name" LIKE 'smith%'/
+        expr.right.to_sql.should match /"children_people"."name" LIKE '%smith'/
+      end
+
       it 'honors an explicit table in string keys' do
         predicate = @v.accept('things.attribute' => 'retro')
         predicate.should be_a Arel::Nodes::Equality

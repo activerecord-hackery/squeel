@@ -55,6 +55,12 @@ module Squeel
         as.right.should eq 'other_name'
       end
 
+      it 'creates sifter nodes with #sift' do
+        @k.sift(:blah, 1)
+        sifter = @k.endpoint
+        sifter.should be_a Sifter
+      end
+
       it 'creates AND nodes with & if the endpoint responds to &' do
         node = @k.third.fourth.eq('Bob') & Stub.new(:attr).eq('Joe')
         node.should be_a And
