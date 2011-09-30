@@ -197,7 +197,7 @@ module Squeel
         when :/
           Arel::Nodes::Division.new(args[0], args[1])
         else
-          Arel::Nodes::InfixOperation(o.operator, args[0], args[1])
+          Arel::Nodes::InfixOperation.new(o.operator, args[0], args[1])
         end
         o.alias ? op.as(o.alias) : op
       end

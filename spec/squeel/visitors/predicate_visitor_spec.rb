@@ -404,6 +404,11 @@ module Squeel
         operation.should be_a Arel::Nodes::Division
       end
 
+      it 'creates an ARel InfixOperation node for an Operation with a custom operator' do
+        operation = @v.accept(dsl{id.op(:blah, 1)})
+        operation.should be_a Arel::Nodes::InfixOperation
+      end
+
       it 'sets the alias on an InfixOperation from the Operation alias' do
         operation = @v.accept(dsl{(id + 1).as(:incremented_id)})
         operation.to_sql.should match /incremented_id/
