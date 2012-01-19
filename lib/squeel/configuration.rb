@@ -34,7 +34,7 @@ module Squeel
     #   @param [Symbol] sym2 :hash or :symbol
     def load_core_extensions(*exts)
       exts.each do |ext|
-        require "core_ext/#{ext}"
+        require "squeel/core_ext/#{ext}"
       end
     end
 
