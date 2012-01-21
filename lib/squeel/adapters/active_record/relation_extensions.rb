@@ -102,7 +102,8 @@ module Squeel
           arel.order(*order) unless order.empty?
 
           build_select(arel, attribute_viz.accept(@select_values.uniq))
-
+          
+          arel.distinct(@uniq_value)
           arel.from(@from_value) if @from_value
           arel.lock(@lock_value) if @lock_value
 
