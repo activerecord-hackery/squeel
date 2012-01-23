@@ -477,6 +477,10 @@ module Squeel
             relation = Person.joins(:authored_article_comments)
             relation.first.authored_article_comments.first.should eq Comment.first
           end
+          
+          it 'creates a unique join when joining a table used in a has_many :through association' do
+            Person.first.authored_article_comments.joins(:article).first.should eq Comment.first
+          end
 
           it 'joins polymorphic belongs_to associations' do
             relation = Note.joins{notable(Article)}
