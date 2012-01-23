@@ -48,6 +48,7 @@ class Article < ActiveRecord::Base
   has_and_belongs_to_many :tags
   has_many   :notes, :as => :notable
   has_many :commenters, :through => :comments, :source => :person
+  has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
 end
 
 class Comment < ActiveRecord::Base
@@ -137,6 +138,7 @@ module Schema
     end
 
     Comment.make(:body => 'First post!', :article => Article.make(:title => 'Hello, world!'))
+    Comment.make(:body => 'Last post!', :article => Article.first, :person => Article.first.commenters.first)
 
   end
 end

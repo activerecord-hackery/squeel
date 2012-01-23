@@ -97,6 +97,10 @@ module Squeel
             relation.join_dependency.join_associations.should have(6).items
             arel.to_sql.should match /INNER JOIN "people" "parents_people_3" ON "parents_people_3"."id" = "children_people_3"."parent_id"/
           end
+          
+          it 'respects :uniq option on associations' do
+            Article.first.uniq_commenters.length.should eq Article.first.uniq_commenters.count
+          end
 
           it 'visits wheres with a PredicateVisitor, converting them to ARel nodes' do
             relation = Person.where(:name.matches => '%bob%')
