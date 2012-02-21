@@ -1,3 +1,5 @@
+require 'active_support/core_ext/module'
+
 module Squeel
   module Nodes
     # A node representing a joined association
