@@ -1,5 +1,6 @@
 require 'squeel/nodes/operators'
 require 'squeel/nodes/predicate_operators'
+require 'active_support/core_ext/module'
 
 module Squeel
   module Nodes
