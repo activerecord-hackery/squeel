@@ -33,6 +33,11 @@ class PersonWithNamePrimaryKey < ActiveRecord::Base
   set_table_name 'people'
 end
 
+class PersonNamedBill < ActiveRecord::Base
+  self.table_name = 'people'
+  default_scope where(:name => 'Bill')
+end
+
 class Message < ActiveRecord::Base
   belongs_to :author, :class_name => 'Person'
   belongs_to :recipient, :class_name => 'Person'

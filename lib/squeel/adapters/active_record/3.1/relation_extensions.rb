@@ -344,7 +344,7 @@ module Squeel
         end
 
         def where_values_hash_with_squeel
-          equalities = find_equality_predicates(predicate_visitor.accept(@where_values))
+          equalities = find_equality_predicates(predicate_visitor.accept(with_default_scope.where_values))
 
           Hash[equalities.map { |where| [where.left.name, where.right] }]
         end

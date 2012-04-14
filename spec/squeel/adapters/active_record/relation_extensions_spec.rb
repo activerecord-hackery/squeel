@@ -108,6 +108,13 @@ module Squeel
             arel.to_sql.should match /"people"."name" LIKE '%bob%'/
           end
 
+	  it 'handles multiple wheres using a keypath' do
+	    relation = Person.joins{articles}.where{articles.title == 'Hello'}.
+	                      where{articles.body == 'World'}
+	    arel = relation.build_arel
+	    arel.to_sql.should match /articles/
+	  end
+
           it 'maps wheres inside a hash to their appropriate association table' do
             relation = Person.joins({
               :children => {
@@ -595,6 +602,10 @@ module Squeel
             @person = Person.where(:name => 'bob', :parent_id => 3).new
             @person.parent_id.should eq 3
             @person.name.should eq 'bob'
+          end
+
+          it "maintains activerecord default scope functionality" do
+            PersonNamedBill.new.name.should eq 'Bill'
           end
 
           it 'uses the last supplied equality predicate in where_values when creating new records' do
