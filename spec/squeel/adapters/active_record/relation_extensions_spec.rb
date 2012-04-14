@@ -484,7 +484,7 @@ module Squeel
             relation = Person.joins(:authored_article_comments)
             relation.first.authored_article_comments.first.should eq Comment.first
           end
-          
+
           it 'creates a unique join when joining a table used in a has_many :through association' do
             Person.first.authored_article_comments.joins(:article).first.should eq Comment.first
           end
@@ -685,7 +685,9 @@ module Squeel
 
             queries.should have(2).queries
 
-            queries.last.should match /IN \(1, ?34, ?67, ?100\)/
+            matched_ids = queries.last.match(/IN \(([^)]*)/).captures.first
+            matched_ids = matched_ids.split(/,\s*/).map(&:to_i)
+            matched_ids.should =~ [1, 34, 67, 100]
           end
 
         end
