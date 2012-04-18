@@ -4,7 +4,7 @@ module Squeel
   module Nodes
     describe Function do
       before do
-        @f = :function.func(1,2,3)
+        @f = Function.new(:function, [1, 2, 3])
       end
 
       Squeel::Constants::PREDICATES.each do |method_name|
@@ -130,6 +130,27 @@ module Squeel
         predicate.expr.should eq @f
         predicate.method_name.should eq :lteq
         predicate.value.should eq 1
+      end
+
+      it 'can be ORed with another node' do
+        right = Predicate.new :name, :eq, 'Bob'
+        combined = @f | right
+        combined.should be_a Nodes::Or
+        combined.left.should eq @f
+        combined.right.should eq right
+      end
+
+      it 'can be ANDed with another node' do
+        right = Predicate.new :name, :eq, 'Bob'
+        combined = @f & right
+        combined.should be_a Nodes::And
+        combined.children.should eq [@f, right]
+      end
+
+      it 'can be negated' do
+        negated = -@f
+        negated.should be_a Nodes::Not
+        negated.expr.should eq @f
       end
 
       describe '#as' do

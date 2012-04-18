@@ -132,6 +132,27 @@ module Squeel
         predicate.value.should eq 1
       end
 
+      it 'can be ORed with another node' do
+        right = Predicate.new :name, :eq, 'Bob'
+        combined = @o | right
+        combined.should be_a Nodes::Or
+        combined.left.should eq @o
+        combined.right.should eq right
+      end
+
+      it 'can be ANDed with another node' do
+        right = Predicate.new :name, :eq, 'Bob'
+        combined = @o & right
+        combined.should be_a Nodes::And
+        combined.children.should eq [@o, right]
+      end
+
+      it 'can be negated' do
+        negated = -@o
+        negated.should be_a Nodes::Not
+        negated.expr.should eq @o
+      end
+
       describe '#as' do
 
         it 'aliases the function' do

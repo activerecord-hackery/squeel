@@ -6,6 +6,7 @@ module Squeel
     class Function
 
       include PredicateMethods
+      include PredicateOperators
       include Operators
 
       alias :== :eq
