@@ -106,6 +106,35 @@ module Squeel
           arel
         end
 
+        # So, building a select for a count query in ActiveRecord is
+        # pretty heavily dependent on select_values containing strings.
+        # I'd initially expected that I could just hack together a fix
+        # to select_for_count and everything would fall in line, but
+        # unfortunately, pretty much everything from that point on
+        # in ActiveRecord::Calculations#perform_calculation expects
+        # the column to be a string, or at worst, a symbol.
+        #
+        # In the long term, I would like to refactor the code in
+        # Rails core, but for now, I'm going to settle for this hack
+        # that tries really hard to coerce things to a string.
+        def select_for_count
+          visited_values = attribute_visitor.accept(select_values.uniq)
+          if visited_values.size == 1
+            select = visited_values.first
+
+            str_select = case select
+            when String
+              select
+            when Symbol
+              select.to_s
+            else
+              select.to_sql if select.respond_to?(:to_sql)
+            end
+
+            str_select if str_select && str_select !~ /[,*]/
+          end
+        end
+
         def build_join_dependency(relation, joins)
           association_joins = []
 

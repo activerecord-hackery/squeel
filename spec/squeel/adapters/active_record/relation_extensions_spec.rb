@@ -401,6 +401,10 @@ module Squeel
             aric.last_article_id.should eq Article.where(:person_id => 1).last.id
           end
 
+          it "doesn't break #count if non-strings are used" do
+            Article.select{distinct(title)}.count.should eq 51
+          end
+
         end
 
         describe '#group' do
