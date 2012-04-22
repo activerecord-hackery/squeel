@@ -21,20 +21,13 @@ In your Gemfile:
     gem "squeel"  # Last officially released gem
     # gem "squeel", :git => "git://github.com/ernie/squeel.git" # Track git repo
 
-In an initializer:
+Then bundle as usual.
 
-    Squeel.configure do |config|
-      # To load hash extensions (to allow for AND (&), OR (|), and NOT (-) against
-      # hashes of conditions)
-      config.load_core_extensions :hash
+If you'd like to customize Squeel's functionality by enabling core
+extensions for hashes or symbols, or aliasing some predicates, you can
+create a sample initializer with:
 
-      # To load symbol extensions (for a subset of the old MetaWhere functionality,
-      # via ARel predicate methods on Symbols: :name.matches, etc)
-      # config.load_core_extensions :symbol
-
-      # To load both hash and symbol extensions
-      # config.load_core_extensions :hash, :symbol
-    end
+    rails g squeel:initializer
 
 ## The Squeel Query DSL
 
