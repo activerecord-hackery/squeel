@@ -7,8 +7,8 @@ Gem::Specification.new do |s|
   s.version     = Squeel::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ernie Miller"]
-  s.email       = ["ernie@metautonomo.us"]
-  s.homepage    = "http://metautonomo.us/projects/squeel"
+  s.email       = ["ernie@erniemiller.org"]
+  s.homepage    = "http://erniemiller.org/projects/squeel"
   s.summary     = %q{ActiveRecord 3, improved.}
   s.description = %q{
       Squeel unlocks the power of ARel in your Rails 3 application with
@@ -16,15 +16,6 @@ Gem::Specification.new do |s|
       functions provided by your RDBMS, and more, all without writing
       SQL strings.
     }
-  s.post_install_message = %q{
-*** Thanks for installing Squeel! ***
-Be sure to check out http://metautonomo.us/projects/squeel/ for a
-walkthrough of Squeel's features, and click the donate link if
-you're feeling especially appreciative. It'd help me justify this
-"open source" stuff to my lovely wife. :)
-
-}
-
   s.rubyforge_project = "squeel"
 
   s.add_dependency 'activerecord', '~> 3.0'
