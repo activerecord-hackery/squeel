@@ -24,7 +24,12 @@ module Squeel
       alias :< :lt
       alias :<= :lteq
 
-      undef_method :id if method_defined?(:id)
+      # We dn't want these default Object methods, because if we're
+      # calling them we are probably talking about a column name
+      [:id, :type].each do |column_method|
+        undef_method column_method if method_defined?(column_method) ||
+          private_method_defined?(column_method)
+      end
 
       # @return [Symbol] The symbol contained by this stub
       attr_reader :symbol

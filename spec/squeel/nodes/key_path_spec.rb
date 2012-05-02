@@ -26,6 +26,11 @@ module Squeel
         expect { @k.another }.to raise_error NoMethodError
       end
 
+      it 'allows specification of a type column' do
+        node = @k.type
+        node.should be_a KeyPath # not a Class (Ruby 1.8 Object#type)
+      end
+
       it 'sends missing calls to its endpoint if the endpoint responds to them' do
         @k.third.fourth.fifth.matches('Joe%')
         @k.endpoint.should be_a Predicate

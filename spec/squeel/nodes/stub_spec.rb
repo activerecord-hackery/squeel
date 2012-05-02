@@ -33,6 +33,18 @@ module Squeel
         keypath.path_with_endpoint.should eq [@s, Stub.new(:another)]
       end
 
+      it 'creates a KeyPath when sent #id' do
+        keypath = @s.id
+        keypath.should be_a KeyPath
+        keypath.path_with_endpoint.should eq [@s, Stub.new(:id)]
+      end
+
+      it 'creates a KeyPath when sent #type' do
+        keypath = @s.type
+        keypath.should be_a KeyPath
+        keypath.path_with_endpoint.should eq [@s, Stub.new(:type)]
+      end
+
       it 'creates a KeyPath with a join endpoint when sent a method with a Class param' do
         keypath = @s.another(Person)
         keypath.should be_a KeyPath
