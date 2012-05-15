@@ -62,8 +62,9 @@ module Squeel
       end
       alias :to_str :to_s
 
+      # @return [Array] An array with a copy of this Stub as the only element.
       def to_a
-        [self]
+        [dup]
       end
 
       # Create a KeyPath when any undefined method is called on a Stub.
