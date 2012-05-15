@@ -34,7 +34,7 @@ module Squeel
       end
 
       def visit_Squeel_Nodes_KeyPath(o, parent)
-        o.path_with_endpoint.reverse.map(&:to_sym).inject do |hash, key|
+        o.path.reverse.map(&:to_sym).inject do |hash, key|
           {key => hash}
         end
       end

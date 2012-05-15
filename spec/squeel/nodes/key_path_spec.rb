@@ -4,19 +4,17 @@ module Squeel
   module Nodes
     describe KeyPath do
       before do
-        @k = KeyPath.new(:first, :second)
+        @k = KeyPath.new([:first, :second])
       end
 
       it 'appends to its path when endpoint is a Stub' do
         @k.third.fourth.fifth
-        @k.path.should eq [:first, :second, :third, :fourth]
-        @k.endpoint.should eq Stub.new(:fifth)
+        @k.path.should eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
       end
 
       it 'becomes absolute when prefixed with ~' do
         ~@k.third.fourth.fifth
-        @k.path.should eq [:first, :second, :third, :fourth]
-        @k.endpoint.should eq Stub.new(:fifth)
+        @k.path.should eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
         @k.should be_absolute
       end
 

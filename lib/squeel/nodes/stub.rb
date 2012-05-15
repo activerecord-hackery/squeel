@@ -62,6 +62,10 @@ module Squeel
       end
       alias :to_str :to_s
 
+      def to_a
+        [self]
+      end
+
       # Create a KeyPath when any undefined method is called on a Stub.
       # @overload node_name
       #   Creates a new KeyPath with this Stub as the base and the method_name as the endpoint
@@ -73,11 +77,11 @@ module Squeel
       def method_missing(method_id, *args)
         super if method_id == :to_ary
         if args.empty?
-          KeyPath.new(self, method_id)
+          KeyPath.new([self, method_id])
         elsif (args.size == 1) && (Class === args[0])
-          KeyPath.new(self, Join.new(method_id, Arel::InnerJoin, args[0]))
+          KeyPath.new([self, Join.new(method_id, Arel::InnerJoin, args[0])])
         else
-          KeyPath.new(self, Nodes::Function.new(method_id, args))
+          KeyPath.new([self, Nodes::Function.new(method_id, args)])
         end
       end
 
@@ -86,7 +90,7 @@ module Squeel
       # DSL is likely to think of them as such.
       # @return [KeyPath] An absolute KeyPath, containing only this Stub
       def ~
-        KeyPath.new [], self, true
+        KeyPath.new [self], true
       end
 
       # Create an ascending Order node with this Stub's symbol as its expression
@@ -116,7 +120,7 @@ module Squeel
       # Create a keypath with a sifter as its endpoint
       # @return [KeyPath] The new KeyPath
       def sift(name, *args)
-        KeyPath.new(self, Sifter.new(name, args))
+        KeyPath.new([self, Sifter.new(name, args)])
       end
 
       # Create an outer Join node for the association named by this Stub

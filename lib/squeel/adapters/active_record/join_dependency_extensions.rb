@@ -21,7 +21,7 @@ module Squeel
 
           if Nodes::KeyPath === associations
             parent ||= _join_parts.last
-            associations.path_with_endpoint.each do |key|
+            associations.path.each do |key|
               parent = build(key, parent, join_type)
             end
             parent

@@ -16,7 +16,7 @@ module Squeel
           end
 
           it "creates Operations with #{operator} operator from key paths" do
-            left = KeyPath.new(:first, :second)
+            left = KeyPath.new([:first, :second])
             node = left.send(operator, 1)
             node.should be_an Operation
             node.left.should eq left
@@ -55,7 +55,7 @@ module Squeel
         end
 
         it "creates Operations with custom operator from key paths" do
-          left = KeyPath.new(:first, :second)
+          left = KeyPath.new([:first, :second])
           node = left.op('||', 1)
           node.should be_an Operation
           node.left.should eq left

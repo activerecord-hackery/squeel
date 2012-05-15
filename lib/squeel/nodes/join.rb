@@ -61,9 +61,9 @@ module Squeel
       def method_missing(method_id, *args)
         super if method_id == :to_ary
         if (args.size == 1) && (Class === args[0])
-          KeyPath.new(self, Join.new(method_id, Arel::InnerJoin, args[0]))
+          KeyPath.new([self, Join.new(method_id, Arel::InnerJoin, args[0])])
         else
-          KeyPath.new(self, method_id)
+          KeyPath.new([self, method_id])
         end
       end
 
@@ -72,7 +72,7 @@ module Squeel
       # DSL is likely to think of them as such.
       # @return [KeyPath] An absolute KeyPath, containing only this Join
       def ~
-        KeyPath.new [], self, true
+        KeyPath.new [self], true
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be

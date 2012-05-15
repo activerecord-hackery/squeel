@@ -26,20 +26,19 @@ module Squeel
       it 'creates a KeyPath when sent an unknown method' do
         keypath = @j.another
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@j, Stub.new(:another)]
+        keypath.path.should eq [@j, Stub.new(:another)]
       end
 
       it 'creates a KeyPath with a join endpoint when sent a method with a Class param' do
         keypath = @j.another(Person)
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@j, Join.new(:another, Arel::InnerJoin, Person)]
+        keypath.path.should eq [@j, Join.new(:another, Arel::InnerJoin, Person)]
       end
 
       it 'creates an absolute keypath with just an endpoint with ~' do
         node = ~@j
         node.should be_a KeyPath
-        node.path.should eq []
-        node.endpoint.should eq @j
+        node.path.should eq [@j]
       end
 
     end

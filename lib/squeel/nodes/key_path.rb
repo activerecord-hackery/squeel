@@ -20,18 +20,13 @@ module Squeel
       # @return [Array<Symbol, Stub, Join>] The path
       attr_reader :path
 
-      # @return The endpoint, either another key as in the path, or a predicate, function, etc.
-      attr_reader :endpoint
-
       # Create a new KeyPath.
       # @param [Array, Object] path The intial path. Will be converted to an array if it isn't already.
-      # @param endpoint the endpoint of the KeyPath
       # @param [Boolean] absolute If the KeyPath should start from the base
       #   or remain relative to whatever location it's found.
-      def initialize(path, endpoint, absolute = false)
-        @path, @endpoint = path, endpoint
-        @path = [@path] unless Array === @path
-        @endpoint = Stub.new(@endpoint) if Symbol === @endpoint
+      def initialize(path, absolute = false)
+        @path = Array(path)
+        self.endpoint = Stub.new(endpoint) if Symbol === endpoint
         @absolute = absolute
       end
 
@@ -42,11 +37,22 @@ module Squeel
         @absolute
       end
 
+      # @return The endpoint, either another key as in the path, or a predicate, function, etc.
+      def endpoint
+        @path[-1]
+      end
+
+      # Set the new value of the KeyPath's endpoint.
+      # @param [Object] val The new endpoint.
+      # @return The value just set.
+      def endpoint=(val)
+        @path[-1] = val
+      end
+
       # Object comparison
       def eql?(other)
         self.class.eql?(other.class) &&
         self.path.eql?(other.path) &&
-        self.endpoint.eql?(other.endpoint) &&
         self.absolute?.eql?(other.absolute?)
       end
 
@@ -120,8 +126,7 @@ module Squeel
       # @return [KeyPath] This keypath, with a sifter as its endpoint
       def sift(name, *args)
         if Stub === endpoint || Join === endpoint
-          @path << endpoint
-          @endpoint = Sifter.new(name, args)
+          @path << Sifter.new(name, args)
           self
         else
           no_method_error :sift
@@ -137,7 +142,7 @@ module Squeel
 
       # For use with equality tests
       def hash
-        [self.class, endpoint, *path].hash
+        [self.class, *path].hash
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be
@@ -162,14 +167,14 @@ module Squeel
         end
       end
 
-      # @return [Array] The KeyPath's path, including its endpoint, as a single array.
-      def path_with_endpoint
-        path + [endpoint]
+      # @return [Array] The KeyPath's path, minus its endpoint, as a single array.
+      def path_without_endpoint
+        path[0..-2]
       end
 
-      # Implement (and alias to :to_str) to play nicely with ActiveRecord grouped calculations
+      # Implement #to_s (and alias to #to_str) to play nicely with ActiveRecord grouped calculations
       def to_s
-        path.map(&:to_s).join('.') << ".#{endpoint}"
+        path.map(&:to_s).join('.')
       end
       alias :to_str :to_s
 
@@ -179,16 +184,15 @@ module Squeel
         super if method_id == :to_ary
 
         if endpoint.respond_to? method_id
-          @endpoint = @endpoint.send(method_id, *args)
+          self.endpoint = endpoint.send(method_id, *args)
           self
         elsif Stub === endpoint || Join === endpoint
-          @path << endpoint
           if args.empty?
-            @endpoint = Stub.new(method_id)
+            @path << Stub.new(method_id)
           elsif (args.size == 1) && (Class === args[0])
-            @endpoint = Join.new(method_id, Arel::InnerJoin, args[0])
+            @path << Join.new(method_id, Arel::InnerJoin, args[0])
           else
-            @endpoint = Nodes::Function.new method_id, args
+            @path << Nodes::Function.new(method_id, args)
           end
           self
         else

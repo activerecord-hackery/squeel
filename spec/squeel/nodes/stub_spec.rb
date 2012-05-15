@@ -30,38 +30,37 @@ module Squeel
       it 'creates a KeyPath when sent an unknown method' do
         keypath = @s.another
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@s, Stub.new(:another)]
+        keypath.path.should eq [@s, Stub.new(:another)]
       end
 
       it 'creates a KeyPath when sent #id' do
         keypath = @s.id
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@s, Stub.new(:id)]
+        keypath.path.should eq [@s, Stub.new(:id)]
       end
 
       it 'creates a KeyPath when sent #type' do
         keypath = @s.type
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@s, Stub.new(:type)]
+        keypath.path.should eq [@s, Stub.new(:type)]
       end
 
       it 'creates a KeyPath with a join endpoint when sent a method with a Class param' do
         keypath = @s.another(Person)
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
+        keypath.path.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
       end
 
       it 'creates a KeyPath with a sifter endpoint when sent #sift' do
         keypath = @s.sift(:blah, 1)
         keypath.should be_a KeyPath
-        keypath.path_with_endpoint.should eq [@s, Sifter.new(:blah, [1])]
+        keypath.path.should eq [@s, Sifter.new(:blah, [1])]
       end
 
       it 'creates an absolute keypath with just an endpoint with ~' do
         node = ~@s
         node.should be_a KeyPath
-        node.path.should eq []
-        node.endpoint.should eq @s
+        node.path.should eq [@s]
       end
 
       Squeel::Constants::PREDICATES.each do |method_name|

@@ -38,7 +38,7 @@ module Squeel
 
         def traverse(keypath, parent = @base, include_endpoint = false)
           parent = @base if keypath.absolute?
-          keypath.path.each do |key|
+          keypath.path_without_endpoint.each do |key|
             parent = find(key, parent) || key
           end
           parent = find(keypath.endpoint, parent) if include_endpoint
