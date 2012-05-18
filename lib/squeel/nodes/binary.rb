@@ -25,7 +25,6 @@ module Squeel
         self.left.eql?(other.left) &&
         self.right.eql?(other.right)
       end
-      alias :== :eql?
 
     end
   end

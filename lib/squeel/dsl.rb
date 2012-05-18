@@ -71,6 +71,15 @@ module Squeel
       Nodes::Literal.new(string)
     end
 
+    # Create a Squeel Grouping node. This allows you to set balanced
+    # pairs of parentheses around your SQL.
+    #
+    # @param expr The expression to group
+    # @return [Nodes::Grouping] The grouping node
+    def _(expr)
+      Nodes::Grouping.new(expr)
+    end
+
     # Create a Squeel Sifter node. This essentially substitutes the
     # sifter block of the supplied name from the model.
     #

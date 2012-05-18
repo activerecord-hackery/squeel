@@ -147,6 +147,15 @@ module Squeel
         o.alias ? op.as(o.alias) : op
       end
 
+      # Visit a Squeel Grouping node, resulting in am ARel Grouping node.
+      #
+      # @param [Nodes::Grouping] The Grouping node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::Grouping] The resulting grouping node.
+      def visit_Squeel_Nodes_Grouping(o, parent)
+        Arel::Nodes::Grouping.new(visit(o.expr, parent))
+      end
+
       # Visit a Squeel As node, resulting in am ARel As node.
       #
       # @param [Nodes::As] The As node to visit

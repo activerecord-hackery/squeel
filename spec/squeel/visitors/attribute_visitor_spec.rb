@@ -115,6 +115,11 @@ module Squeel
         as.to_sql.should match /"children_people"."name" AS other_name/
       end
 
+      it 'creates an ARel Grouping node for a Squeel Grouping node' do
+        grouping = @v.accept(dsl{_(id)})
+        grouping.should be_a Arel::Nodes::Grouping
+      end
+
       it 'creates an ARel Addition node for an Operation node with + as operator' do
         operation = @v.accept(dsl{id + 1})
         operation.should be_a Arel::Nodes::Addition

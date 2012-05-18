@@ -43,7 +43,6 @@ module Squeel
         self.class.eql?(other.class) &&
         self.children.eql?(other.children)
       end
-      alias :== :eql?
 
     end
   end

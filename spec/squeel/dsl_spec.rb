@@ -110,5 +110,13 @@ module Squeel
       end
     end
 
+    describe '#_' do
+      it 'creates a Grouping' do
+        result = dsl{_(id + 1)}
+        result.should be_a Nodes::Grouping
+        result.expr.should eq Nodes::Operation.new(:+, Nodes::Stub.new(:id), 1)
+      end
+    end
+
   end
 end

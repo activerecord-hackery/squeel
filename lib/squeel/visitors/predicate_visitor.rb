@@ -223,8 +223,22 @@ module Squeel
         Arel::Nodes::Grouping.new(Arel::Nodes::Or.new(visit(o.left, parent), (visit(o.right, parent))))
       end
 
+      # Visit a Squeel Not node, returning an ARel Not node.
+      #
+      # @param [Nodes::Not] o The Not node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::Not] An ARel Not node, with expression visited
       def visit_Squeel_Nodes_Not(o, parent)
-        visit(o.expr, parent).not
+        Arel::Nodes::Not.new(visit(o.expr, parent))
+      end
+
+      # Visit a Squeel Grouping node, returning an ARel Grouping node.
+      #
+      # @param [Nodes::Grouping] o The Grouping node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::Grouping] An ARel Grouping node, with expression visited
+      def visit_Squeel_Nodes_Grouping(o, parent)
+        Arel::Nodes::Grouping.new(visit(o.expr, parent))
       end
 
       # @return [Boolean] Whether the given value implies a context change

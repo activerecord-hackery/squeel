@@ -21,7 +21,6 @@ module Squeel
         self.class.eql?(other.class) &&
         self.expr.eql?(other.expr)
       end
-      alias :== :eql?
 
     end
   end
