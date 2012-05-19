@@ -95,6 +95,10 @@ module Arel
         super(:-, left, right)
       end
     end
+
+    class Grouping < Unary
+      include Arel::Predications
+    end unless Grouping.include?(Arel::Predications)
   end
 
   module Visitors

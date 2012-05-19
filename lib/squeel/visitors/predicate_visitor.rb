@@ -118,7 +118,7 @@ module Squeel
         value = quote_for_node(o.expr, value)
 
         attribute = case o.expr
-        when Nodes::Stub, Nodes::Function, Nodes::Literal
+        when Nodes::Stub, Nodes::Function, Nodes::Literal, Nodes::Grouping
           visit(o.expr, parent)
         else
           contextualize(parent)[o.expr]

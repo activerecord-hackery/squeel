@@ -16,6 +16,7 @@ when 3
     ActiveRecord::Associations::ClassMethods::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependencyExtensions
     ActiveRecord::Base.extend Squeel::Adapters::ActiveRecord::AssociationPreloadExtensions
   when 1
+    require 'squeel/adapters/active_record/3.1/compat'
     require 'squeel/adapters/active_record/3.1/relation_extensions'
     require 'squeel/adapters/active_record/3.1/preloader_extensions'
     require 'squeel/adapters/active_record/3.1/context'
@@ -24,6 +25,7 @@ when 3
     ActiveRecord::Associations::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependencyExtensions
     ActiveRecord::Associations::Preloader.send :include, Squeel::Adapters::ActiveRecord::PreloaderExtensions
   else
+    require 'squeel/adapters/active_record/compat'
     require 'squeel/adapters/active_record/relation_extensions'
     require 'squeel/adapters/active_record/preloader_extensions'
     require 'squeel/adapters/active_record/context'

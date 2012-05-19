@@ -55,10 +55,16 @@ module Squeel
         predicate.should eq '1=1'
       end
 
-      it 'creates Grouping nodes' do
+      it 'visits Grouping nodes' do
         predicate = @v.accept(dsl{_(`foo`)})
         predicate.should be_a Arel::Nodes::Grouping
         predicate.to_sql.should eq '(foo)'
+      end
+
+      it 'visits Grouping nodes on the attribute side of predicates' do
+        predicate = @v.accept(dsl{_(`foo`) == `foo`})
+        predicate.should be_a Arel::Nodes::Equality
+        predicate.to_sql.should eq '(foo) = foo'
       end
 
       it 'creates OR nodes against a Literal' do
