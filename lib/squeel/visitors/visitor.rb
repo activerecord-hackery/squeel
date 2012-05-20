@@ -106,6 +106,29 @@ module Squeel
         retry
       end
 
+      # Visit an array, which involves accepting any values we know how to
+      # accept, and skipping the rest.
+      #
+      # @param [Array] o The Array to visit
+      # @param parent The current parent object in the context
+      # @return [Array] The visited array
+      def visit_Array(o, parent)
+        o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
+      end
+
+      # Pass an object through the visitor unmodified. This is
+      # in order to allow objects that don't require modification
+      # to be handled by ARel directly.
+      #
+      # @param object The object to visit
+      # @param parent The object's parent within the context
+      # @return The object, unmodified
+      def visit_passthrough(object, parent)
+        object
+      end
+      alias :visit_Fixnum :visit_passthrough
+      alias :visit_Bignum :visit_passthrough
+
     end
   end
 end

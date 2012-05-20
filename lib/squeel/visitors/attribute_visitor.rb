@@ -24,16 +24,6 @@ module Squeel
         end.flatten
       end
 
-      # Visit elements of an array that it's possible to visit -- leave other
-      # elements untouched.
-      #
-      # @param [Array] o The array to visit
-      # @param parent The array's parent within the context
-      # @return [Array] The flattened array with elements visited
-      def visit_Array(o, parent)
-        o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
-      end
-
       # Visit a symbol. This will return an attribute named after the symbol against
       # the current parent's contextualized table.
       #
@@ -101,7 +91,7 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal
+          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
@@ -123,7 +113,7 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal
+          when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Symbol, Nodes::Stub
             Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])

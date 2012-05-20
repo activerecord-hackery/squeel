@@ -33,16 +33,6 @@ module Squeel
         end
       end
 
-      # Visit an array, which involves accepting any values we know how to
-      # accept, and skipping the rest.
-      #
-      # @param [Array] o The Array to visit
-      # @param parent The current parent object in the context
-      # @return [Array] The visited array
-      def visit_Array(o, parent)
-        o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
-      end
-
       # Visit ActiveRecord::Base objects. These should be converted to their
       # id before being used in a comparison.
       #
@@ -140,7 +130,7 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::As, Nodes::Literal
+          when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when ActiveRecord::Relation
             arg.arel.ast
@@ -176,7 +166,7 @@ module Squeel
       def visit_Squeel_Nodes_Operation(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::As, Nodes::Literal
+          when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Nodes::KeyPath
             can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
