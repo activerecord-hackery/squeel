@@ -1,5 +1,3 @@
-require 'squeel/predicate_methods'
-
 module Squeel
   module Nodes
     # A node that represents an SQL function call
@@ -8,6 +6,7 @@ module Squeel
       include PredicateMethods
       include PredicateOperators
       include Operators
+      include Ordering
 
       alias :== :eq
       alias :'^' :not_eq
@@ -44,14 +43,6 @@ module Squeel
       def as(alias_name)
         @alias = alias_name.to_s
         self
-      end
-
-      def asc
-        Order.new self, 1
-      end
-
-      def desc
-        Order.new self, -1
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be

@@ -22,7 +22,6 @@ module Squeel
 
 end
 
-require 'squeel/nodes'
 require 'squeel/dsl'
 require 'squeel/visitors'
 require 'squeel/adapters/active_record'

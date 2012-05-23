@@ -1,7 +1,3 @@
-require 'squeel/predicate_methods'
-require 'squeel/nodes/operators'
-require 'squeel/nodes/aliasing'
-
 module Squeel
   module Nodes
     # Literal nodes are a container for raw SQL.
@@ -10,6 +6,7 @@ module Squeel
       include PredicateOperators
       include Operators
       include Aliasing
+      include Ordering
 
       attr_reader :expr
 
@@ -28,18 +25,6 @@ module Squeel
       alias :>= :gteq
       alias :< :lt
       alias :<= :lteq
-
-      # Create an ascending Order node with this Literal as its expression
-      # @return [Order] The new Order node
-      def asc
-        Order.new self, 1
-      end
-
-      # Create a descending Order node with this Literal as its expression
-      # @return [Order] The new Order node
-      def desc
-        Order.new self, -1
-      end
 
       # Object comparison
       def eql?(other)

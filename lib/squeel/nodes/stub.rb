@@ -1,7 +1,3 @@
-require 'squeel/predicate_methods'
-require 'squeel/nodes/operators'
-require 'squeel/nodes/aliasing'
-
 module Squeel
   module Nodes
     # Stub nodes are basically a container for a Symbol that can have handy predicate
@@ -11,6 +7,7 @@ module Squeel
       include PredicateMethods
       include Operators
       include Aliasing
+      include Ordering
 
       alias :== :eq
       alias :'^' :not_eq
@@ -92,18 +89,6 @@ module Squeel
       # @return [KeyPath] An absolute KeyPath, containing only this Stub
       def ~
         KeyPath.new [self], true
-      end
-
-      # Create an ascending Order node with this Stub's symbol as its expression
-      # @return [Order] The new Order node
-      def asc
-        Order.new self.symbol, 1
-      end
-
-      # Create a descending Order node with this Stub's symbol as its expression
-      # @return [Order] The new Order node
-      def desc
-        Order.new self.symbol, -1
       end
 
       # Create a Function node for a function named the same as this Stub and with the given arguments

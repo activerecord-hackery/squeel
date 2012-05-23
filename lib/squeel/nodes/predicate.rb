@@ -1,6 +1,3 @@
-require 'squeel/predicate_methods'
-require 'squeel/nodes/predicate_operators'
-
 module Squeel
   module Nodes
     # This node is essentially a container that will result in ARel predicate nodes

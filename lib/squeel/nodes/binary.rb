@@ -1,5 +1,3 @@
-require 'squeel/nodes/predicate_operators'
-
 module Squeel
   module Nodes
     # A node that represents an operation with two operands.
