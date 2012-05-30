@@ -54,6 +54,16 @@ module Squeel
         visit(o.endpoint, parent)
       end
 
+      # Visit a symbol. This will return an attribute named after the symbol against
+      # the current parent's contextualized table.
+      #
+      # @param [Symbol] o The symbol to visit
+      # @param parent The symbol's parent within the context
+      # @return [Arel::Attribute] An attribute on the contextualized parent table
+      def visit_Symbol(o, parent)
+        contextualize(parent)[o]
+      end
+
       # Visit a Stub by converting it to an ARel attribute
       #
       # @param [Nodes::Stub] o The Stub to visit
@@ -229,6 +239,15 @@ module Squeel
       # @return [Arel::Nodes::Grouping] An ARel Grouping node, with expression visited
       def visit_Squeel_Nodes_Grouping(o, parent)
         Arel::Nodes::Grouping.new(visit(o.expr, parent))
+      end
+
+      # Visit a Squeel As node, resulting in am ARel As node.
+      #
+      # @param [Nodes::As] The As node to visit
+      # @param parent The parent object in the context
+      # @return [Arel::Nodes::As] The resulting as node.
+      def visit_Squeel_Nodes_As(o, parent)
+        visit(o.left, parent).as(o.right)
       end
 
       # @return [Boolean] Whether the given value implies a context change
