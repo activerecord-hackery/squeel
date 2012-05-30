@@ -97,7 +97,7 @@ module Squeel
             relation.join_dependency.join_associations.should have(6).items
             arel.to_sql.should match /INNER JOIN "people" "parents_people_3" ON "parents_people_3"."id" = "children_people_3"."parent_id"/
           end
-          
+
           it 'respects :uniq option on associations' do
             Article.first.uniq_commenters.length.should eq Article.first.uniq_commenters.count
           end
@@ -466,6 +466,11 @@ module Squeel
             new_hotness = Person.where{name.in(Person.select{name}.where{name.in(names)})}
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
+          end
+
+          it "doesn't break #count if wheres contain InfixOperations" do
+            first_name = Person.first.name
+            Person.where{name.op('=', first_name)}.count.should eq 1
           end
 
         end
