@@ -17,11 +17,11 @@ module Squeel
 
         def find(object, parent = @base)
           if JoinPart === parent
-            object = object.to_sym if String === object
             case object
-            when Symbol, Nodes::Stub
+            when String, Symbol, Nodes::Stub
+              assoc_name = object.to_s
               @object.join_associations.detect { |j|
-                j.reflection.name == object.to_sym && j.parent == parent
+                j.reflection.name.to_s == assoc_name && j.parent == parent
               }
             when Nodes::Join
               @object.join_associations.detect { |j|
@@ -50,7 +50,7 @@ module Squeel
 
         def get_table(object)
           if [Symbol, String, Nodes::Stub].include?(object.class)
-            Arel::Table.new(object.to_sym, :engine => @engine)
+            Arel::Table.new(object.to_s, :engine => @engine)
           elsif Nodes::Join === object
             object._klass ? object._klass.arel_table : Arel::Table.new(object._name, :engine => @engine)
           elsif object.respond_to?(:aliased_table_name)

@@ -1,3 +1,9 @@
+## 1.0.3 (unreleased)
+
+* Port fix for Rails CVE-2012-2661 to Squeel.
+* Reduce risk of a potential memory leak through overzealous
+  calling to to_sym.
+
 ## 1.0.2 (2012-05-30)
 
 * Add groupings to DSL. Allows control of matched sets of

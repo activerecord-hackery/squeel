@@ -17,10 +17,10 @@ module Squeel
       # @return [Array] An array of values for use in a where or having clause
       def visit_Hash(o, parent)
         predicates = o.map do |k, v|
-          if implies_context_change?(v)
-            visit_with_context_change(k, v, parent)
+          if implies_hash_context_shift?(v)
+            visit_with_hash_context_shift(k, v, parent)
           else
-            visit_without_context_change(k, v, parent)
+            visit_without_hash_context_shift(k, v, parent)
           end
         end
 
@@ -71,7 +71,7 @@ module Squeel
       # @return [Arel::Attribute] An attribute of the parent table with the
       #   Stub's column
       def visit_Squeel_Nodes_Stub(o, parent)
-        contextualize(parent)[o.symbol]
+        contextualize(parent)[o.to_s]
       end
 
       # Visit a Literal by converting it to an ARel SqlLiteral
@@ -105,7 +105,7 @@ module Squeel
 
         case value
         when Nodes::KeyPath
-          value = can_visit?(value.endpoint) ? visit(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_sym]
+          value = can_visit?(value.endpoint) ? visit(value, parent) : contextualize(traverse(value, parent))[value.endpoint.to_s]
         when ActiveRecord::Relation
           value = visit(
             value.select_values.empty? ? value.select(value.klass.arel_table[value.klass.primary_key]) : value,
@@ -145,9 +145,9 @@ module Squeel
           when ActiveRecord::Relation
             arg.arel.ast
           when Nodes::KeyPath
-            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
+            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_s]
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
+            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
           else
             quote arg
           end
@@ -179,9 +179,9 @@ module Squeel
           when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Nodes::KeyPath
-            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_sym]
+            can_visit?(arg.endpoint) ? visit(arg, parent) : contextualize(traverse(arg, parent))[arg.endpoint.to_s]
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
+            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
           else
             quote arg
           end
@@ -252,7 +252,7 @@ module Squeel
 
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider
-      def implies_context_change?(v)
+      def implies_hash_context_shift?(v)
         case v
         when Hash, Nodes::Predicate, Nodes::Unary, Nodes::Binary, Nodes::Nary, Nodes::Sifter
           true
@@ -270,7 +270,9 @@ module Squeel
       # @param v The hash value
       # @param parent The current parent object in the context
       # @return The visited value
-      def visit_with_context_change(k, v, parent)
+      def visit_with_hash_context_shift(k, v, parent)
+        @hash_context_depth += 1
+
         parent = case k
           when Nodes::KeyPath
             traverse(k, parent, true)
@@ -290,6 +292,8 @@ module Squeel
           of key = #{k} and value = #{v}"
           END
         end
+      ensure
+        @hash_context_depth -= 1
       end
 
       # Create a predicate for a given key/value pair. If the value is
@@ -300,12 +304,12 @@ module Squeel
       # @param v The hash value
       # @param parent The current parent object in the context
       # @return An ARel predicate
-      def visit_without_context_change(k, v, parent)
+      def visit_without_hash_context_shift(k, v, parent)
         case v
         when Nodes::Stub, Symbol
-          v = contextualize(parent)[v.to_sym]
+          v = contextualize(parent)[v.to_s]
         when Nodes::KeyPath # If we could visit the endpoint, we wouldn't be here
-          v = contextualize(traverse(v, parent))[v.endpoint.to_sym]
+          v = contextualize(traverse(v, parent))[v.endpoint.to_s]
         end
 
         case k
@@ -317,11 +321,11 @@ module Squeel
           visit(k % quote_for_node(k.endpoint, v), parent)
         else
           attr_name = k.to_s
-          attribute = if attr_name.include?('.')
+          attribute = if !hash_context_shifted? && attr_name.include?('.')
               table_name, attr_name = attr_name.split(/\./, 2)
-              Arel::Table.new(table_name.to_sym, :engine => engine)[attr_name.to_sym]
+              Arel::Table.new(table_name.to_s, :engine => engine)[attr_name.to_s]
             else
-              contextualize(parent)[k.to_sym]
+              contextualize(parent)[attr_name]
             end
           arel_predicate_for(attribute, v, parent)
         end

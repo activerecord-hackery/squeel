@@ -16,10 +16,10 @@ module Squeel
       # @return [Array] An array of values for use in an ordering, grouping, etc.
       def visit_Hash(o, parent)
         o.map do |k, v|
-          if implies_context_change?(v)
-            visit_with_context_change(k, v, parent)
+          if implies_hash_context_shift?(v)
+            visit_with_hash_context_shift(k, v, parent)
           else
-            visit_without_context_change(k, v, parent)
+            visit_without_hash_context_shift(k, v, parent)
           end
         end.flatten
       end
@@ -41,7 +41,7 @@ module Squeel
       # @param parent The stub's parent within the context
       # @return [Arel::Attribute] An attribute on the contextualized parent table
       def visit_Squeel_Nodes_Stub(o, parent)
-        contextualize(parent)[o.symbol]
+        contextualize(parent)[o.to_s]
       end
 
       # Visit a Literal by converting it to an ARel SqlLiteral
@@ -94,7 +94,7 @@ module Squeel
           when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
+            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
           else
             quote arg
           end
@@ -116,7 +116,7 @@ module Squeel
           when Nodes::Function, Nodes::KeyPath, Nodes::As, Nodes::Literal, Nodes::Grouping
             visit(arg, parent)
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_sym])
+            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
           else
             quote arg
           end
@@ -166,7 +166,7 @@ module Squeel
 
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider
-      def implies_context_change?(v)
+      def implies_hash_context_shift?(v)
         can_visit?(v)
       end
 
@@ -177,7 +177,9 @@ module Squeel
       # @param v The hash value
       # @param parent The current parent object in the context
       # @return The visited value
-      def visit_with_context_change(k, v, parent)
+      def visit_with_hash_context_shift(k, v, parent)
+        @hash_context_depth += 1
+
         parent = case k
           when Nodes::KeyPath
             traverse(k, parent, true)
@@ -190,6 +192,8 @@ module Squeel
         else
           can_visit?(v) ? visit(v, parent || k) : v
         end
+      ensure
+        @hash_context_depth -= 1
       end
 
       # If there is no context change, we'll just return the value unchanged,
@@ -201,7 +205,7 @@ module Squeel
       # @param parent The current parent object in the context
       # @return The same value we just received. Yeah, this method's pretty pointless,
       #   for now, and only here for consistency's sake.
-      def visit_without_context_change(k, v, parent)
+      def visit_without_hash_context_shift(k, v, parent)
         v
       end
 

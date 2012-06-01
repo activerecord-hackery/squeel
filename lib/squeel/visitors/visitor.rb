@@ -14,6 +14,7 @@ module Squeel
       # @param [Context] context The context to use for node visitation.
       def initialize(context = nil)
         @context = context
+        @hash_context_depth = 0
       end
 
       # Accept an object.
@@ -48,6 +49,16 @@ module Squeel
       # A hash that caches the method name to use for a visitor for a given class
       DISPATCH = Hash.new do |hash, klass|
         hash[klass] = "visit_#{(klass.name || '').gsub('::', '_')}"
+      end
+
+      # If we're visiting stuff in a hash, it's good to check whether or
+      # not we've shifted context already. If we have, we may want to use
+      # caution as it pertains to certain input, in case it's untrusted.
+      # See CVE-2012-2661 for info.
+      #
+      # @return [Boolean] Whether we're within a new context.
+      def hash_context_shifted?
+        @hash_context_depth > 0
       end
 
       # Important to avoid accidentally allowing the default ARel visitor's

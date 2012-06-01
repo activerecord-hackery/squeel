@@ -26,14 +26,14 @@ module Squeel
       it 'creates Equality nodes for simple hashes' do
         predicate = @v.accept(:name => 'Joe')
         predicate.should be_a Arel::Nodes::Equality
-        predicate.left.name.should eq :name
+        predicate.left.name.to_s.should eq 'name'
         predicate.right.should eq 'Joe'
       end
 
       it 'creates In nodes for simple hashes with an array as a value' do
         predicate = @v.accept(:name => ['Joe', 'Bob'])
         predicate.should be_a Arel::Nodes::In
-        predicate.left.name.should eq :name
+        predicate.left.name.to_s.should eq 'name'
         predicate.right.should eq ['Joe', 'Bob']
       end
 
@@ -112,14 +112,14 @@ module Squeel
       it 'allows a subquery on the value side of an explicit predicate' do
         predicate = @v.accept dsl{name.in(Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
         predicate.should be_a Arel::Nodes::In
-        predicate.left.name.should eq :name
+        predicate.left.name.to_s.should eq 'name'
         predicate.right.should be_a Arel::Nodes::SelectStatement
       end
 
       it 'allows a subquery on the value side of an implicit predicate' do
         predicate = @v.accept(:name => Person.select{name}.where{name.in(['Aric Smith', 'Gladyce Kulas'])})
         predicate.should be_a Arel::Nodes::In
-        predicate.left.name.should eq :name
+        predicate.left.name.to_s.should eq 'name'
         predicate.right.should be_a Arel::Nodes::SelectStatement
       end
 
@@ -150,14 +150,14 @@ module Squeel
       it 'converts ActiveRecord::Base objects to their id' do
         predicate = @v.accept(:id => Person.first)
         predicate.should be_a Arel::Nodes::Equality
-        predicate.left.name.should eq :id
+        predicate.left.name.to_s.should eq 'id'
         predicate.right.should eq 1
       end
 
       it 'converts arrays of ActiveRecord::Base objects to their ids' do
         predicate = @v.accept(:id => [Person.first, Person.last])
         predicate.should be_a Arel::Nodes::In
-        predicate.left.name.should eq :id
+        predicate.left.name.to_s.should eq 'id'
         predicate.right.should eq [1, 332]
       end
 
@@ -305,6 +305,14 @@ module Squeel
         predicate.to_sql.should match /"things"."attribute" = 'retro'/
       end
 
+      it 'does not allow "table.column" keys after context change' do
+        result = @v.accept(:id => {'articles.person_id' => 1})
+        result.should be_a Arel::Nodes::Equality
+        result.left.should be_a Arel::Attributes::Attribute
+        result.left.relation.name.should eq 'id'
+        result.left.name.to_s.should eq 'articles.person_id'
+      end
+
       it 'visits ActiveRecord::Relation values in predicates' do
         predicate = @v.accept(dsl{id >> Person.select{id}.limit(3).order{id.desc}})
         predicate.should be_a Arel::Nodes::In
@@ -367,7 +375,7 @@ module Squeel
         predicate = @v.accept(:children => Nodes::Stub.new(:children).name.eq('Joe'))
         predicate.should be_a Arel::Nodes::Equality
         predicate.left.relation.table_alias.should eq 'children_people_2'
-        predicate.left.name.should eq :name
+        predicate.left.name.to_s.should eq 'name'
         predicate.right.should eq 'Joe'
       end
 
