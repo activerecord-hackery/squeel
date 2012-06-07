@@ -1,8 +1,9 @@
-## 1.0.3 (unreleased)
+## 1.0.3 (2012-06-07)
 
 * Port fix for Rails CVE-2012-2661 to Squeel.
 * Reduce risk of a potential memory leak through overzealous
   calling to to_sym.
+* Allow right-hand relation conditions to prevail in Relation#merge.
 
 ## 1.0.2 (2012-05-30)
 
