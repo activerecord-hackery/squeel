@@ -32,38 +32,19 @@ module Squeel
           )
         end
 
-        # We need to be able to support merging two relations that have a different
-        # base class. Stock ActiveRecord doesn't have to do anything too special, because
-        # it's already created predicates out of the where_values by now, and they're
-        # already bound to the proper table.
-        #
-        # Squeel, on the other hand, needs to do its best to ensure the predicates are still
-        # winding up against the proper table. The most "correct" way I can think of to do
-        # this is to try to emulate the default AR behavior -- that is, de-squeelifying
-        # the *_values, erm... values by visiting them and converting them to ARel nodes
-        # before merging. Merging relations is a nifty little trick, but it's another
-        # little corner of ActiveRecord where the magic quickly fades. :(
-        def merge(r)
-          if relation_with_different_base?(r)
-            r = r.clone.visit!
+        # We need to be able to support merging two relations without having
+        # to get our hooks too deeply into ActiveRecord. AR's relation
+        # merge functionality is very cool, but relatively complex, to
+        # handle the various edge cases. Our best shot at avoiding strange
+        # behavior with Squeel loaded is to visit the *_values arrays in
+        # the relations we're merging, and then use the default AR merge
+        # code on the result.
+        def merge(r, relations_visited = false)
+          if relations_visited
+            super(r)
+          else
+            clone.visit!.merge(r.clone.visit!, true)
           end
-
-          super(r)
-        end
-
-        def relation_with_different_base?(r)
-          ::ActiveRecord::Relation === r &&
-          base_class.name != r.klass.base_class.name
-        end
-
-        def prepare_relation_for_association_merge!(r, association_name)
-          r.where_values.map! {|w| Squeel::Visitors::PredicateVisitor.can_visit?(w) ? {association_name => w} : w}
-          r.having_values.map! {|h| Squeel::Visitors::PredicateVisitor.can_visit?(h) ? {association_name => h} : h}
-          r.group_values.map! {|g| Squeel::Visitors::AttributeVisitor.can_visit?(g) ? {association_name => g} : g}
-          r.order_values.map! {|o| Squeel::Visitors::AttributeVisitor.can_visit?(o) ? {association_name => o} : o}
-          r.select_values.map! {|s| Squeel::Visitors::AttributeVisitor.can_visit?(s) ? {association_name => s} : s}
-          r.joins_values.map! {|j| [Symbol, Hash, Nodes::Stub, Nodes::Join, Nodes::KeyPath].include?(j.class) ? {association_name => j} : j}
-          r.includes_values.map! {|i| [Symbol, Hash, Nodes::Stub, Nodes::Join, Nodes::KeyPath].include?(i.class) ? {association_name => i} : i}
         end
 
         def visit!

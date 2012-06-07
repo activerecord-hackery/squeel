@@ -672,6 +672,15 @@ module Squeel
             sql.should match /"articles"."title" = 'Condition'/
           end
 
+          it 'uses the last condition in the case of a conflicting where' do
+            relation = Person.where{name == 'Ernie'}.merge(
+              Person.where{name == 'Bert'}
+            )
+            sql = relation.to_sql
+            sql.should_not match /Ernie/
+            sql.should match /Bert/
+          end
+
         end
 
         describe '#to_a' do
