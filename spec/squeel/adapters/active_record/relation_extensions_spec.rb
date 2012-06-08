@@ -681,6 +681,11 @@ module Squeel
             sql.should match /Bert/
           end
 
+          it "doesn't ruin everything when a scope returns nil" do
+            relation = Person.nil_scope
+            relation.should eq Person.scoped
+          end
+
         end
 
         describe '#to_a' do

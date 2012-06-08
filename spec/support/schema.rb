@@ -21,6 +21,8 @@ class Person < ActiveRecord::Base
   has_many   :outgoing_messages, :class_name => 'Message', :foreign_key => :author_id
   has_many   :incoming_messages, :class_name => 'Message', :foreign_key => :recipient_id
 
+  scope :nil_scope, lambda { nil }
+
   sifter :name_starts_or_ends_with do |value|
     (name =~ "#{value}%") | (name =~ "%#{value}")
   end

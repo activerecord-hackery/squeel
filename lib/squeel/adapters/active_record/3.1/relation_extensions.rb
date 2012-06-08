@@ -40,7 +40,7 @@ module Squeel
         # the relations we're merging, and then use the default AR merge
         # code on the result.
         def merge(r, relations_visited = false)
-          if relations_visited
+          if relations_visited or not ::ActiveRecord::Relation === r
             super(r)
           else
             clone.visit!.merge(r.clone.visit!, true)
