@@ -686,6 +686,11 @@ module Squeel
             relation.should eq Person.scoped
           end
 
+          it "doesn't ruin everything when a group exists" do
+            relation = Person.scoped.merge(Person.group{name})
+            count_hash = relation.count
+          end
+
         end
 
         describe '#to_a' do

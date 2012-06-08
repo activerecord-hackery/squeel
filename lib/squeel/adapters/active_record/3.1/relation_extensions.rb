@@ -63,7 +63,8 @@ module Squeel
 
           @where_values = predicate_viz.accept((@where_values - ['']).uniq)
           @having_values = predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})
-          @group_values = attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})
+          # FIXME: AR barfs on ARel attributes in group_values. Workaround?
+          # @group_values = attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})
           @order_values = attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?})
           @select_values = attribute_viz.accept(@select_values.uniq)
 
