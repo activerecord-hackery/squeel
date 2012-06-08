@@ -1,3 +1,7 @@
+## 1.0.4 (2012-06-07)
+
+* Fix regression in merge causing issues with scopes returning nil
+
 ## 1.0.3 (2012-06-07)
 
 * Port fix for Rails CVE-2012-2661 to Squeel.
