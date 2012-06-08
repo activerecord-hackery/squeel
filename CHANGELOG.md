@@ -1,3 +1,8 @@
+## 1.0.5 (2012-06-08)
+
+* Stop visiting group_values on merge. AR hates ARel attributes in
+  group_values.
+
 ## 1.0.4 (2012-06-07)
 
 * Fix regression in merge causing issues with scopes returning nil
