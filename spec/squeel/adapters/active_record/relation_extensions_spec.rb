@@ -258,6 +258,14 @@ module Squeel
             block.debug_sql.should eq standard.debug_sql
           end
 
+          it 'eager loads belongs_to_associations' do
+            relation = Article.includes(:person).
+              where{person.name == 'Ernie'}
+            sql = relation.debug_sql
+            sql.should match /LEFT OUTER JOIN "people"/
+            sql.should match /"people"."name" = 'Ernie'/
+          end
+
           it 'eager loads polymorphic belongs_to associations' do
             relation = Note.includes{notable(Article)}.where{{notable(Article) => {title => 'hey'}}}
             relation.debug_sql.should match /"notes"."notable_type" = 'Article'/
