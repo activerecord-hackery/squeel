@@ -200,6 +200,13 @@ module Squeel
 
       private
 
+      # Prevent a cloned keypath from inadvertently modifying the
+      # path of its source.
+      def initialize_copy(orig)
+        super
+        @path = @path.dup
+      end
+
       # Raises a NoMethodError manually, bypassing #method_missing.
       # Used by special-case operator overrides.
       def no_method_error(method_id)

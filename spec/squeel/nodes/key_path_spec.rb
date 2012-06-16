@@ -106,6 +106,14 @@ module Squeel
         expect {-@k.third.fourth}.to raise_error NoMethodError
       end
 
+      it 'dups its path when it is duped' do
+        k1 = KeyPath.new([:one, :two])
+        k2 = k1.dup
+        k2.three
+        k2.path.should have(3).items
+        k1.path.should have(2).items
+      end
+
     end
   end
 end
