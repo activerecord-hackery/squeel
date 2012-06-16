@@ -1,3 +1,7 @@
+## 1.0.6 (2012-06-16)
+
+* Prevent cloned KeyPaths from modifying each other. Fixes #135
+
 ## 1.0.5 (2012-06-08)
 
 * Stop visiting group_values on merge. AR hates ARel attributes in
