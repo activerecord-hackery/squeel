@@ -20,7 +20,7 @@ when 3
     require 'squeel/adapters/active_record/3.1/relation_extensions'
     require 'squeel/adapters/active_record/3.1/preloader_extensions'
     require 'squeel/adapters/active_record/3.1/context'
-    
+
     ActiveRecord::Relation.send :include, Squeel::Adapters::ActiveRecord::RelationExtensions
     ActiveRecord::Associations::JoinDependency.send :include, Squeel::Adapters::ActiveRecord::JoinDependencyExtensions
     ActiveRecord::Associations::Preloader.send :include, Squeel::Adapters::ActiveRecord::PreloaderExtensions

@@ -258,12 +258,25 @@ module Squeel
             block.debug_sql.should eq standard.debug_sql
           end
 
-          it 'eager loads belongs_to_associations' do
-            relation = Article.includes(:person).
-              where{person.name == 'Ernie'}
-            sql = relation.debug_sql
-            sql.should match /LEFT OUTER JOIN "people"/
-            sql.should match /"people"."name" = 'Ernie'/
+          it 'eager loads belongs_to associations' do
+            queries = queries_for do
+              Article.includes(:person).
+                      where{person.name == 'Ernie'}.all
+            end
+            queries.should have(1).item
+            queries.first.should match /LEFT OUTER JOIN "people"/
+            queries.first.should match /"people"."name" = 'Ernie'/
+          end
+
+          it 'eager loads belongs_to associations on models with default_scopes' do
+            queries = queries_for do
+              PersonNamedBill.includes(:parent).
+                              where{parent.name == 'Ernie'}.all
+            end
+            queries.should have(1).item
+            queries.first.should match /LEFT OUTER JOIN "people"/
+            queries.first.should match /"people"."name" = 'Bill'/
+            queries.first.should match /"parents_people"."name" = 'Ernie'/
           end
 
           it 'eager loads polymorphic belongs_to associations' do
@@ -688,6 +701,13 @@ module Squeel
             sql.should_not match /Ernie/
             sql.should match /Bert/
           end
+
+          it 'uses the given equality condition in the case of a conflicting where from a default scope in AR >= 3.1' do
+            relation = PersonNamedBill.where{name == 'Ernie'}
+            sql = relation.to_sql
+            sql.should_not match /Bill/
+            sql.should match /Ernie/
+          end unless ::ActiveRecord::VERSION::MINOR == 0
 
           it "doesn't ruin everything when a scope returns nil" do
             relation = Person.nil_scope

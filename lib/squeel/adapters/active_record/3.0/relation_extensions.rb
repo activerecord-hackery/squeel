@@ -39,12 +39,16 @@ module Squeel
         # behavior with Squeel loaded is to visit the *_values arrays in
         # the relations we're merging, and then use the default AR merge
         # code on the result.
-        def merge(r, relations_visited = false)
-          if relations_visited or not ::ActiveRecord::Relation === r
+        def merge(r, skip_visit = false)
+          if skip_visit or not ::ActiveRecord::Relation === r
             super(r)
           else
-            clone.visit!.merge(r.clone.visit!, true)
+            visited.merge(r.visited, true)
           end
+        end
+
+        def visited
+          clone.visit!
         end
 
         def visit!

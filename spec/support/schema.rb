@@ -37,7 +37,8 @@ end
 
 class PersonNamedBill < ActiveRecord::Base
   self.table_name = 'people'
-  default_scope where(:name => 'Bill')
+  belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
+  default_scope where{name == 'Bill'}
 end
 
 class Message < ActiveRecord::Base
