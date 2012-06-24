@@ -99,9 +99,8 @@ module Squeel
             quote arg
           end
         end
-        func = Arel::Nodes::NamedFunction.new(o.name, args)
 
-        o.alias ? func.as(o.alias) : func
+        Arel::Nodes::NamedFunction.new(o.name, args)
       end
 
       # Visit an Operation node. Each operand will be accepted or
@@ -134,7 +133,8 @@ module Squeel
         else
           Arel.sql("#{arel_visitor.accept(args[0])} #{o.operator} #{arel_visitor.accept(args[1])}")
         end
-        o.alias ? op.as(o.alias) : op
+
+        op
       end
 
       # Visit a Squeel Grouping node, resulting in am ARel Grouping node.

@@ -7,6 +7,7 @@ module Squeel
       include PredicateOperators
       include Operators
       include Ordering
+      include Aliasing
 
       alias :== :eq
       alias :'^' :not_eq
@@ -26,23 +27,11 @@ module Squeel
       # @return [Array] The arguments to be passed to the SQL function
       attr_reader :args
 
-      # @return [String] The SQL function's alias
-      # @return [NilClass] If no alias
-      attr_reader :alias
-
       # Create a node representing an SQL Function with the given name and arguments
       # @param [Symbol] name The function name
       # @param [Array] args The array of arguments to pass to the function.
       def initialize(name, args)
         @name, @args = name, args
-      end
-
-      # Set an alias for the function
-      # @param [String, Symbol] The alias name
-      # @return [Function] This function with the new alias value.
-      def as(alias_name)
-        @alias = alias_name.to_s
-        self
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be

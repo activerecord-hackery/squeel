@@ -152,9 +152,8 @@ module Squeel
             quote arg
           end
         end
-        func = Arel::Nodes::NamedFunction.new(o.name, args)
 
-        o.alias ? func.as(o.alias) : func
+        Arel::Nodes::NamedFunction.new(o.name, args)
       end
 
       # Visit an ActiveRecord Relation, returning an Arel::SelectManager
@@ -199,7 +198,8 @@ module Squeel
         else
           Arel::Nodes::InfixOperation.new(o.operator, args[0], args[1])
         end
-        o.alias ? op.as(o.alias) : op
+
+        op
       end
 
       # Visit a Squeel And node, returning an ARel Grouping containing an

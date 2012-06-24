@@ -153,20 +153,6 @@ module Squeel
         negated.expr.should eq @o
       end
 
-      describe '#as' do
-
-        it 'aliases the function' do
-          @o.as('the_alias')
-          @o.alias.should eq 'the_alias'
-        end
-
-        it 'casts the alias to a string' do
-          @o.as(:the_alias)
-          @o.alias.should eq 'the_alias'
-        end
-
-      end
-
     end
   end
 end

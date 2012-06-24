@@ -422,8 +422,22 @@ module Squeel
             aric.last_article_id.should eq Article.where(:person_id => 1).last.id
           end
 
-          it "doesn't break #count if non-strings are used" do
+        end
+
+        describe '#count' do
+
+          it 'works with non-strings in select' do
             Article.select{distinct(title)}.count.should eq 51
+          end
+
+          it 'works with non-strings in wheres' do
+            first_name = Person.first.name
+            Person.where{name.op('=', first_name)}.count.should eq 1
+          end
+
+          it 'works with non-strings in group' do
+            counts = Person.group{name.op('||', '-diddly')}.count
+            counts.should eq Person.group{name.op('||', '-diddly')}.count
           end
 
         end
@@ -487,11 +501,6 @@ module Squeel
             new_hotness = Person.where{name.in(Person.select{name}.where{name.in(names)})}
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
-          end
-
-          it "doesn't break #count if wheres contain InfixOperations" do
-            first_name = Person.first.name
-            Person.where{name.op('=', first_name)}.count.should eq 1
           end
 
         end
