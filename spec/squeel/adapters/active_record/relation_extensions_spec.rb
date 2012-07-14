@@ -593,9 +593,21 @@ module Squeel
           end
 
           it 'builds options with a block' do
-            block = Person.reorder{id}
+            block = @standard.reorder{id}
             block.to_sql.should_not eq @standard.to_sql
             block.to_sql.should match /ORDER BY "people"."id"/
+          end
+
+          it 'drops order by clause when passed nil' do
+            block = @standard.reorder(nil)
+            sql = block.to_sql
+            sql.should_not match /ORDER BY/
+          end
+
+          it 'drops order by clause when passed nil if reversed' do
+            block = @standard.reverse_order.reorder(nil)
+            sql = block.to_sql
+            sql.should_not match /ORDER BY/
           end
 
         end

@@ -83,9 +83,9 @@ module Squeel
           arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
           order = @reorder_value ? @reorder_value : @order_values
-          order = attribute_viz.accept(order.uniq.reject{|o| o.blank?})
+          order = attribute_viz.accept(order)
           order = reverse_sql_order(attrs_to_orderings(order)) if @reverse_order_value
-          arel.order(*order) unless order.empty?
+          arel.order(*order.uniq.reject{|o| o.blank?}) unless order.empty?
 
           build_select(arel, attribute_viz.accept(@select_values.uniq))
 

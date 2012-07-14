@@ -1,3 +1,7 @@
+## 1.0.7 (2012-07-14)
+
+* Prevent reorder(nil) on reversed SQL from adding an order by id.
+
 ## 1.0.6 (2012-06-16)
 
 * Prevent cloned KeyPaths from modifying each other. Fixes #135
