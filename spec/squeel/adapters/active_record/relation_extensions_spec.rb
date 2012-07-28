@@ -45,6 +45,22 @@ module Squeel
 
         end
 
+        describe 'finding by attribute' do
+
+          it 'returns nil when passed an empty string' do
+            Person.find_by_id('').should be_nil
+          end
+
+          it 'casts an empty string to the proper value' do
+            queries = queries_for do
+              Person.find_by_id('')
+            end
+            queries.should have(1).query
+            queries.first.should match /"people"."id" = 0/
+          end
+
+        end
+
         describe '#build_arel' do
 
           it 'joins associations' do
