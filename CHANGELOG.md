@@ -1,3 +1,8 @@
+## 1.0.8 (2012-07-28)
+
+* Fix an issue with properly casting values to column type when used
+  on Rails 3.0.x.
+
 ## 1.0.7 (2012-07-14)
 
 * Prevent reorder(nil) on reversed SQL from adding an order by id.
