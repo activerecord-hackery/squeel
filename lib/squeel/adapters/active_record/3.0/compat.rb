@@ -10,7 +10,11 @@ module Arel
     alias :table_name :name
 
     def [] name
-      ::Arel::Attribute.new self, name.to_sym
+      if table_exists?
+        columns.find { |column| column.name == name.to_sym }
+      else
+        ::Arel::Attribute.new self, name.to_sym
+      end
     end
   end
 
