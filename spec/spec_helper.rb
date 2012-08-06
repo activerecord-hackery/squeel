@@ -29,6 +29,8 @@ end
 Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
   require f
 end
+require File.expand_path('../support/schema.rb', __FILE__)
+require File.expand_path('../support/models.rb', __FILE__)
 
 Sham.define do
   name     { Faker::Name.name }
@@ -45,13 +47,7 @@ RSpec.configure do |config|
     puts '=' * 80
     puts "Running specs against ActiveRecord #{ActiveRecord::VERSION::STRING} and ARel #{Arel::VERSION}..."
     puts '=' * 80
-    require File.expand_path('../support/schema.rb', __FILE__)
-    Schema.create
-    require File.expand_path('../support/models.rb', __FILE__)
-    Dir[File.expand_path('../blueprints/*.rb', __FILE__)].each do |f|
-      require f
-    end
-    Schema.make_spec_data
+    Models.make
   end
   config.before(:all)   { Sham.reset(:before_all) }
   config.before(:each)  { Sham.reset(:before_each) }

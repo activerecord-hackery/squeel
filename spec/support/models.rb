@@ -65,3 +65,35 @@ end
 class Note < ActiveRecord::Base
   belongs_to :notable, :polymorphic => true
 end
+
+Dir[File.expand_path('../../blueprints/*.rb', __FILE__)].each do |f|
+  require f
+end
+
+class Models
+  def self.make
+    10.times do
+      person = Person.make
+      2.times do
+        UnidentifiedObject.create(:person => person, :name => Sham.object_name)
+      end
+      Note.make(:notable => person)
+      3.times do
+        article = Article.make(:person => person)
+        3.times do
+          article.tags = [Tag.make, Tag.make, Tag.make]
+        end
+        Note.make(:notable => article)
+        10.times do
+          Comment.make(:article => article)
+        end
+      end
+      2.times do
+        Comment.make(:person => person)
+      end
+    end
+
+    Comment.make(:body => 'First post!', :article => Article.make(:title => 'Hello, world!'))
+    Comment.make(:body => 'Last post!', :article => Article.first, :person => Article.first.commenters.first)
+  end
+end

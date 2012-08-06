@@ -1,3 +1,7 @@
+## 1.0.9 (2012-08-06)
+
+* Fix issue with duplication of order conditions in default_scope on AR 3.0.x
+
 ## 1.0.8 (2012-07-28)
 
 * Fix an issue with properly casting values to column type when used

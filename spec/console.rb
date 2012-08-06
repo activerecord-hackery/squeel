@@ -3,9 +3,11 @@ require 'machinist/active_record'
 require 'sham'
 require 'faker'
 
-Dir[File.expand_path('../../spec/{helpers,support,blueprints}/*.rb', __FILE__)].each do |f|
+Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
   require f
 end
+require File.expand_path('../support/schema.rb', __FILE__)
+require File.expand_path('../support/models.rb', __FILE__)
 
 Sham.define do
   name        { Faker::Name.name }
@@ -17,7 +19,7 @@ Sham.define do
   object_name { Faker::Lorem.words(1).first }
 end
 
-Schema.create
+Models.make
 
 require 'squeel'
 
