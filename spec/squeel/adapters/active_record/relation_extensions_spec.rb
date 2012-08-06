@@ -754,7 +754,20 @@ module Squeel
 
           it "doesn't ruin everything when a group exists" do
             relation = Person.scoped.merge(Person.group{name})
-            count_hash = relation.count
+            count_hash = {}
+            expect { count_hash = relation.count }.should_not raise_error
+            count_hash.size.should eq Person.scoped.size
+            count_hash.values.all? {|v| v == 1}.should be_true
+            count_hash.keys.should =~ Person.select{name}.map(&:name)
+          end
+
+          it "doesn't merge the default scope more than once" do
+            relation = PersonNamedBill.scoped.highly_compensated.ending_with_ill
+            sql = relation.to_sql
+            sql.scan(/"people"."name" = 'Bill'/).should have(1).item
+            sql.scan(/"people"."name" LIKE '%ill'/).should have(1).item
+            sql.scan(/"people"."salary" > 200000/).should have(1).item
+            sql.scan(/"people"."id"/).should have(1).item
           end
 
         end

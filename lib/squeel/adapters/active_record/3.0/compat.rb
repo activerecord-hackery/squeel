@@ -16,6 +16,36 @@ module Arel
         ::Arel::Attribute.new self, name.to_sym
       end
     end
+
+    def hash
+      [name, engine].hash
+    end
+
+    def eql?(other)
+      self.class == other.class &&
+        self.name == other.name &&
+        self.engine == other.engine
+    end
+    alias :== :eql?
+  end
+
+  module Attributes
+
+    class Attribute < Attribute.superclass
+
+      def hash
+        [relation, name].hash
+      end
+
+      def eql?(other)
+        self.class == other.class &&
+          self.relation == other.relation &&
+          self.name == other.name
+      end
+      alias :== :eql?
+
+    end
+
   end
 
   module Nodes
