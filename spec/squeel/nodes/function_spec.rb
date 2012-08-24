@@ -153,6 +153,12 @@ module Squeel
         negated.expr.should eq @f
       end
 
+      it 'implements equivalence check' do
+        other = Function.new(:function, [1, 2, 3])
+        array = [@f, other]
+        array.uniq.should have(1).function
+      end
+
     end
   end
 end

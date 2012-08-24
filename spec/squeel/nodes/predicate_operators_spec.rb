@@ -83,6 +83,12 @@ module Squeel
         end
       end
 
+      it 'implements equivalence check' do
+        p1 = dsl{name.eq 'blargh'}
+        p2 = dsl{name.eq 'blargh'}
+        [p1, p2].uniq.should have(1).predicate
+      end
+
     end
   end
 end

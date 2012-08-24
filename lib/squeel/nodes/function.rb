@@ -42,6 +42,16 @@ module Squeel
         nil
       end
 
+      def hash
+        [@name, @args].hash
+      end
+
+      def eql?(other)
+        self.class == other.class &&
+          self.name.eql?(other.name) &&
+          self.args.eql?(other.args)
+      end
+
     end
   end
 end

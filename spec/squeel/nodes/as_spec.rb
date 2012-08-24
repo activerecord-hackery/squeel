@@ -2,12 +2,9 @@ require 'spec_helper'
 
 module Squeel
   module Nodes
-    describe Sifter do
+    describe As do
 
-      subject { Sifter.new :title_or_body_contains, ['awesome'] }
-
-      specify { subject.name.should eq :title_or_body_contains }
-      specify { subject.args.should eq ['awesome'] }
+      subject { As.new 'name', 'alias'}
 
       it { should respond_to :& }
       it { should respond_to :| }
@@ -16,7 +13,7 @@ module Squeel
       specify { (subject & subject).should be_a And }
       specify { (subject | subject).should be_a Or }
       specify { (-subject).should be_a Not }
-      specify { [subject, Sifter.new(:title_or_body_contains, ['awesome'])].uniq.should have(1).sifter }
+      specify { [subject, As.new('name', 'alias')].uniq.should have(1).as }
 
     end
   end

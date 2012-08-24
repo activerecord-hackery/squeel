@@ -17,6 +17,10 @@ module Squeel
         @left, @right = left, right
       end
 
+      def hash
+        [@left, @right].hash
+      end
+
       # Comparison with other nodes
       def eql?(other)
         self.class.eql?(other.class) &&

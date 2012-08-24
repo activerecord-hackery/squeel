@@ -153,6 +153,12 @@ module Squeel
         negated.expr.should eq @g
       end
 
+      it 'implements equivalence check' do
+        other = Grouping.new('foo')
+        array = [@g, other]
+        array.uniq.should have(1).grouping
+      end
+
       describe '#as' do
 
         it 'aliases the function' do

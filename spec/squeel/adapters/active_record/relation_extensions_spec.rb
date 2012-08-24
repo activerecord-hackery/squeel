@@ -747,6 +747,14 @@ module Squeel
             sql.should match /Ernie/
           end unless ::ActiveRecord::VERSION::MINOR == 0
 
+          it 'allows scopes to join/query a table through two different associations and uses the correct alias' do
+            relation = Person.with_article_title('hi').
+                              with_article_condition_title('yo')
+            sql = relation.to_sql
+            sql.should match /"articles"."title" = 'hi'/
+            sql.should match /"articles_with_conditions_people"."title" = 'yo'/
+          end
+
           it "doesn't ruin everything when a scope returns nil" do
             relation = Person.nil_scope
             relation.should eq Person.scoped
@@ -768,6 +776,20 @@ module Squeel
             sql.scan(/"people"."name" LIKE '%ill'/).should have(1).item
             sql.scan(/"people"."salary" > 200000/).should have(1).item
             sql.scan(/"people"."id"/).should have(1).item
+          end
+
+          it 'merges scopes that contain functions' do
+            relation = PersonNamedBill.scoped.with_salary_equal_to(100)
+            sql = relation.to_sql
+            sql.should match /abs\("people"."salary"\) = 100/
+          end
+
+          it 'uses last equality when merging two scopes with identical function equalities' do
+            relation = PersonNamedBill.scoped.with_salary_equal_to(100).
+                                              with_salary_equal_to(200)
+            sql = relation.to_sql
+            sql.should_not match /abs\("people"."salary"\) = 100/
+            sql.should match /abs\("people"."salary"\) = 200/
           end
 
         end

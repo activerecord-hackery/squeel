@@ -14,6 +14,10 @@ module Squeel
         @expr = expr
       end
 
+      def hash
+        @expr.hash
+      end
+
       # Object comparison
       def eql?(other)
         self.class.eql?(other.class) &&

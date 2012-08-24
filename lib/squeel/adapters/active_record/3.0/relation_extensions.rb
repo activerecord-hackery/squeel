@@ -13,9 +13,9 @@ module Squeel
 
         # Returns a JoinDependency for the current relation.
         #
-        # We don't need to clear out @join_dependency by overriding #reset, because
-        # the default #reset already does this, despite never setting it anywhere that
-        # I can find. Serendipity, I say!
+        # We don't need to clear out @join_dependency by overriding #reset,
+        # because the default #reset already does this, despite never setting
+        # it anywhere that I can find. Serendipity, I say!
         def join_dependency
           @join_dependency ||= (build_join_dependency(table, @joins_values) && @join_dependency)
         end
@@ -33,17 +33,21 @@ module Squeel
         end
 
         # We need to be able to support merging two relations without having
-        # to get our hooks too deeply into ActiveRecord. AR's relation
-        # merge functionality is very cool, but relatively complex, to
-        # handle the various edge cases. Our best shot at avoiding strange
-        # behavior with Squeel loaded is to visit the *_values arrays in
-        # the relations we're merging, and then use the default AR merge
-        # code on the result.
-        def merge(r, skip_visit = false)
-          if skip_visit or not ::ActiveRecord::Relation === r
-            super(r)
+        # to get our hooks too deeply into ActiveRecord. That proves to be
+        # easier said than done. I hate Relation#merge. If Squeel has a
+        # nemesis, Relation#merge would be it.
+        #
+        # Whatever code you see here currently is my current best attempt at
+        # coexisting peacefully with said nenesis.
+        def merge(r, equalities_resolved = false)
+          if ::ActiveRecord::Relation === r && !equalities_resolved
+            if self.table_name != r.table_name
+              super(r.visited)
+            else
+              merge_resolving_duplicate_squeel_equalities(r)
+            end
           else
-            visited.merge(r.visited, true)
+            super(r)
           end
         end
 
@@ -285,7 +289,10 @@ module Squeel
           nodes.map { |node|
             case node
             when Arel::Nodes::Equality
-              node if node.left.relation.name == table_name
+              if node.left.respond_to?(:relation) &&
+                node.left.relation.name == table_name
+                node
+              end
             when Arel::Nodes::Grouping
               find_equality_predicates([node.expr])
             when Arel::Nodes::And
@@ -294,6 +301,48 @@ module Squeel
               nil
             end
           }.compact.flatten
+        end
+
+        def flatten_nodes(nodes)
+          nodes.map { |node|
+            case node
+            when Array
+              flatten_nodes(node)
+            when Nodes::And
+              flatten_nodes(node.children)
+            when Nodes::Grouping
+              flatten_nodes(node.expr)
+            else
+              node
+            end
+          }.flatten
+        end
+
+        def merge_resolving_duplicate_squeel_equalities(r)
+          left = clone
+          right = r.clone
+          left.where_values = flatten_nodes(left.where_values)
+          right.where_values = flatten_nodes(right.where_values)
+          right_equalities = right.where_values.select do |obj|
+            Nodes::Predicate === obj && obj.method_name == :eq
+          end
+          right.where_values -= right_equalities
+          left.where_values = resolve_duplicate_squeel_equalities(
+            left.where_values + right_equalities
+          )
+          left.merge(right, true)
+        end
+
+        def resolve_duplicate_squeel_equalities(wheres)
+          seen = {}
+          wheres.reverse.reject { |n|
+            nuke = false
+            if Nodes::Predicate === n && n.method_name == :eq
+              nuke       = seen[n.expr]
+              seen[n.expr] = true
+            end
+            nuke
+          }.reverse
         end
 
         # Simulate the logic that occurs in #to_a
@@ -316,10 +365,12 @@ module Squeel
         # ...
         # Since you're still looking, let me explain this horrible
         # transgression you see before you.
+        #
         # You see, Relation#where_values_hash is defined on the
-        # ActiveRecord::Relation class. Since it's defined there, but
-        # I would very much like to modify its behavior, I have three
-        # choices.
+        # ActiveRecord::Relation class, itself.
+        #
+        # Since it's defined there, but I would very much like to modify its
+        # behavior, I have three choices:
         #
         # 1. Inherit from ActiveRecord::Relation in a Squeel::Relation
         #    class, and make an attempt to usurp all of the various calls
@@ -327,7 +378,7 @@ module Squeel
         #    evil stuff with constant reassignment, all for the sake of
         #    being able to use super().
         #
-        # 2. Submit a patch to Rails core, breaking this method off into
+        # 2. Submit a patch to Rails core, breaking these methods off into
         #    another module, all for my own selfish desire to use super()
         #    while mucking about in Rails internals.
         #
@@ -335,6 +386,9 @@ module Squeel
         #
         # I opted to go with #3. Except for the hail Hansson thing.
         # Unless you're DHH, in which case, I totally said them.
+        #
+        # If you'd like to read more about alias_method_chain, see
+        # http://erniemiller.org/2011/02/03/when-to-use-alias_method_chain/
 
         def self.included(base)
           base.class_eval do

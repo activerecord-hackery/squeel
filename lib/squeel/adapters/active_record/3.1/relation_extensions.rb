@@ -13,9 +13,9 @@ module Squeel
 
         # Returns a JoinDependency for the current relation.
         #
-        # We don't need to clear out @join_dependency by overriding #reset, because
-        # the default #reset already does this, despite never setting it anywhere that
-        # I can find. Serendipity, I say!
+        # We don't need to clear out @join_dependency by overriding #reset,
+        # because the default #reset already does this, despite never setting
+        # it anywhere that I can find. Serendipity, I say!
         def join_dependency
           @join_dependency ||= (build_join_dependency(table.from(table), @joins_values) && @join_dependency)
         end
@@ -33,17 +33,21 @@ module Squeel
         end
 
         # We need to be able to support merging two relations without having
-        # to get our hooks too deeply into ActiveRecord. AR's relation
-        # merge functionality is very cool, but relatively complex, to
-        # handle the various edge cases. Our best shot at avoiding strange
-        # behavior with Squeel loaded is to visit the *_values arrays in
-        # the relations we're merging, and then use the default AR merge
-        # code on the result.
-        def merge(r, skip_visit = false)
-          if skip_visit or not ::ActiveRecord::Relation === r
-            super(r)
+        # to get our hooks too deeply into ActiveRecord. That proves to be
+        # easier said than done. I hate Relation#merge. If Squeel has a
+        # nemesis, Relation#merge would be it.
+        #
+        # Whatever code you see here currently is my current best attempt at
+        # coexisting peacefully with said nenesis.
+        def merge(r, equalities_resolved = false)
+          if ::ActiveRecord::Relation === r && !equalities_resolved
+            if self.table_name != r.table_name
+              super(r.visited)
+            else
+              merge_resolving_duplicate_squeel_equalities(r)
+            end
           else
-            visited.merge(r.visited, true)
+            super(r)
           end
         end
 
@@ -301,7 +305,10 @@ module Squeel
           nodes.map { |node|
             case node
             when Arel::Nodes::Equality
-              node if node.left.relation.name == table_name
+              if node.left.respond_to?(:relation) &&
+                node.left.relation.name == table_name
+                node
+              end
             when Arel::Nodes::Grouping
               find_equality_predicates([node.expr])
             when Arel::Nodes::And
@@ -327,9 +334,24 @@ module Squeel
           }.flatten
         end
 
-        def overwrite_squeel_equalities(wheres)
+        def merge_resolving_duplicate_squeel_equalities(r)
+          left = clone
+          right = r.clone
+          left.where_values = flatten_nodes(left.where_values)
+          right.where_values = flatten_nodes(right.where_values)
+          right_equalities = right.where_values.select do |obj|
+            Nodes::Predicate === obj && obj.method_name == :eq
+          end
+          right.where_values -= right_equalities
+          left.where_values = resolve_duplicate_squeel_equalities(
+            left.where_values + right_equalities
+          )
+          left.merge(right, true)
+        end
+
+        def resolve_duplicate_squeel_equalities(wheres)
           seen = {}
-          flatten_nodes(wheres).reverse.reject { |n|
+          wheres.reverse.reject { |n|
             nuke = false
             if Nodes::Predicate === n && n.method_name == :eq
               nuke       = seen[n.expr]
@@ -360,11 +382,11 @@ module Squeel
         # Since you're still looking, let me explain this horrible
         # transgression you see before you.
         #
-        # You see, Relation#where_values_hash and with_default_scope
-        # are defined on the ActiveRecord::Relation class, itself.
-        # ActiveRecord::Relation class. Since they're defined there, but
-        # I would very much like to modify their behavior, I have three
-        # choices.
+        # You see, Relation#where_values_hash is defined on the
+        # ActiveRecord::Relation class, itself.
+        #
+        # Since it's defined there, but I would very much like to modify its
+        # behavior, I have three choices:
         #
         # 1. Inherit from ActiveRecord::Relation in a Squeel::Relation
         #    class, and make an attempt to usurp all of the various calls
@@ -387,7 +409,6 @@ module Squeel
         def self.included(base)
           base.class_eval do
             alias_method_chain :where_values_hash, :squeel
-            alias_method_chain :with_default_scope, :squeel
           end
         end
 
@@ -400,39 +421,6 @@ module Squeel
           equalities = find_equality_predicates(predicate_visitor.accept(with_default_scope.where_values))
 
           Hash[equalities.map { |where| [where.left.name, where.right] }]
-        end
-
-        # with_default_scope was added to ActiveRecord ~> 3.1 in order to
-        # address https://github.com/rails/rails/issues/1233. Unfortunately,
-        # it plays havoc with Squeel's approach of visiting both sides of
-        # a relation merge. Thankfully, when merging with a relation from
-        # the same AR::Base, it's unnecessary to visit...
-        #
-        # Except, of course, this means we have to handle the edge case
-        # where equalities are duplicated on both sides of the merge, in
-        # which case, unlike all other chained relation calls, the latter
-        # equality overwrites the former.
-        #
-        # The workaround using overwrite_squeel_equalities works as long
-        # as you stick to the Squeel DSL, but breaks down if you throw hash
-        # conditions into the mix. If anyone's got any suggestions, I'm all
-        # ears. Otherwise, just stick to the Squeel DSL.
-        #
-        # Or, don't use default scopes. They're the devil, anyway. I can't
-        # remember the last time I used one and didn't find myself
-        # regretting the decision later.
-        def with_default_scope_with_squeel
-          if default_scoped? &&
-            default_scope = klass.build_default_scope_with_squeel
-            default_scope = default_scope.merge(self, true)
-            default_scope.default_scoped = false
-            default_scope.where_values = overwrite_squeel_equalities(
-              default_scope.where_values + self.where_values
-            )
-            default_scope
-          else
-            self
-          end
         end
 
       end

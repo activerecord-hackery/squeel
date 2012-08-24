@@ -14,6 +14,8 @@ class Person < ActiveRecord::Base
   has_many   :incoming_messages, :class_name => 'Message', :foreign_key => :recipient_id
 
   scope :nil_scope, lambda { nil }
+  scope :with_article_title, lambda {|t| joins{articles}.where{articles.title == t}}
+  scope :with_article_condition_title, lambda {|t| joins{articles_with_condition}.where{articles_with_condition.title == t}}
 
   sifter :name_starts_or_ends_with do |value|
     (name =~ "#{value}%") | (name =~ "%#{value}")
@@ -33,6 +35,7 @@ class PersonNamedBill < ActiveRecord::Base
   default_scope where{name == 'Bill'}.order{id}
   scope :highly_compensated, where{salary > 200000}
   scope :ending_with_ill, where{name =~ '%ill'}
+  scope :with_salary_equal_to, lambda { |value| where{abs(salary) == value} }
 end
 
 class Message < ActiveRecord::Base

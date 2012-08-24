@@ -48,6 +48,16 @@ module Squeel
         @direction = - @direction
         self
       end
+
+      def hash
+        [@expr, @direction].hash
+      end
+
+      def eql?(other)
+        self.class.eql?(other.class) &&
+          self.expr.eql?(other.expr) &&
+          self.direction.eql?(other.direction)
+      end
     end
   end
 end

@@ -153,6 +153,12 @@ module Squeel
         negated.expr.should eq @o
       end
 
+      it 'implements equivalence check' do
+        other = dsl{name + 1}
+        array = [@o, other]
+        array.uniq.should have(1).operation
+      end
+
     end
   end
 end

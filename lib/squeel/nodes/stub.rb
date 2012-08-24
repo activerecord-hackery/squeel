@@ -39,6 +39,8 @@ module Squeel
 
       # Object comparison
       def eql?(other)
+        # Should we maybe allow a stub to equal a symbol?
+        # I can see not doing to leading to confusion, but I don't like it. :(
         self.class.eql?(other.class) &&
         self.symbol.eql?(other.symbol)
       end

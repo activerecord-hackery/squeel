@@ -211,6 +211,10 @@ module Squeel
         as.right.should eq 'other_name'
       end
 
+      it 'implements equivalence check' do
+        [@s, Stub.new(:attribute)].uniq.should have(1).element
+      end
+
     end
   end
 end

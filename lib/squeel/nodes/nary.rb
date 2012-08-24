@@ -35,7 +35,7 @@ module Squeel
 
       # Implemented for equality testing
       def hash
-        [self.class].concat(self.children).hash
+        @children.hash
       end
 
       # Object comparison
