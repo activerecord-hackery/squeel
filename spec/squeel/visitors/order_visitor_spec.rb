@@ -27,8 +27,8 @@ module Squeel
       end
 
       it 'orders by predicates' do
-        orders = @v.accept(dsl{name != 'Ernie'})
-        orders.to_sql.should match /"people"."name" != 'Ernie'/
+        orders = @v.accept(dsl{name == 'Ernie'})
+        orders.to_sql.should match /"people"."name" = 'Ernie'/
       end
 
     end
