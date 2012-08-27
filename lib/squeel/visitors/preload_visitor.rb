@@ -1,10 +1,10 @@
-require 'squeel/visitors/visitor'
-
 module Squeel
   module Visitors
-    class SymbolVisitor < Visitor
+    class PreloadVisitor < Visitor
 
-      def initialize
+      def initialize(_ = nil)
+        # Unused. Just here to provide consistency in method signature
+        # among subclasses of Visitor
       end
 
       def accept(object, parent = nil)

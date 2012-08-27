@@ -2,9 +2,10 @@ require 'spec_helper'
 
 module Squeel
   module Visitors
-    describe SymbolVisitor do
+    describe PreloadVisitor do
+
       before do
-        @v = SymbolVisitor.new
+        @v = PreloadVisitor.new
       end
 
       it 'returns symbols unmodified' do

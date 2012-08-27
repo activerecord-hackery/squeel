@@ -11,7 +11,7 @@ module Squeel
 
         def run_with_squeel
           unless records.empty?
-            Visitors::SymbolVisitor.new.accept(associations).each { |association| preload(association) }
+            Visitors::PreloadVisitor.new.accept(associations).each { |association| preload(association) }
           end
         end
 

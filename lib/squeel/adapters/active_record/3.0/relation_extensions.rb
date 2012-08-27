@@ -20,16 +20,12 @@ module Squeel
           @join_dependency ||= (build_join_dependency(table, @joins_values) && @join_dependency)
         end
 
-        def predicate_visitor
-          Visitors::PredicateVisitor.new(
-            Context.new(join_dependency)
-          )
-        end
-
-        def attribute_visitor
-          Visitors::AttributeVisitor.new(
-            Context.new(join_dependency)
-          )
+        %w(where having group order select from).each do |visitor|
+          define_method "#{visitor}_visit" do |values|
+            Visitors.const_get("#{visitor.capitalize}Visitor").new(
+              Context.new(join_dependency)
+            ).accept(values)
+          end
         end
 
         # We need to be able to support merging two relations without having
@@ -56,15 +52,12 @@ module Squeel
         end
 
         def visit!
-          predicate_viz = predicate_visitor
-          attribute_viz = attribute_visitor
-
-          @where_values = predicate_viz.accept((@where_values - ['']).uniq)
-          @having_values = predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})
+          @where_values = where_visit((@where_values - ['']).uniq)
+          @having_values = having_visit(@having_values.uniq.reject{|h| h.blank?})
           # FIXME: AR barfs on ARel attributes in group_values. Workaround?
-          # @group_values = attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})
-          @order_values = attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?})
-          @select_values = attribute_viz.accept(@select_values.uniq)
+          # @group_values = group_visit(@group_values.uniq.reject{|g| g.blank?})
+          @order_values = order_visit(@order_values.uniq.reject{|o| o.blank?})
+          @select_values = select_visit(@select_values.uniq)
 
           self
         end
@@ -74,21 +67,18 @@ module Squeel
 
           arel = build_join_dependency(arel, @joins_values) unless @joins_values.empty?
 
-          predicate_viz = predicate_visitor
-          attribute_viz = attribute_visitor
+          arel = collapse_wheres(arel, where_visit((@where_values - ['']).uniq))
 
-          arel = collapse_wheres(arel, predicate_viz.accept((@where_values - ['']).uniq))
-
-          arel = arel.having(*predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
+          arel = arel.having(*having_visit(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
 
           arel = arel.take(connection.sanitize_limit(@limit_value)) if @limit_value
           arel = arel.skip(@offset_value) if @offset_value
 
-          arel = arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
+          arel = arel.group(*group_visit(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
-          arel = arel.order(*attribute_viz.accept(@order_values.uniq.reject{|o| o.blank?})) unless @order_values.empty?
+          arel = arel.order(*order_visit(@order_values.uniq.reject{|o| o.blank?})) unless @order_values.empty?
 
-          arel = build_select(arel, attribute_viz.accept(@select_values.uniq))
+          arel = build_select(arel, select_visit(@select_values.uniq))
 
           arel = arel.from(@from_value) if @from_value
           arel = arel.lock(@lock_value) if @lock_value
@@ -108,7 +98,7 @@ module Squeel
         # Rails core, but for now, I'm going to settle for this hack
         # that tries really hard to coerce things to a string.
         def select_for_count
-          visited_values = attribute_visitor.accept(select_values.uniq)
+          visited_values = select_visit(select_values.uniq)
           if visited_values.size == 1
             select = visited_values.first
 
@@ -397,7 +387,7 @@ module Squeel
         end
 
         def where_values_hash_with_squeel
-          equalities = find_equality_predicates(predicate_visitor.accept(@where_values))
+          equalities = find_equality_predicates(where_visit(@where_values))
 
           Hash[equalities.map { |where| [where.left.name, where.right] }]
         end

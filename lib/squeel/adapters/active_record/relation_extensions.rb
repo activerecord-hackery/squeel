@@ -10,23 +10,20 @@ module Squeel
 
           build_join_dependency(arel, @joins_values) unless @joins_values.empty?
 
-          predicate_viz = predicate_visitor
-          attribute_viz = attribute_visitor
+          collapse_wheres(arel, where_visit((@where_values - ['']).uniq))
 
-          collapse_wheres(arel, predicate_viz.accept((@where_values - ['']).uniq))
-
-          arel.having(*predicate_viz.accept(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
+          arel.having(*having_visit(@having_values.uniq.reject{|h| h.blank?})) unless @having_values.empty?
 
           arel.take(connection.sanitize_limit(@limit_value)) if @limit_value
           arel.skip(@offset_value) if @offset_value
 
-          arel.group(*attribute_viz.accept(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
+          arel.group(*group_visit(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
-          order = attribute_viz.accept(@order_values)
+          order = order_visit(@order_values)
           order = reverse_sql_order(attrs_to_orderings(order)) if @reverse_order_value
           arel.order(*order.uniq.reject{|o| o.blank?}) unless order.empty?
 
-          build_select(arel, attribute_viz.accept(@select_values.uniq))
+          build_select(arel, select_visit(@select_values.uniq))
 
           arel.distinct(@uniq_value)
           arel.from(@from_value) if @from_value

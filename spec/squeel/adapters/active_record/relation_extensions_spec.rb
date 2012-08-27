@@ -5,46 +5,6 @@ module Squeel
     module ActiveRecord
       describe RelationExtensions do
 
-        describe '#predicate_visitor' do
-
-          it 'creates a predicate visitor with a Context for the relation' do
-            relation = Person.joins({
-              :children => {
-                :children => {
-                  :parent => :parent
-                }
-              }
-            })
-
-            visitor = relation.predicate_visitor
-
-            visitor.should be_a Visitors::PredicateVisitor
-            table = visitor.contextualize(relation.join_dependency._join_parts.last)
-            table.table_alias.should eq 'parents_people_2'
-          end
-
-        end
-
-        describe '#attribute_visitor' do
-
-          it 'creates an attribute visitor with a Context for the relation' do
-            relation = Person.joins({
-              :children => {
-                :children => {
-                  :parent => :parent
-                }
-              }
-            })
-
-            visitor = relation.attribute_visitor
-
-            visitor.should be_a Visitors::AttributeVisitor
-            table = visitor.contextualize(relation.join_dependency._join_parts.last)
-            table.table_alias.should eq 'parents_people_2'
-          end
-
-        end
-
         describe 'finding by attribute' do
 
           it 'returns nil when passed an empty string' do
