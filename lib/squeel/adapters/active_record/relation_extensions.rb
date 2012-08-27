@@ -26,7 +26,7 @@ module Squeel
           build_select(arel, select_visit(@select_values.uniq))
 
           arel.distinct(@uniq_value)
-          arel.from(@from_value) if @from_value
+          arel.from(from_visit(@from_value)) if @from_value
           arel.lock(@lock_value) if @lock_value
 
           arel

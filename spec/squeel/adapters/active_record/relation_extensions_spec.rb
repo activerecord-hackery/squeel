@@ -588,6 +588,16 @@ module Squeel
 
         end
 
+        describe '#from' do
+          it 'creates froms with a block' do
+            expected = /SELECT "sub"."name" AS aliased_name FROM \(SELECT "people"."name" FROM "people"\s*\) sub/
+            block = Person.from{Person.select{name}.as('sub')}.
+              select{sub.name.as('aliased_name')}
+            sql = block.to_sql
+            sql.should match expected
+          end
+        end
+
         describe '#build_where' do
 
           it 'sanitizes SQL as usual with strings' do

@@ -80,7 +80,7 @@ module Squeel
 
           arel = build_select(arel, select_visit(@select_values.uniq))
 
-          arel = arel.from(@from_value) if @from_value
+          arel = arel.from(from_visit(@from_value)) if @from_value
           arel = arel.lock(@lock_value) if @lock_value
 
           arel
@@ -232,6 +232,14 @@ module Squeel
         end
 
         def having(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
+        def from(*args)
           if block_given? && args.empty?
             super(DSL.eval &Proc.new)
           else
