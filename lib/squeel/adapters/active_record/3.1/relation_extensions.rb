@@ -34,7 +34,7 @@ module Squeel
         # nemesis, Relation#merge would be it.
         #
         # Whatever code you see here currently is my current best attempt at
-        # coexisting peacefully with said nenesis.
+        # coexisting peacefully with said nemesis.
         def merge(r, equalities_resolved = false)
           if ::ActiveRecord::Relation === r && !equalities_resolved
             if self.table_name != r.table_name
@@ -392,7 +392,7 @@ module Squeel
         #    evil stuff with constant reassignment, all for the sake of
         #    being able to use super().
         #
-        # 2. Submit a patch to Rails core, breaking these methods off into
+        # 2. Submit a patch to Rails core, breaking this method off into
         #    another module, all for my own selfish desire to use super()
         #    while mucking about in Rails internals.
         #
