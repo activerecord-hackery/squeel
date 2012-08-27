@@ -8,6 +8,7 @@ module Squeel
     class Predicate
 
       include PredicateOperators
+      include Aliasing
 
       # @return The right-hand value being considered in this predicate.
       attr_accessor :value
@@ -34,11 +35,10 @@ module Squeel
         self.method_name.eql?(other.method_name) &&
         self.value.eql?(other.value)
       end
-      alias :== :eql?
 
       # Implemented for equality testing
       def hash
-        [self.class, expr, method_name, value].hash
+        [@expr, @method_name, @value].hash
       end
 
       # Whether the value has been assigned yet.

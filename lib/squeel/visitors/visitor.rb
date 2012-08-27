@@ -245,7 +245,14 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::As] The resulting as node.
       def visit_Squeel_Nodes_As(o, parent)
-        visit(o.left, parent).as(o.right)
+        left = visit(o.left, parent)
+        # Some nodes, like Arel::SelectManager, have their own #as methods,
+        # with behavior that we don't want to clobber.
+        if left.respond_to?(:as)
+          left.as(o.right)
+        else
+          Arel::Nodes::As.new(left, o.right)
+        end
       end
 
       # Visit a Squeel And node, returning an ARel Grouping containing an

@@ -45,6 +45,19 @@ module Squeel
         combined.children.should eq [left, right]
       end
 
+      it 'implements equivalence check' do
+        p1 = dsl{name.eq 'blargh'}
+        p2 = dsl{name.eq 'blargh'}
+        [p1, p2].uniq.should have(1).predicate
+      end
+
+      it 'can be aliased' do
+        aliased = dsl{(name == 'joe').as('zomg_its_joe')}
+        aliased.should be_a Squeel::Nodes::As
+        aliased.left.should eql dsl{(name == 'joe')}
+        aliased.right.should eq 'zomg_its_joe'
+      end
+
     end
   end
 end

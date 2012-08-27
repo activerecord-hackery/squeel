@@ -26,6 +26,11 @@ module Squeel
         operation.to_sql.should match /"people"."id" \/ 1 DESC/
       end
 
+      it 'orders by predicates' do
+        orders = @v.accept(dsl{name != 'Ernie'})
+        orders.to_sql.should match /"people"."name" != 'Ernie'/
+      end
+
     end
   end
 end

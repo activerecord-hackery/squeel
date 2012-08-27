@@ -20,7 +20,7 @@ module Squeel
 
       it 'stops appending once its endpoint is not a Stub' do
         @k.third.fourth.fifth == 'cinco'
-        @k.endpoint.should eq Predicate.new(Stub.new(:fifth), :eq, 'cinco')
+        @k.endpoint.should eql Predicate.new(Stub.new(:fifth), :eq, 'cinco')
         expect { @k.another }.to raise_error NoMethodError
       end
 
@@ -67,7 +67,7 @@ module Squeel
       it 'creates AND nodes with & if the endpoint responds to &' do
         node = @k.third.fourth.eq('Bob') & Stub.new(:attr).eq('Joe')
         node.should be_a And
-        node.children.should eq [@k, Stub.new(:attr).eq('Joe')]
+        node.children.should eql [@k, Stub.new(:attr).eq('Joe')]
       end
 
       it 'raises NoMethodError with & if the endpoint does not respond to &' do
@@ -78,7 +78,7 @@ module Squeel
         node = @k.third.fourth.eq('Bob') | Stub.new(:attr).eq('Joe')
         node.should be_a Or
         node.left.should eq @k
-        node.right.should eq Stub.new(:attr).eq('Joe')
+        node.right.should eql Stub.new(:attr).eq('Joe')
       end
 
       it 'raises NoMethodError with | if the endpoint does not respond to |' do
