@@ -22,4 +22,17 @@ module SqueelHelper
       ActiveRecord::Associations::ClassMethods::JoinDependency.new(*args)
     end
   end
+
+  def activerecord_at_least_version(version_string)
+    required_version_parts = version_string.split('.', 3).map(&:to_i)
+    (0..2).each do |index|
+      required_version_parts[index] ||= 0
+    end
+    actual_version_parts = [
+      ActiveRecord::VERSION::MAJOR,
+      ActiveRecord::VERSION::MINOR,
+      ActiveRecord::VERSION::TINY
+    ]
+    (actual_version_parts <=> required_version_parts) >= 0
+  end
 end

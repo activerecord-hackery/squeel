@@ -412,11 +412,13 @@ module Squeel
           end
 
           it 'works with non-strings in group' do
-            pending "Requires some big hacks to execute_grouped_calculation"
-            counts = Person.group{name.op('||', '-diddly')}.count
-            counts.should eq Person.group{name.op('||', '-diddly')}.count
+            if activerecord_at_least_version '3.2.7'
+              counts = Person.group{name.op('||', '-diddly')}.count
+              counts.should eq Person.group("name || '-diddly'").count
+            else
+              pending 'Unsupported in ActiveRecord < 3.2.7'
+            end
           end
-
         end
 
         describe '#group' do
@@ -642,6 +644,20 @@ module Squeel
             @person.name.should eq 'bob'
           end
 
+          it 'creates new records with equality predicates from has_many associations' do
+            person = Person.first
+            article = person.articles_with_condition.new
+            article.person.should eq person
+            article.title.should eq 'Condition'
+          end
+
+          it 'creates new records with equality predicates from has_many :through associations' do
+            pending "When ActiveRecord supports this, we'll want to, too"
+            person = Person.first
+            comment = person.article_comments_with_first_post.new
+            comment.body.should eq 'first post'
+          end
+
           it "maintains activerecord default scope functionality" do
             PersonNamedBill.new.name.should eq 'Bill'
           end
@@ -710,12 +726,16 @@ module Squeel
             sql.should match /Bert/
           end
 
-          it 'uses the given equality condition in the case of a conflicting where from a default scope in AR >= 3.1' do
-            relation = PersonNamedBill.where{name == 'Ernie'}
-            sql = relation.to_sql
-            sql.should_not match /Bill/
-            sql.should match /Ernie/
-          end unless ::ActiveRecord::VERSION::MINOR == 0
+          it 'uses the given equality condition in the case of a conflicting where from a default scope' do
+            if activerecord_at_least_version '3.1'
+              relation = PersonNamedBill.where{name == 'Ernie'}
+              sql = relation.to_sql
+              sql.should_not match /Bill/
+              sql.should match /Ernie/
+            else
+              pending 'Unsupported in ActiveRecord < 3.1'
+            end
+          end
 
           it 'allows scopes to join/query a table through two different associations and uses the correct alias' do
             relation = Person.with_article_title('hi').
