@@ -412,7 +412,7 @@ module Squeel
           end
 
           it 'works with non-strings in group' do
-            if activerecord_at_least_version '3.2.7'
+            if activerecord_version_at_least '3.2.7'
               counts = Person.group{name.op('||', '-diddly')}.count
               counts.should eq Person.group("name || '-diddly'").count
             else
@@ -645,10 +645,14 @@ module Squeel
           end
 
           it 'creates new records with equality predicates from has_many associations' do
-            person = Person.first
-            article = person.articles_with_condition.new
-            article.person.should eq person
-            article.title.should eq 'Condition'
+            if activerecord_version_at_least '3.1.0'
+              person = Person.first
+              article = person.articles_with_condition.new
+              article.person.should eq person
+              article.title.should eq 'Condition'
+            else
+              pending 'Unsupported on ActiveRecord < 3.1'
+            end
           end
 
           it 'creates new records with equality predicates from has_many :through associations' do
@@ -727,7 +731,7 @@ module Squeel
           end
 
           it 'uses the given equality condition in the case of a conflicting where from a default scope' do
-            if activerecord_at_least_version '3.1'
+            if activerecord_version_at_least '3.1'
               relation = PersonNamedBill.where{name == 'Ernie'}
               sql = relation.to_sql
               sql.should_not match /Bill/

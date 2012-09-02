@@ -13,6 +13,11 @@ module Squeel
     $VERBOSE = original_verbosity
   end
 
+  def self.deprecate(message)
+    external_caller = caller.find {|s| !s.include?('/lib/squeel/')}
+    warn "DEPRECATION WARNING: #{message} (called from #{external_caller})"
+  end
+
   # Set up initial predicate aliases
   Constants::PREDICATE_ALIASES.each do |original, aliases|
     aliases.each do |aliaz|
