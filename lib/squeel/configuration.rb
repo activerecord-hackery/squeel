@@ -33,6 +33,7 @@ module Squeel
     #   @param [Symbol] sym1 :hash or :symbol
     #   @param [Symbol] sym2 :hash or :symbol
     def load_core_extensions(*exts)
+      deprecate 'Core extensions are deprecated and will be removed in Squeel 2.0.'
       exts.each do |ext|
         require "squeel/core_ext/#{ext}"
       end
