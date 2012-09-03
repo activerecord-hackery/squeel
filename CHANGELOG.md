@@ -1,10 +1,12 @@
-## 1.0.10 (2012-09-01)
+## 1.0.11 (2012-09-03)
 
-* Deprecated core extensions. In Squeel 1.1, the DSL will be the way to
-  construct queries, and Symbol/Hash extensions will go away.
 * Fixed issue #157, resolving problems when joining the same table twice.
 * Allow predicates in order/select values
 * Support Relation#from in Squeel DSL
+
+## 1.0.10 (2012-09-01)
+
+  * Yanked from RubyGems.org due to semantic versioning oversight
 
 ## 1.0.9 (2012-08-06)
 
