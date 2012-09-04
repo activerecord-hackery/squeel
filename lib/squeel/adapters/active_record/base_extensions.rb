@@ -20,3 +20,5 @@ module Squeel
     end
   end
 end
+
+ActiveRecord::Base.extend Squeel::Adapters::ActiveRecord::BaseExtensions

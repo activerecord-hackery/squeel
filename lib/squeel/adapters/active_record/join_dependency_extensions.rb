@@ -31,6 +31,17 @@ module Squeel
         end
 
       end
+
+      if defined?(::ActiveRecord::Associations::JoinDependency)
+        JoinAssociation = ::ActiveRecord::Associations::JoinDependency::JoinAssociation
+        JoinDependency = ::ActiveRecord::Associations::JoinDependency
+      elsif defined?(::ActiveRecord::Associations::ClassMethods::JoinDependency)
+        JoinAssociation = ::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinAssociation
+        JoinDependency = ::ActiveRecord::Associations::ClassMethods::JoinDependency
+      end
+
+      JoinDependency.send :include, Adapters::ActiveRecord::JoinDependencyExtensions
+
     end
   end
 end
