@@ -177,10 +177,10 @@ Let's say we want to generate this simple query:
 All of the following will generate the above SQL:
 
     Person.where(:name => 'Joe Blow')
-    Person.where{{name => 'Joe Blow'}}
-    Person.where{{name.eq => 'Joe Blow'}}
-    Person.where{name.eq 'Joe Blow'}
-    Person.where{name == 'Joe Blow'}
+    Person.where({name => 'Joe Blow'})
+    Person.where({name.eq => 'Joe Blow'})
+    Person.where(name.eq 'Joe Blow')
+    Person.where(name == 'Joe Blow')
     
 Not a very exciting example since equality is handled just fine via the
 first example in standard ActiveRecord. But consider the following query:
