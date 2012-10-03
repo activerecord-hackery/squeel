@@ -404,7 +404,59 @@ custom operator, such as the standard SQL concatenation operator, `||`:
 
 As you can see, just like functions, these operations can be given aliases.
 
-## Legacy compatibility
+## Compatibility with ActiveRecord 
+
+Most of the new functionality provided by Squeel is accessed with the new block-style `where{}`
+syntax.
+
+All your existing code that uses plain ActiveRecord `where()` queries should continue to work the
+same after adding Squeel to your project with one exception: symbols as the value side of a
+condition (in normal `where()` clauses).
+
+### Symbols as the value side of a condition (in normal `where()` clauses)
+
+If you have any `where()` clauses that use a symbol as the value side
+(right-hand side) of a condition, **you will need to change the symbol into a
+string in order for it to continue to be treated as a value**.
+
+Squeel changes the meaning of symbols in the value of a condition to refer to
+the name of a **column** instead of simply treating the symbol as a **string literal**.
+
+For example, this query:
+
+    Person.where(:first_name => :last_name)
+
+produces this SQL query in plain ActiveRecord:
+
+    SELECT people.* FROM people WHERE people.first_name = 'last_name'.
+
+but produces this SQL query if you are using Squeel:
+
+    SELECT people.* FROM people WHERE people.first_name = people.last_name
+
+Note that this new behavior applies to the plain `where()`-style expressions in addition to the new
+`where{}` Squeel style.
+
+In order for your existing  `where()` clauses with symbols to continue to behave the same, you
+**must** change the symbols into strings. These scopes, for example:
+
+    scope :active, where(:state => :active)
+    scope :in_state, lambda {|state| where(:state => type) }
+
+should be changed to this:
+
+    scope :active, where(:state => 'active')
+    scope :in_state, lambda {|state| where(:state => type.to_s) }
+
+For further information, see
+[this post to the Rails list](https://groups.google.com/forum/?fromgroups=#!topic/rubyonrails-core/NQJJzZ7R7S0),
+[this commit](https://github.com/lifo/docrails/commit/50c5005bafe7e43f81a141cd2c512379aec74325) to
+the [ActiveRecord guides](http://edgeguides.rubyonrails.org/active_record_querying.html#hash-conditions),
+[#67](https://github.com/ernie/squeel/issues/67),
+[#75](https://github.com/ernie/squeel/issues/75), and
+[#171](https://github.com/ernie/squeel/issues/171).
+
+## Compatibility with MetaWhere
 
 While the Squeel DSL is the preferred way to access advanced query functionality, you can
 still enable methods on symbols to access ARel predications in a similar manner to MetaWhere:
