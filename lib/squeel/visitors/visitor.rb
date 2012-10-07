@@ -168,7 +168,6 @@ module Squeel
       end
       alias :visit_Fixnum :visit_passthrough
       alias :visit_Bignum :visit_passthrough
-      alias :visit_String :visit_passthrough
 
       # Visit an array, which involves accepting any values we know how to
       # accept, and skipping the rest.
