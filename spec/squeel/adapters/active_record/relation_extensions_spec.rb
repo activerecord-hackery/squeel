@@ -191,6 +191,11 @@ module Squeel
             Person.order{name}.last.should eq sorted_people.last
           end
 
+          it 'removed duplicate order values' do
+            ordered = Person.order{name.asc}.order{name.asc}
+            ordered.to_sql.scan('name').should have(1).item
+          end
+
         end
 
         describe '#to_sql' do
