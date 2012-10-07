@@ -19,7 +19,7 @@ module Squeel
 
           arel.group(*group_visit(@group_values.uniq.reject{|g| g.blank?})) unless @group_values.empty?
 
-          order = order_visit(@order_values)
+          order = order_visit(@order_values.uniq)
           order = reverse_sql_order(attrs_to_orderings(order)) if @reverse_order_value
           arel.order(*order.uniq.reject{|o| o.blank?}) unless order.empty?
 
