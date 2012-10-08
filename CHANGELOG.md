@@ -3,6 +3,11 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
+## 1.0.12 (2012-10-07)
+
+* Properly uniq order_values before visiting, to fix #163
+* Remove an unnecessary passthrough on String in visitor.rb. Fixes #162
+
 ## 1.0.11 (2012-09-03)
 
 * Fixed issue #157, resolving problems when joining the same table twice.
