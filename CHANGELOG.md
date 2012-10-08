@@ -1,3 +1,8 @@
+## 1.0.12 (2012-10-07)
+
+* Properly uniq order_values before visiting, to fix #163
+* Remove an unnecessary passthrough on String in visitor.rb. Fixes #162
+
 ## 1.0.11 (2012-09-03)
 
 * Fixed issue #157, resolving problems when joining the same table twice.
@@ -6,7 +11,7 @@
 
 ## 1.0.10 (2012-09-01)
 
-  * Yanked from RubyGems.org due to semantic versioning oversight
+* Yanked from RubyGems.org due to semantic versioning oversight
 
 ## 1.0.9 (2012-08-06)
 
