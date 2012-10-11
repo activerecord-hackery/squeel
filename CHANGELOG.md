@@ -3,6 +3,10 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
+## 1.0.13 (2012-10-11)
+
+* Allow strings in from_value. Fixes incompatibility with acts-as-taggable-on.
+
 ## 1.0.12 (2012-10-07)
 
 * Properly uniq order_values before visiting, to fix #163
