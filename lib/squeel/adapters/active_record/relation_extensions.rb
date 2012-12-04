@@ -167,7 +167,7 @@ module Squeel
 
         def select(value = Proc.new)
           if block_given? && Proc === value
-            if value.arity > 0
+            if value.arity != 0
               to_a.select {|*block_args| value.call(*block_args)}
             else
               relation = clone

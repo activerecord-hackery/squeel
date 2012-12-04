@@ -364,10 +364,15 @@ module Squeel
             block.to_sql.should eq standard.to_sql
           end
 
-          it 'falls back to Array#select behavior with a block that has an arity' do
+          it 'falls back to Array#select with a block that has an arity > 0' do
             people = Person.select{|p| p.id == 1}
             people.should have(1).person
             people.first.id.should eq 1
+          end
+
+          it 'falls back to Array#select with Symbol#to_proc block' do
+            people = Person.select(&:odd?)
+            people.map(&:id)[0..3].should eq [1, 3, 5, 7]
           end
 
           it 'behaves as normal with standard parameters' do
