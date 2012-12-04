@@ -21,6 +21,10 @@ class Person < ActiveRecord::Base
   sifter :name_starts_or_ends_with do |value|
     (name =~ "#{value}%") | (name =~ "%#{value}")
   end
+
+  def odd?
+    id.odd?
+  end
 end
 
 class PersonWithNamePrimaryKey < ActiveRecord::Base
