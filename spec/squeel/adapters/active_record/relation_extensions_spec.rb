@@ -371,8 +371,12 @@ module Squeel
           end
 
           it 'falls back to Array#select with Symbol#to_proc block' do
-            people = Person.select(&:odd?)
-            people.map(&:id)[0..3].should eq [1, 3, 5, 7]
+            if Squeel.sane_arity?
+              people = Person.select(&:odd?)
+              people.map(&:id)[0..3].should eq [1, 3, 5, 7]
+            else
+              pending 'This version of Ruby has insane Proc#arity behavior.'
+            end
           end
 
           it 'behaves as normal with standard parameters' do

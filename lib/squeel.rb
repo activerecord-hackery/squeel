@@ -18,6 +18,12 @@ module Squeel
     warn "DEPRECATION WARNING: #{message} (called from #{external_caller})"
   end
 
+  # Ruby 1.9 has a zero arity on a Proc with no arity. Prior to that, it mimics
+  # Symbol#to_proc and returns -1.
+  def self.sane_arity?
+    @sane_arity ||= Proc.new {}.arity == 0
+  end
+
   # Set up initial predicate aliases
   Constants::PREDICATE_ALIASES.each do |original, aliases|
     aliases.each do |aliaz|
