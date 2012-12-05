@@ -441,12 +441,12 @@ In order for your existing  `where()` clauses with symbols to continue to behave
 **must** change the symbols into strings. These scopes, for example:
 
     scope :active, where(:state => :active)
-    scope :in_state, lambda {|state| where(:state => type) }
+    scope :in_state, lambda {|state| where(:state => state) }
 
 should be changed to this:
 
     scope :active, where(:state => 'active')
-    scope :in_state, lambda {|state| where(:state => type.to_s) }
+    scope :in_state, lambda {|state| where(:state => state.to_s) }
 
 For further information, see
 [this post to the Rails list](https://groups.google.com/forum/?fromgroups=#!topic/rubyonrails-core/NQJJzZ7R7S0),
