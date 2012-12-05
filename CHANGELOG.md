@@ -1,3 +1,8 @@
+## 1.0.14 (2012-12-04 OpenHack Louisville Edition!)
+
+* Use bind values in where_values_hash, to prep for compatibility with 3.2.10
+* Allow Symbol#to_proc blocks to fall through to Array's select method
+
 ## 1.0.13 (2012-10-11)
 
 * Allow strings in from_value. Fixes incompatibility with acts-as-taggable-on.

@@ -388,7 +388,12 @@ module Squeel
         def where_values_hash_with_squeel
           equalities = find_equality_predicates(where_visit(with_default_scope.where_values))
 
-          Hash[equalities.map { |where| [where.left.name, where.right] }]
+          binds = Hash[bind_values.find_all(&:first).map { |column, v| [column.name, v] }]
+
+          Hash[equalities.map { |where|
+            name = where.left.name
+            [name, binds.fetch(name.to_s) { where.right }]
+          }]
         end
 
       end
