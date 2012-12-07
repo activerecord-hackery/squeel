@@ -1,7 +1,7 @@
 # Squeel [![Build Status](https://secure.travis-ci.org/ernie/squeel.png)](http://travis-ci.org/ernie/squeel) [![endorse](http://api.coderwall.com/ernie/endorsecount.png)](http://coderwall.com/ernie)
 
-Squeel lets you write your ActiveRecord queries with fewer strings, and more Ruby,
-by making the ARel awesomeness that lies beneath ActiveRecord more accessible.
+Squeel lets you write your Active Record queries with fewer strings, and more Ruby,
+by making the ARel awesomeness that lies beneath Active Record more accessible.
 
 Squeel lets you rewrite...
 
@@ -31,7 +31,7 @@ create a sample initializer with:
 
 ## The Squeel Query DSL
 
-Squeel enhances the normal ActiveRecord query methods by enabling them to accept
+Squeel enhances the normal Active Record query methods by enabling them to accept
 blocks. Inside a block, the Squeel query DSL can be used. Note the use of curly braces
 in these examples instead of parentheses. `{}` denotes a Squeel DSL query.
 
@@ -73,7 +73,7 @@ very handy.
 ### KeyPaths
 
 A Squeel keypath is essentially a more concise and readable alternative to a
-deeply nested hash. For instance, in standard ActiveRecord, you might join several
+deeply nested hash. For instance, in standard Active Record, you might join several
 associations like this to perform a query:
 
     Person.joins(:articles => {:comments => :person})
@@ -183,13 +183,13 @@ All of the following will generate the above SQL:
     Person.where{name == 'Joe Blow'}
     
 Not a very exciting example since equality is handled just fine via the
-first example in standard ActiveRecord. But consider the following query:
+first example in standard Active Record. But consider the following query:
 
     SELECT "people".* FROM people
     WHERE ("people"."name" LIKE 'Ernie%' AND "people"."salary" < 50000)
       OR  ("people"."name" LIKE 'Joe%' AND "people"."salary" > 100000)
       
-To do this with standard ActiveRecord, we'd do something like:
+To do this with standard Active Record, we'd do something like:
 
     Person.where(
       '(name LIKE ? AND salary < ?) OR (name LIKE ? AND salary > ?)',
@@ -404,12 +404,12 @@ custom operator, such as the standard SQL concatenation operator, `||`:
 
 As you can see, just like functions, these operations can be given aliases.
 
-## Compatibility with ActiveRecord 
+## Compatibility with Active Record 
 
 Most of the new functionality provided by Squeel is accessed with the new block-style `where{}`
 syntax.
 
-All your existing code that uses plain ActiveRecord `where()` queries should continue to work the
+All your existing code that uses plain Active Record `where()` queries should continue to work the
 same after adding Squeel to your project with one exception: symbols as the value side of a
 condition (in normal `where()` clauses).
 
@@ -426,7 +426,7 @@ For example, this query:
 
     Person.where(:first_name => :last_name)
 
-produces this SQL query in plain ActiveRecord:
+produces this SQL query in plain Active Record:
 
     SELECT people.* FROM people WHERE people.first_name = 'last_name'.
 
@@ -451,7 +451,7 @@ should be changed to this:
 For further information, see
 [this post to the Rails list](https://groups.google.com/forum/?fromgroups=#!topic/rubyonrails-core/NQJJzZ7R7S0),
 [this commit](https://github.com/lifo/docrails/commit/50c5005bafe7e43f81a141cd2c512379aec74325) to
-the [ActiveRecord guides](http://edgeguides.rubyonrails.org/active_record_querying.html#hash-conditions),
+the [Active Record guides](http://edgeguides.rubyonrails.org/active_record_querying.html#hash-conditions),
 [#67](https://github.com/ernie/squeel/issues/67),
 [#75](https://github.com/ernie/squeel/issues/75), and
 [#171](https://github.com/ernie/squeel/issues/171).
