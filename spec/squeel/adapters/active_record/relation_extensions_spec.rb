@@ -430,7 +430,7 @@ module Squeel
               counts = Person.group{name.op('||', '-diddly')}.count
               counts.should eq Person.group("name || '-diddly'").count
             else
-              pending 'Unsupported in ActiveRecord < 3.2.7'
+              pending 'Unsupported in Active Record < 3.2.7'
             end
           end
         end
@@ -665,12 +665,12 @@ module Squeel
               article.person.should eq person
               article.title.should eq 'Condition'
             else
-              pending 'Unsupported on ActiveRecord < 3.1'
+              pending 'Unsupported on Active Record < 3.1'
             end
           end
 
           it 'creates new records with equality predicates from has_many :through associations' do
-            pending "When ActiveRecord supports this, we'll want to, too"
+            pending "When Active Record supports this, we'll want to, too"
             person = Person.first
             comment = person.article_comments_with_first_post.new
             comment.body.should eq 'first post'
@@ -751,7 +751,7 @@ module Squeel
               sql.should_not match /Bill/
               sql.should match /Ernie/
             else
-              pending 'Unsupported in ActiveRecord < 3.1'
+              pending 'Unsupported in Active Record < 3.1'
             end
           end
 

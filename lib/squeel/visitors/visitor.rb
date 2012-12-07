@@ -352,7 +352,7 @@ module Squeel
         op
       end
 
-      # Visit an ActiveRecord Relation, returning an Arel::SelectManager
+      # Visit an Active Record Relation, returning an Arel::SelectManager
       # @param [ActiveRecord::Relation] o The Relation to visit
       # @param parent The parent object in the context
       # @return [Arel::SelectManager] The ARel select manager that represents

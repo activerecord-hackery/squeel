@@ -9,5 +9,5 @@ when 3
     require f
   end
 else
-  raise NotImplementedError, "Squeel does not support ActiveRecord version #{ActiveRecord::VERSION::STRING}"
+  raise NotImplementedError, "Squeel does not support Active Record version #{ActiveRecord::VERSION::STRING}"
 end

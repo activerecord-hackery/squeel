@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Ernie Miller"]
   s.email       = ["ernie@erniemiller.org"]
   s.homepage    = "http://erniemiller.org/projects/squeel"
-  s.summary     = %q{ActiveRecord 3, improved.}
+  s.summary     = %q{Active Record 3, improved.}
   s.description = %q{
       Squeel unlocks the power of ARel in your Rails 3 application with
       a handy block-based syntax. You can write subqueries, access named
