@@ -170,7 +170,8 @@ module Squeel
         path[0..-2]
       end
 
-      # Implement #to_s (and alias to #to_str) to play nicely with ActiveRecord grouped calculations
+      # Implement #to_s (and alias to #to_str) to play nicely with Active Record
+      # grouped calculations
       def to_s
         path.map(&:to_s).join('.')
       end

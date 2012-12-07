@@ -45,7 +45,7 @@ end
 RSpec.configure do |config|
   config.before(:suite) do
     puts '=' * 80
-    puts "Running specs against ActiveRecord #{ActiveRecord::VERSION::STRING} and ARel #{Arel::VERSION}..."
+    puts "Running specs against Active Record #{ActiveRecord::VERSION::STRING} and ARel #{Arel::VERSION}..."
     puts '=' * 80
     Models.make
   end

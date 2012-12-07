@@ -26,7 +26,7 @@ module Squeel
         end
 
         # We need to be able to support merging two relations without having
-        # to get our hooks too deeply into ActiveRecord. That proves to be
+        # to get our hooks too deeply into Active Record. That proves to be
         # easier said than done. I hate Relation#merge. If Squeel has a
         # nemesis, Relation#merge would be it.
         #
@@ -67,7 +67,7 @@ module Squeel
           end
         end
 
-        # So, building a select for a count query in ActiveRecord is
+        # So, building a select for a count query in Active Record is
         # pretty heavily dependent on select_values containing strings.
         # I'd initially expected that I could just hack together a fix
         # to select_for_count and everything would fall in line, but
