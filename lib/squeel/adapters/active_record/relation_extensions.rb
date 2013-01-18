@@ -45,7 +45,7 @@ module Squeel
         end
 
         def visited
-          clone.visit!
+          with_default_scope.visit!
         end
 
         def visit!
