@@ -786,6 +786,12 @@ module Squeel
             sql.scan(/"people"."id"/).should have(1).item
           end
 
+          it "doesn't hijack the table name when merging a relation with different base and default_scope" do
+            relation = Article.joins(:person).merge(PersonNamedBill.scoped)
+            sql = relation.to_sql
+            sql.scan(/"people"."name" = 'Bill'/).should have(1).item
+          end
+
           it 'merges scopes that contain functions' do
             relation = PersonNamedBill.scoped.with_salary_equal_to(100)
             sql = relation.to_sql
