@@ -14,6 +14,12 @@ module Squeel
           @join_dependency ||= (build_join_dependency(table, @joins_values) && @join_dependency)
         end
 
+        # We don't need to call with_default_scope in AR 3.0.x. In fact, since
+        # there is no with_default_scope in 3.0.x, that'd be pretty dumb.
+        def visited
+          clone.visit!
+        end
+
         def build_arel
           arel = table
 
