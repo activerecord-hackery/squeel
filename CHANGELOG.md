@@ -3,6 +3,11 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
+## 1.0.15 (2013-01-23)
+
+* Fix issue #214, don't alter table name when mergine a relation with a default
+  scope
+
 ## 1.0.14 (2012-12-04 OpenHack Louisville Edition!)
 
 * Use bind values in where_values_hash, to prep for compatibility with 3.2.10
