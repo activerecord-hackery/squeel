@@ -12,6 +12,7 @@ require 'squeel/nodes/aliasing'
 require 'squeel/nodes/ordering'
 
 require 'squeel/nodes/literal'
+require 'squeel/nodes/string'
 require 'squeel/nodes/stub'
 require 'squeel/nodes/key_path'
 require 'squeel/nodes/sifter'
