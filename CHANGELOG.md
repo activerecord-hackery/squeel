@@ -3,7 +3,7 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
-## 1.0.16 (unreleased)
+## 1.0.16 (2013-02-12)
 
 * Port workaround for MySQL's "helpful" casting behavior from Rails 3.2.12
 
