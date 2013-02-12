@@ -142,6 +142,8 @@ module Arel
         table   = attr.relation.table_name
 
         column_cache[table][name]
+      rescue ActiveRecord::StatementInvalid # non-existent tables
+        nil
       end
 
       def column_cache
