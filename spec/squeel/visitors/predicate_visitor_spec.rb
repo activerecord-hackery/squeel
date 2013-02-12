@@ -23,6 +23,12 @@ module Squeel
         node.right.should be_a Arel::Nodes::SelectStatement
       end
 
+      it 'quotes the RHS of a predicate based on its LHS' do
+        predicate = Nodes::Predicate.new(Nodes::Stub.new(:name), :eq, 1)
+        node = @v.accept(predicate)
+        node.to_sql.should be_like '"people"."name" = \'1\''
+      end
+
       it 'creates Equality nodes for simple hashes' do
         predicate = @v.accept(:name => 'Joe')
         predicate.should be_a Arel::Nodes::Equality

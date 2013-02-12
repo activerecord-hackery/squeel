@@ -56,11 +56,11 @@ module Squeel
 
         case k
         when Nodes::Predicate
-          visit(k % quote_for_node(k.expr, v), parent)
+          visit(k % quote_for_node(v, k.expr, parent), parent)
         when Nodes::Function, Nodes::Literal
           arel_predicate_for(visit(k, parent), quote(v), parent)
         when Nodes::KeyPath
-          visit(k % quote_for_node(k.endpoint, v), parent)
+          visit(k % quote_for_node(v, k.endpoint, parent), parent)
         else
           attr_name = k.to_s
           attribute = if !hash_context_shifted? && attr_name.include?('.')
