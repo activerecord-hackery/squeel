@@ -3,6 +3,10 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
+## 1.0.16 (unreleased)
+
+* Port workaround for MySQL's "helpful" casting behavior from Rails 3.2.12
+
 ## 1.0.15 (2013-01-23)
 
 * Fix issue #214, don't alter table name when mergine a relation with a default

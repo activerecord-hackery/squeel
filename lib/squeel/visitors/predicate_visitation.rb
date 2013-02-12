@@ -40,7 +40,7 @@ module Squeel
           value = visit(value, parent) if can_visit?(value)
         end
 
-        value = quote_for_node(o.expr, value)
+        value = quote_for_node(value, o.expr, parent)
 
         attribute = case o.expr
         when Nodes::Stub, Nodes::Function, Nodes::Literal, Nodes::Grouping
@@ -108,14 +108,40 @@ module Squeel
       # can end up with annoyances like having "joe" quoted to 0, if the
       # last visited column was of an integer type.
       #
-      # @param node The node we (might) be quoting for
       # @param v The value to (possibly) quote
-      def quote_for_node(node, v)
+      # @param node The node we (might) be quoting for
+      # @param parent The parent of the node being quoted for
+      def quote_for_node(v, node, parent)
         case node
         when Nodes::Function, Nodes::Literal
           quote(v)
         when Nodes::Predicate
-          quote_for_node(node.expr, v)
+          quote_for_node(v, node.expr, parent)
+        when Symbol, Nodes::Stub # MySQL hates freedom
+          quote_for_attribute v, visit(node, parent)
+        else
+          v
+        end
+      end
+
+      # Because MySQL hates doing sane things, we are forced to try to quote
+      # certain values for a specific column type. Otherwise, MySQL might
+      # "helpfully" cast the column we're checking to the type we're comparing
+      # it to, resulting in such wonderful queries as...
+      #
+      #   SELECT * FROM table WHERE str_column = 0
+      #
+      # ...returning every record in the table that doesn't have a number in
+      # str_column.
+      #
+      # Everything about this method is awful. 2 x private method calls to ARel,
+      # wrapping a pre-quoted value in an SqlLiteral... Everything. My only
+      # solace is that I think we can fix it in ARel in the longer term.
+      def quote_for_attribute(v, attr)
+        case v
+        when Fixnum, ActiveSupport::Duration
+          column = arel_visitor.send(:column_for, attr)
+          Arel::Nodes::SqlLiteral.new arel_visitor.send(:quote, v, column)
         else
           v
         end
