@@ -1,4 +1,4 @@
-## 1.0.16 (unreleased)
+## 1.0.16 (2013-02-12)
 
 * Port workaround for MySQL's "helpful" casting behavior from Rails 3.2.12
 
