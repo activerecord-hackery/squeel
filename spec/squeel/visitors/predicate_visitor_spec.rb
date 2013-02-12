@@ -23,10 +23,42 @@ module Squeel
         node.right.should be_a Arel::Nodes::SelectStatement
       end
 
-      it 'quotes the RHS of a predicate based on its LHS' do
+      it 'quotes the value of a predicate based on its key' do
+        predicate = Nodes::Predicate.new(Nodes::Stub.new(:id), :eq, 1)
+        node = @v.accept(predicate)
+        node.to_sql.should be_like '"people"."id" = 1'
         predicate = Nodes::Predicate.new(Nodes::Stub.new(:name), :eq, 1)
         node = @v.accept(predicate)
         node.to_sql.should be_like '"people"."name" = \'1\''
+      end
+
+      it 'quotes the value of a hash based on its key' do
+        node = @v.accept(:id => 1)
+        node.to_sql.should be_like '"people"."id" = 1'
+        node = @v.accept(:name => 1)
+        node.to_sql.should be_like '"people"."name" = \'1\''
+      end
+
+      it 'quotes array values for a Predicate based on its key' do
+        predicate = Nodes::Predicate.new(Nodes::Stub.new(:name), :in, [1, 2])
+        node = @v.accept(predicate)
+        node.to_sql.should be_like '"people"."name" IN (\'1\', \'2\')'
+      end
+
+      it 'quotes array values for a hash based on their key' do
+        node = @v.accept(:name => [1, 2])
+        node.to_sql.should be_like '"people"."name" IN (\'1\', \'2\')'
+      end
+
+      it 'quotes range values for a predicate based on its key' do
+        predicate = Nodes::Predicate.new(Nodes::Stub.new(:name), :in, 1..2)
+        node = @v.accept(predicate)
+        node.to_sql.should be_like '"people"."name" BETWEEN \'1\' AND \'2\''
+      end
+
+      it 'quotes range values for a hash based on its key' do
+        node = @v.accept(:name => 1..2)
+        node.to_sql.should be_like '"people"."name" BETWEEN \'1\' AND \'2\''
       end
 
       it 'creates Equality nodes for simple hashes' do
@@ -156,15 +188,13 @@ module Squeel
       it 'converts ActiveRecord::Base objects to their id' do
         predicate = @v.accept(:id => Person.first)
         predicate.should be_a Arel::Nodes::Equality
-        predicate.left.name.to_s.should eq 'id'
-        predicate.right.should eq 1
+        predicate.to_sql.should be_like '"people"."id" = 1'
       end
 
       it 'converts arrays of ActiveRecord::Base objects to their ids' do
         predicate = @v.accept(:id => [Person.first, Person.last])
         predicate.should be_a Arel::Nodes::In
-        predicate.left.name.to_s.should eq 'id'
-        predicate.right.should eq [1, 332]
+        predicate.to_sql.should be_like '"people"."id" IN (1, 332)'
       end
 
       it 'creates the node against the proper table for nested hashes' do
