@@ -67,7 +67,9 @@ module Squeel
         if ActiveRecord::Relation === value && value.select_values.empty?
           value = visit(value.select(value.klass.arel_table[value.klass.primary_key]), parent)
         else
+          testing = value.is_a? ActiveRecord::Base
           value = can_visit?(value) ? visit(value, parent) : value
+          value = quote_for_attribute(value, attribute)
         end
 
         case value
@@ -139,7 +141,15 @@ module Squeel
       # solace is that I think we can fix it in ARel in the longer term.
       def quote_for_attribute(v, attr)
         case v
-        when Fixnum, ActiveSupport::Duration
+        when Array
+          v.map { |v| quote_for_attribute(v, attr) }
+        when Range
+          Range.new(
+            quote_for_attribute(v.begin, attr),
+            quote_for_attribute(v.end, attr),
+            v.exclude_end?
+          )
+        when Bignum, Fixnum, Integer, ActiveSupport::Duration
           column = arel_visitor.send(:column_for, attr)
           Arel::Nodes::SqlLiteral.new arel_visitor.send(:quote, v, column)
         else
