@@ -67,7 +67,6 @@ module Squeel
         if ActiveRecord::Relation === value && value.select_values.empty?
           value = visit(value.select(value.klass.arel_table[value.klass.primary_key]), parent)
         else
-          testing = value.is_a? ActiveRecord::Base
           value = can_visit?(value) ? visit(value, parent) : value
           value = quote_for_attribute(value, attribute)
         end
