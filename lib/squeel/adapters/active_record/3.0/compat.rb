@@ -137,6 +137,14 @@ module Arel
 
   module Visitors
     class ToSql
+
+      def initialize engine
+        @engine         = engine
+        @engine.connection_pool.with_connection { |conn| @connection = conn }
+        @quoted_tables  = {}
+        @quoted_columns = {}
+      end
+
       def column_for attr
         name    = attr.name.to_s
         table   = attr.relation.table_name
