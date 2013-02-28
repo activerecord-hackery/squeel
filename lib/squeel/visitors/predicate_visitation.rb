@@ -40,7 +40,7 @@ module Squeel
           value = visit(value, parent) if can_visit?(value)
         end
 
-        value = quote_for_node(value, o.expr, parent)
+        value = quote_for_node(o.expr, value)
 
         attribute = case o.expr
         when Nodes::Stub, Nodes::Function, Nodes::Literal, Nodes::Grouping
@@ -68,7 +68,6 @@ module Squeel
           value = visit(value.select(value.klass.arel_table[value.klass.primary_key]), parent)
         else
           value = can_visit?(value) ? visit(value, parent) : value
-          value = quote_for_attribute(value, attribute)
         end
 
         case value
@@ -109,48 +108,14 @@ module Squeel
       # can end up with annoyances like having "joe" quoted to 0, if the
       # last visited column was of an integer type.
       #
-      # @param v The value to (possibly) quote
       # @param node The node we (might) be quoting for
-      # @param parent The parent of the node being quoted for
-      def quote_for_node(v, node, parent)
+      # @param v The value to (possibly) quote
+      def quote_for_node(node, v)
         case node
         when Nodes::Function, Nodes::Literal
           quote(v)
         when Nodes::Predicate
-          quote_for_node(v, node.expr, parent)
-        when Symbol, Nodes::Stub # MySQL hates freedom
-          quote_for_attribute v, visit(node, parent)
-        else
-          v
-        end
-      end
-
-      # Because MySQL hates doing sane things, we are forced to try to quote
-      # certain values for a specific column type. Otherwise, MySQL might
-      # "helpfully" cast the column we're checking to the type we're comparing
-      # it to, resulting in such wonderful queries as...
-      #
-      #   SELECT * FROM table WHERE str_column = 0
-      #
-      # ...returning every record in the table that doesn't have a number in
-      # str_column.
-      #
-      # Everything about this method is awful. 2 x private method calls to ARel,
-      # wrapping a pre-quoted value in an SqlLiteral... Everything. My only
-      # solace is that I think we can fix it in ARel in the longer term.
-      def quote_for_attribute(v, attr)
-        case v
-        when Array
-          v.map { |v| quote_for_attribute(v, attr) }
-        when Range
-          Range.new(
-            quote_for_attribute(v.begin, attr),
-            quote_for_attribute(v.end, attr),
-            v.exclude_end?
-          )
-        when Bignum, Fixnum, Integer, ActiveSupport::Duration
-          column = arel_visitor.send(:column_for, attr)
-          Arel::Nodes::SqlLiteral.new arel_visitor.send(:quote, v, column)
+          quote_for_node(node.expr, v)
         else
           v
         end

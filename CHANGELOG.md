@@ -1,3 +1,7 @@
+## 1.0.17 (2013-02-28)
+
+* Revert MySQL hacks, since AR did too.
+
 ## 1.0.16 (2013-02-12)
 
 * Port workaround for MySQL's "helpful" casting behavior from Rails 3.2.12
