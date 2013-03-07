@@ -3,6 +3,10 @@
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
 
+## 1.0.18 (2013-03-07)
+
+* Stop treating nils as quotable. Fixes issue #221.
+
 ## 1.0.17 (2013-02-28)
 
 * Revert MySQL hacks, since AR did too.
