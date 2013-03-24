@@ -22,19 +22,19 @@ module Squeel
               end
             end
 
-            it { should respond_to :title_or_body_contains }
-            specify { subject.title_or_body_contains('ernie').should be_a Nodes::Or }
+            it { should respond_to :sifter_title_or_body_contains }
+            specify { subject.sifter_title_or_body_contains('ernie').should be_a Nodes::Or }
           end
 
           context 'with a sifter defined via method' do
             before :all do
-              def subject.title_starts_with(val)
+              def subject.sifter_title_starts_with(val)
                 squeel{title =~ "#{val}%"}
               end
             end
 
-            it { should respond_to :title_starts_with }
-            specify { subject.title_starts_with('ernie').should be_a Nodes::Predicate }
+            it { should respond_to :sifter_title_starts_with }
+            specify { subject.sifter_title_starts_with('ernie').should be_a Nodes::Predicate }
           end
 
         end

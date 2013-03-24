@@ -16,7 +16,7 @@ module Squeel
       # @return The result of visiting the executed block's return value
       def visit_Squeel_Nodes_Sifter(o, parent)
         klass = classify(parent)
-        visit(klass.send(o.name, *o.args), parent)
+        visit(klass.send("sifter_#{o.name}", *o.args), parent)
       end
 
       # Visit a Squeel predicate, converting it into an ARel predicate

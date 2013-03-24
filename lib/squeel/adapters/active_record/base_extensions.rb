@@ -9,7 +9,7 @@ module Squeel
 
         def sifter(name = nil)
           if Symbol === name && block_given?
-            singleton_class.send :define_method, name,
+            singleton_class.send :define_method, "sifter_#{name}",
                                   lambda {|*args| DSL.exec(*args, &Proc.new)}
           else
             raise ArgumentError, "A name and block are required"
