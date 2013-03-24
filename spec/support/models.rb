@@ -28,10 +28,18 @@ class Person < ActiveRecord::Base
 end
 
 class PersonWithNamePrimaryKey < ActiveRecord::Base
-  set_primary_key 'name'
+  if respond_to?(:primary_key=)
+    self.primary_key = 'name'
+  else
+    set_primary_key 'name'
+  end
   # Set this second, because I'm lazy and don't want to populate another table,
   # and also don't want to clobber the AR connection's primary_key cache.
-  set_table_name 'people'
+  if respond_to?(:table_name=)
+    self.table_name = 'people'
+  else
+    set_table_name 'people'
+  end
 end
 
 class PersonNamedBill < ActiveRecord::Base
