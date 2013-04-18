@@ -5,11 +5,15 @@ by making the ARel awesomeness that lies beneath Active Record more accessible.
 
 Squeel lets you rewrite...
 
-    Article.where ['created_at >= ?', 2.weeks.ago]
+```ruby
+Article.where ['created_at >= ?', 2.weeks.ago]
+```
 
 ...as...
 
-    Article.where{created_at >= 2.weeks.ago}
+```ruby
+Article.where{created_at >= 2.weeks.ago}
+```
 
 This is a _good thing_. If you don't agree, Squeel might not be for you. The above is
 just a simple example -- Squeel's capable of a whole lot more. Keep reading.
@@ -18,8 +22,10 @@ just a simple example -- Squeel's capable of a whole lot more. Keep reading.
 
 In your Gemfile:
 
-    gem "squeel"  # Last officially released gem
-    # gem "squeel", :git => "git://github.com/ernie/squeel.git" # Track git repo
+```ruby
+gem "squeel"  # Last officially released gem
+# gem "squeel", :git => "git://github.com/ernie/squeel.git" # Track git repo
+```
 
 Then bundle as usual.
 
@@ -27,7 +33,9 @@ If you'd like to customize Squeel's functionality by enabling core
 extensions for hashes or symbols, or aliasing some predicates, you can
 create a sample initializer with:
 
-    rails g squeel:initializer
+```sh
+$ rails g squeel:initializer
+```
 
 ## The Squeel Query DSL
 
@@ -63,8 +71,10 @@ Stubs are, for most intents and purposes, just like Symbols in a normal call to
 `Relation#where` (note the need for doubling up on the curly braces here, the first ones
 start the block, the second are the hash braces):
 
-    Person.where{{name => 'Ernie'}}
-    => SELECT "people".* FROM "people"  WHERE "people"."name" = 'Ernie'
+```ruby
+Person.where{{name => 'Ernie'}}
+# => SELECT "people".* FROM "people"  WHERE "people"."name" = 'Ernie'
+```
 
 You normally wouldn't bother using the DSL in this case, as a simple hash would
 suffice. However, stubs serve as a building block for keypaths, and keypaths are
@@ -76,21 +86,27 @@ A Squeel keypath is essentially a more concise and readable alternative to a
 deeply nested hash. For instance, in standard Active Record, you might join several
 associations like this to perform a query:
 
-    Person.joins(:articles => {:comments => :person})
-    => SELECT "people".* FROM "people"
-         INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
-         INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-         INNER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```ruby
+Person.joins(:articles => {:comments => :person})
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    INNER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```
 
 With a keypath, this would look like:
 
-    Person.joins{articles.comments.person}
+```ruby
+Person.joins{articles.comments.person}
+```
 
 A keypath can exist in the context of a hash, and is normally interpreted relative to
 the current level of nesting. It can be forced into an "absolute" path by anchoring it with
 a ~, like:
 
-    ~articles.comments.person
+```ruby
+~articles.comments.person
+```
 
 This isn't quite so useful in the typical hash context, but can be very useful when it comes
 to interpreting functions and the like. We'll cover those later.
@@ -172,34 +188,44 @@ used in `WHERE` or `HAVING` clauses.
 
 Let's say we want to generate this simple query:
 
-    SELECT "people".* FROM people WHERE "people"."name" = 'Joe Blow'
+```
+SELECT "people".* FROM people WHERE "people"."name" = 'Joe Blow'
+```
 
 All of the following will generate the above SQL:
 
-    Person.where(:name => 'Joe Blow')
-    Person.where{{name => 'Joe Blow'}}
-    Person.where{{name.eq => 'Joe Blow'}}
-    Person.where{name.eq 'Joe Blow'}
-    Person.where{name == 'Joe Blow'}
-    
+```ruby
+Person.where(:name => 'Joe Blow')
+Person.where{{name => 'Joe Blow'}}
+Person.where{{name.eq => 'Joe Blow'}}
+Person.where{name.eq 'Joe Blow'}
+Person.where{name == 'Joe Blow'}
+```
+
 Not a very exciting example since equality is handled just fine via the
 first example in standard Active Record. But consider the following query:
 
-    SELECT "people".* FROM people
-    WHERE ("people"."name" LIKE 'Ernie%' AND "people"."salary" < 50000)
-      OR  ("people"."name" LIKE 'Joe%' AND "people"."salary" > 100000)
-      
+```
+SELECT "people".* FROM people
+WHERE ("people"."name" LIKE 'Ernie%' AND "people"."salary" < 50000)
+  OR  ("people"."name" LIKE 'Joe%' AND "people"."salary" > 100000)
+```
+
 To do this with standard Active Record, we'd do something like:
 
-    Person.where(
-      '(name LIKE ? AND salary < ?) OR (name LIKE ? AND salary > ?)',
-      'Ernie%', 50000, 'Joe%', 100000
-    )
-    
+```ruby
+Person.where(
+  '(name LIKE ? AND salary < ?) OR (name LIKE ? AND salary > ?)',
+  'Ernie%', 50000, 'Joe%', 100000
+)
+```
+
 With Squeel:
 
-    Person.where{(name =~ 'Ernie%') & (salary < 50000) | (name =~ 'Joe%') & (salary > 100000)}
-    
+```ruby
+Person.where{(name =~ 'Ernie%') & (salary < 50000) | (name =~ 'Joe%') & (salary > 100000)}
+```
+
 Here, we're using `&` and `|` to generate `AND` and `OR`, respectively.
 
 There are two obvious but important differences between these two code samples, and
@@ -209,7 +235,7 @@ both of them have to do with *context*.
    first be considered, then we must cross-reference the values to be substituted
    with their placeholders. This carries with it a small but perceptible (and
    annoying!) context shift during which we stop thinking about the comparison being
-   performed, and instead play "count the arguments", or, in the case of 
+   performed, and instead play "count the arguments", or, in the case of
    named/hash interpolations, "find the word". The Squeel syntax places
    both sides of each comparison in proximity to one another, allowing us to
    focus on what our code is doing.
@@ -228,12 +254,15 @@ our intentions more clear, on the first read-through. And if we don't like the
 way that the existing predications read, we can create our own aliases in a Squeel
 configure block:
 
-    Squeel.configure do |config|
-      config.alias_predicate :is_less_than, :lt
-    end
-    
-    Person.where{salary.is_less_than 50000}.to_sql
-    # => SELECT "people".* FROM "people"  WHERE "people"."salary" < 50000
+```ruby
+Squeel.configure do |config|
+  config.alias_predicate :is_less_than, :lt
+end
+```
+```ruby
+Person.where{salary.is_less_than 50000}.to_sql
+# => SELECT "people".* FROM "people"  WHERE "people"."salary" < 50000
+```
 
 And while we're on the topic of helping you make your code more expressive...
 
@@ -241,20 +270,26 @@ And while we're on the topic of helping you make your code more expressive...
 
 Let's say you want to check if a Person has a name like one of several possibilities.
 
-    names = ['Ernie%', 'Joe%', 'Mary%']
-    Person.where('name LIKE ? OR name LIKE ? OR name LIKE ?', *names)
+```ruby
+names = ['Ernie%', 'Joe%', 'Mary%']
+Person.where('name LIKE ? OR name LIKE ? OR name LIKE ?', *names)
+```
 
 But you're smart, and you know that you might want to check more or less than
 3 names, so you make your query flexible:
 
-    Person.where((['name LIKE ?'] * names.size).join(' OR '), *names)
+```ruby
+Person.where((['name LIKE ?'] * names.size).join(' OR '), *names)
+```
 
 Yeah... that's readable, all right. How about:
 
-    Person.where{name.like_any names}
-    # => SELECT "people".* FROM "people"  
-         WHERE (("people"."name" LIKE 'Ernie%' OR "people"."name" LIKE 'Joe%' OR "people"."name" LIKE 'Mary%'))
-    
+```ruby
+Person.where{name.like_any names}
+# => SELECT "people".* FROM "people"
+#    WHERE (("people"."name" LIKE 'Ernie%' OR "people"."name" LIKE 'Joe%' OR "people"."name" LIKE 'Mary%'))
+```
+
 I'm not sure about you, but I much prefer the latter. In short, you can add `_any` or
 `_all` to any predicate method, and it would do what you expect, when given an array of
 possibilities to compare against.
@@ -265,57 +300,69 @@ Sifters are like little snippets of conditions that take parameters. Let's say t
 have a model called Article, and you often want to query for articles that contain a
 string in the title or body. So you write a scope:
 
-    def self.title_or_body_contains(string)
-      where{title.matches("%#{string}%") | body.matches("%#{string}%")}
-    end
+```ruby
+def self.title_or_body_contains(string)
+  where{title.matches("%#{string}%") | body.matches("%#{string}%")}
+end
+```
 
 But then you want to query for people who wrote an article that matches these conditions,
 but the scope only works against the model where it was defined. So instead, you write a
 sifter:
 
-    class Article < ActiveRecord::Base
-      sifter :title_or_body_contains do |string|
-        title.matches("%#{string}%") | body.matches("%#{string}%")
-      end
-    end
+```ruby
+class Article < ActiveRecord::Base
+  sifter :title_or_body_contains do |string|
+    title.matches("%#{string}%") | body.matches("%#{string}%")
+  end
+end
+```
 
 Now you can write...
 
-    Article.where{sift :title_or_body_contains, 'awesome'}
-    => SELECT "articles".* FROM "articles"  
-       WHERE ((
-         "articles"."title" LIKE '%awesome%' 
-         OR "articles"."body" LIKE '%awesome%'
-       ))
+```ruby
+Article.where{sift :title_or_body_contains, 'awesome'}
+# => SELECT "articles".* FROM "articles"
+#    WHERE ((
+#      "articles"."title" LIKE '%awesome%'
+#      OR "articles"."body" LIKE '%awesome%'
+#    ))
+```
 
 ... or ...
 
-    Person.joins(:articles).
-           where{
-             {articles => sift(:title_or_body_contains, 'awesome')}
-           }
-    # => SELECT "people".* FROM "people" 
-         INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
-         WHERE ((
-           "articles"."title" LIKE '%awesome%' 
-           OR "articles"."body" LIKE '%awesome%'
-         ))
+```ruby
+Person.joins(:articles).
+       where{
+         {articles => sift(:title_or_body_contains, 'awesome')}
+       }
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    WHERE ((
+#      "articles"."title" LIKE '%awesome%'
+#      OR "articles"."body" LIKE '%awesome%'
+#    ))
+```
 
 Or, you can just modify your previous scope, changing `where` to `squeel`:
 
-    def self.title_or_body_contains(string)
-      squeel{title.matches("%#{string}%") | body.matches("%#{string}%")}
-    end
+```ruby
+def self.title_or_body_contains(string)
+  squeel{title.matches("%#{string}%") | body.matches("%#{string}%")}
+end
+```
 
 ### Subqueries
 
 You can supply an `ActiveRecord::Relation` as a value for a predicate in order to use
 a subquery. So, for example:
 
-    awesome_people = Person.where{awesome == true}
-    Article.where{author_id.in(awesome_people.select{id})}
-    # => SELECT "articles".* FROM "articles"  
-         WHERE "articles"."author_id" IN (SELECT "people"."id" FROM "people"  WHERE "people"."awesome" = 't')
+```ruby
+awesome_people = Person.where{awesome == true}
+Article.where{author_id.in(awesome_people.select{id})}
+# => SELECT "articles".* FROM "articles"
+#    WHERE "articles"."author_id" IN (SELECT "people"."id" FROM "people"  WHERE "people"."awesome" = 't')
+```
 
 ### Joins
 
@@ -323,40 +370,46 @@ Squeel adds a couple of enhancements to joins. First, keypaths can be used as sh
 nested association joins. Second, you can specify join types (inner and outer), and a class
 in the case of a polymorphic belongs_to relationship.
 
-    Person.joins{articles.outer}
-    => SELECT "people".* FROM "people"
-       LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
-    Note.joins{notable(Person).outer}
-    => SELECT "notes".* FROM "notes"
-       LEFT OUTER JOIN "people"
-         ON "people"."id" = "notes"."notable_id"
-         AND "notes"."notable_type" = 'Person'
+```ruby
+Person.joins{articles.outer}
+# => SELECT "people".* FROM "people"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+Note.joins{notable(Person).outer}
+# => SELECT "notes".* FROM "notes"
+#    LEFT OUTER JOIN "people"
+#      ON "people"."id" = "notes"."notable_id"
+#      AND "notes"."notable_type" = 'Person'
+```
 
 These can also be used inside keypaths:
 
-    Note.joins{notable(Person).articles}
-    => SELECT "notes".* FROM "notes"
-       INNER JOIN "people" ON "people"."id" = "notes"."notable_id"
-         AND "notes"."notable_type" = 'Person'
-       INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
-       
+```ruby
+Note.joins{notable(Person).articles}
+# => SELECT "notes".* FROM "notes"
+#    INNER JOIN "people" ON "people"."id" = "notes"."notable_id"
+#      AND "notes"."notable_type" = 'Person'
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+```
+
 You can refer to these associations when constructing other parts of your query, and
 they'll be automatically mapped to the proper table or table alias This is most noticeable
 when using self-referential associations:
 
-    Person.joins{children.parent.children}.
-           where{
-             (children.name.like 'Ernie%') |
-             (children.parent.name.like 'Ernie%') |
-             (children.parent.children.name.like 'Ernie%')
-           }
-    => SELECT "people".* FROM "people" 
-       INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id" 
-       INNER JOIN "people" "parents_people" ON "parents_people"."id" = "children_people"."parent_id" 
-       INNER JOIN "people" "children_people_2" ON "children_people_2"."parent_id" = "parents_people"."id" 
-       WHERE ((("children_people"."name" LIKE 'Ernie%' 
-             OR "parents_people"."name" LIKE 'Ernie%') 
-             OR "children_people_2"."name" LIKE 'Ernie%'))
+```ruby
+Person.joins{children.parent.children}.
+       where{
+         (children.name.like 'Ernie%') |
+         (children.parent.name.like 'Ernie%') |
+         (children.parent.children.name.like 'Ernie%')
+       }
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"
+#    INNER JOIN "people" "parents_people" ON "parents_people"."id" = "children_people"."parent_id"
+#    INNER JOIN "people" "children_people_2" ON "children_people_2"."parent_id" = "parents_people"."id"
+#    WHERE ((("children_people"."name" LIKE 'Ernie%'
+#          OR "parents_people"."name" LIKE 'Ernie%')
+#          OR "children_people_2"."name" LIKE 'Ernie%'))
+```
 
 Keypaths were used here for clarity, but nested hashes would work just as well.
 
@@ -364,33 +417,41 @@ Keypaths were used here for clarity, but nested hashes would work just as well.
 
 You can call SQL functions just like you would call a method in Ruby...
 
-    Person.select{coalesce(name, '<no name given>')}
-    => SELECT coalesce("people"."name", '<no name given>') FROM "people"
+```ruby
+Person.select{coalesce(name, '<no name given>')}
+# => SELECT coalesce("people"."name", '<no name given>') FROM "people"
+```
 
 ...and you can easily give it an alias:
 
-    person = Person.select{
-      coalesce(name, '<no name given>').as(name_with_default)
-    }.first
-    person.name_with_default # name or <no name given>, depending on data
+```ruby
+person = Person.select{
+  coalesce(name, '<no name given>').as(name_with_default)
+}.first
+person.name_with_default # name or <no name given>, depending on data
+```
 
 When you use a stub, symbol, or keypath inside a function call, it'll be interpreted relative to
 its place inside any nested associations:
 
-    Person.joins{articles}.group{articles.title}.having{{articles => {max(id) => id}}}
-    => SELECT "people".* FROM "people" 
-       INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
-       GROUP BY "articles"."title" 
-       HAVING max("articles"."id") = "articles"."id"
-       
+```ruby
+Person.joins{articles}.group{articles.title}.having{{articles => {max(id) => id}}}
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    GROUP BY "articles"."title"
+#    HAVING max("articles"."id") = "articles"."id"
+```
+
 If you want to use an attribute from a different branch of the hierarchy, use an absolute
 keypath (~) as done here:
 
-    Person.joins{articles}.group{articles.title}.having{{articles => {max(~id) => id}}}
-    => SELECT "people".* FROM "people" 
-       INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
-       GROUP BY "articles"."title" 
-       HAVING max("people"."id") = "articles"."id"
+```ruby
+Person.joins{articles}.group{articles.title}.having{{articles => {max(~id) => id}}}
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    GROUP BY "articles"."title"
+#    HAVING max("people"."id") = "articles"."id"
+```
 
 ### SQL Operators
 
@@ -398,13 +459,15 @@ You can use the standard mathematical operators (`+`, `-`, `*`, `/`) inside the 
 specify operators in the resulting SQL, or the `op` method to specify another
 custom operator, such as the standard SQL concatenation operator, `||`:
 
-    p = Person.select{name.op('||', '-diddly').as(flanderized_name)}.first
-    p.flanderized_name
-    => "Aric Smith-diddly" 
+```ruby
+p = Person.select{name.op('||', '-diddly').as(flanderized_name)}.first
+p.flanderized_name
+# => "Aric Smith-diddly"
+```
 
 As you can see, just like functions, these operations can be given aliases.
 
-## Compatibility with Active Record 
+## Compatibility with Active Record
 
 Most of the new functionality provided by Squeel is accessed with the new block-style `where{}`
 syntax.
@@ -424,15 +487,21 @@ the name of a **column** instead of simply treating the symbol as a **string lit
 
 For example, this query:
 
-    Person.where(:first_name => :last_name)
+```ruby
+Person.where(:first_name => :last_name)
+```
 
 produces this SQL query in plain Active Record:
 
-    SELECT people.* FROM people WHERE people.first_name = 'last_name'.
+```
+SELECT people.* FROM people WHERE people.first_name = 'last_name'.
+```
 
 but produces this SQL query if you are using Squeel:
 
-    SELECT people.* FROM people WHERE people.first_name = people.last_name
+```
+SELECT people.* FROM people WHERE people.first_name = people.last_name
+```
 
 Note that this new behavior applies to the plain `where()`-style expressions in addition to the new
 `where{}` Squeel style.
@@ -440,13 +509,17 @@ Note that this new behavior applies to the plain `where()`-style expressions in 
 In order for your existing  `where()` clauses with symbols to continue to behave the same, you
 **must** change the symbols into strings. These scopes, for example:
 
-    scope :active, where(:state => :active)
-    scope :in_state, lambda {|state| where(:state => state) }
+```ruby
+scope :active, where(:state => :active)
+scope :in_state, lambda {|state| where(:state => state) }
+```
 
 should be changed to this:
 
-    scope :active, where(:state => 'active')
-    scope :in_state, lambda {|state| where(:state => state.to_s) }
+```ruby
+scope :active, where(:state => 'active')
+scope :in_state, lambda {|state| where(:state => state.to_s) }
+```
 
 For further information, see
 [this post to the Rails list](https://groups.google.com/forum/?fromgroups=#!topic/rubyonrails-core/NQJJzZ7R7S0),
@@ -461,16 +534,19 @@ the [Active Record guides](http://edgeguides.rubyonrails.org/active_record_query
 While the Squeel DSL is the preferred way to access advanced query functionality, you can
 still enable methods on symbols to access ARel predications in a similar manner to MetaWhere:
 
-    Squeel.configure do |config|
-      config.load_core_extensions :symbol
-    end
-    
-    Person.joins(:articles => :comments).
-           where(:articles => {:comments => {:body.matches => 'Hello!'}})
-    SELECT "people".* FROM "people" 
-    INNER JOIN "articles" ON "articles"."person_id" = "people"."id" 
-    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id" 
-    WHERE "comments"."body" LIKE 'Hello!'
+```ruby
+Squeel.configure do |config|
+  config.load_core_extensions :symbol
+end
+```
+```ruby
+Person.joins(:articles => :comments).
+       where(:articles => {:comments => {:body.matches => 'Hello!'}})
+# => SELECT "people".* FROM "people"
+#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    WHERE "comments"."body" LIKE 'Hello!'
+```
 
 This should help to smooth over the transition to the new DSL.
 
