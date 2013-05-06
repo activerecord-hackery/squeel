@@ -3,7 +3,7 @@ module Squeel
     # Stub nodes are basically a container for a Symbol that can have handy predicate
     # methods and operators defined on it since doing so on Symbol will incur the
     # nerdrage of many.
-    class Stub
+    class Stub < Node
       include PredicateMethods
       include Operators
       include Aliasing
@@ -21,7 +21,7 @@ module Squeel
       alias :< :lt
       alias :<= :lteq
 
-      # We dn't want these default Object methods, because if we're
+      # We don't want these default Object methods, because if we're
       # calling them we are probably talking about a column name
       [:id, :type].each do |column_method|
         undef_method column_method if method_defined?(column_method) ||

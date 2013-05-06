@@ -1,6 +1,6 @@
 module Squeel
   module Nodes
-    class Sifter
+    class Sifter < Node
       include PredicateOperators
 
       attr_reader :name, :args

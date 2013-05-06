@@ -3,8 +3,8 @@ gemspec
 
 gem 'rake'
 
-rails = ENV['RAILS'] || '3-2-stable'
-arel = ENV['AREL'] || '3-0-stable'
+rails = ENV['RAILS'] || '4-0-stable'
+arel = ENV['AREL'] || 'master'
 
 arel_opts = case arel
 when /\// # A path

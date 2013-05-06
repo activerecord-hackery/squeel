@@ -5,7 +5,7 @@ module Squeel
     # operation), the ARel predicate method name, and a value. these are then interpreted
     # when visited by the PredicateVisitor to generate a condition against the appropriate
     # columns.
-    class Predicate
+    class Predicate < Node
 
       include PredicateOperators
       include Aliasing

@@ -5,6 +5,8 @@ module Squeel
   end
 end
 
+require 'squeel/nodes/node'
+
 require 'squeel/nodes/predicate_methods'
 require 'squeel/nodes/operators'
 require 'squeel/nodes/predicate_operators'

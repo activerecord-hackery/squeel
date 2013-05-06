@@ -14,7 +14,12 @@ module Squeel
         # because the default #reset already does this, despite never setting
         # it anywhere that I can find. Serendipity, I say!
         def join_dependency
-          @join_dependency ||= (build_join_dependency(table.from(table), @joins_values) && @join_dependency)
+          @join_dependency ||= (
+            build_join_dependency(
+              Arel::SelectManager.new(table.engine, table),
+              joins_values
+            ) && @join_dependency
+          )
         end
 
         %w(where having group order select from).each do |visitor|
@@ -49,12 +54,12 @@ module Squeel
         end
 
         def visit!
-          @where_values = where_visit((@where_values - ['']).uniq)
-          @having_values = having_visit(@having_values.uniq.reject{|h| h.blank?})
+          self.where_values = where_visit((where_values - ['']).uniq)
+          self.having_values = having_visit(having_values.uniq.reject{|h| h.blank?})
           # FIXME: AR barfs on ARel attributes in group_values. Workaround?
-          # @group_values = group_visit(@group_values.uniq.reject{|g| g.blank?})
-          @order_values = order_visit(@order_values.uniq.reject{|o| o.blank?})
-          @select_values = select_visit(@select_values.uniq)
+          # self.group_values = group_visit(group_values.uniq.reject{|g| g.blank?})
+          self.order_values = order_visit(order_values.uniq.reject{|o| o.blank?})
+          self.select_values = select_visit(select_values.uniq)
 
           self
         end
@@ -100,22 +105,22 @@ module Squeel
           buckets = joins.group_by do |join|
             case join
             when String
-              'string_join'
+              :string_join
             when Hash, Symbol, Array, Nodes::Stub, Nodes::Join, Nodes::KeyPath
-              'association_join'
+              :association_join
             when JoinAssociation
-              'stashed_join'
+              :stashed_join
             when Arel::Nodes::Join
-              'join_node'
+              :join_node
             else
               raise 'unknown class: %s' % join.class.name
             end
           end
 
-          association_joins         = buckets['association_join'] || []
-          stashed_association_joins = buckets['stashed_join'] || []
-          join_nodes                = (buckets['join_node'] || []).uniq
-          string_joins              = (buckets['string_join'] || []).map { |x|
+          association_joins         = buckets[:association_join] || []
+          stashed_association_joins = buckets[:stashed_join] || []
+          join_nodes                = (buckets[:join_node] || []).uniq
+          string_joins              = (buckets[:string_join] || []).map { |x|
             x.strip
           }.uniq
 
@@ -140,6 +145,8 @@ module Squeel
 
           manager
         end
+        # For 4.x adapters
+        alias :build_joins :build_join_dependency
 
         def includes(*args)
           if block_given? && args.empty?
@@ -335,7 +342,7 @@ module Squeel
         # DB for debug purposes without actually running the query.
         def debug_sql
           if eager_loading?
-            including = (@eager_load_values + @includes_values).uniq
+            including = (eager_load_values + includes_values).uniq
             join_dependency = JoinDependency.new(@klass, including, [])
             construct_relation_for_association_find(join_dependency).to_sql
           else

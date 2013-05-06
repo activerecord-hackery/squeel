@@ -23,7 +23,7 @@ describe Symbol do
     it 'creates a function node' do
       function = :blah.func('foo')
       function.should be_a Squeel::Nodes::Function
-      function.name.should eq :blah
+      function.function_name.should eq :blah
       function.args.should eq ['foo']
     end
   end

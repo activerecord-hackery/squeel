@@ -1,7 +1,7 @@
 module Squeel
   module Nodes
     # A node that contains a single expression.
-    class Unary
+    class Unary < Node
 
       include PredicateOperators
 

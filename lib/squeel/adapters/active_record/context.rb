@@ -44,6 +44,16 @@ module Squeel
           parent
         end
 
+        def classify(object)
+          if Class === object
+            object
+          elsif object.respond_to? :base_klass
+            object.base_klass
+          else
+            raise ArgumentError, "#{object} can't be converted to a class"
+          end
+        end
+
         private
 
         def get_table(object)
@@ -55,16 +65,6 @@ module Squeel
             Arel::Table.new(object.table_name, :as => object.aliased_table_name, :engine => @engine)
           else
             raise ArgumentError, "Unable to get table for #{object}"
-          end
-        end
-
-        def classify(object)
-          if Class === object
-            object
-          elsif object.respond_to? :active_record
-            object.active_record
-          else
-            raise ArgumentError, "#{object} can't be converted to a class"
           end
         end
 

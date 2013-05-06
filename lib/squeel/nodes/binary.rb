@@ -1,7 +1,7 @@
 module Squeel
   module Nodes
     # A node that represents an operation with two operands.
-    class Binary
+    class Binary < Node
 
       include PredicateOperators
 

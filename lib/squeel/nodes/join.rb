@@ -3,7 +3,7 @@ require 'active_support/core_ext/module'
 module Squeel
   module Nodes
     # A node representing a joined association
-    class Join
+    class Join < Node
       undef_method :id if method_defined?(:id)
 
       attr_reader :_join

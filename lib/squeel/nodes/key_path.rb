@@ -4,7 +4,7 @@ module Squeel
   module Nodes
     # A node that stores a path of keys (of Symbol, Stub, or Join values) and
     # an endpoint. Used similarly to a nested hash.
-    class KeyPath
+    class KeyPath < Node
       include PredicateOperators
       include Operators
 
@@ -179,12 +179,17 @@ module Squeel
 
       # Appends to the KeyPath or delegates to the endpoint, as appropriate
       # @return [KeyPath] The updated KeyPath
-      def method_missing(method_id, *args)
+      def method_missing(method_id, *args, &block)
         super if method_id == :to_ary
 
-        if endpoint.respond_to? method_id
-          self.endpoint = endpoint.send(method_id, *args)
-          self
+        if endpoint.respond_to?(method_id)
+          if Predicate === endpoint && method_id == :==
+            false
+          else
+            # TODO: We really should not mutate here.
+            self.endpoint = endpoint.send(method_id, *args)
+            self
+          end
         elsif Stub === endpoint || Join === endpoint
           if args.empty?
             @path << Stub.new(method_id)

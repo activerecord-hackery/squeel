@@ -315,7 +315,7 @@ module Squeel
           end
         end
 
-        Arel::Nodes::NamedFunction.new(o.name, args)
+        Arel::Nodes::NamedFunction.new(o.function_name, args)
       end
 
       # Visit a Squeel operation node, convering it to an ARel InfixOperation

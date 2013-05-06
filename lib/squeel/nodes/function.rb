@@ -1,7 +1,7 @@
 module Squeel
   module Nodes
     # A node that represents an SQL function call
-    class Function
+    class Function < Node
 
       include PredicateMethods
       include PredicateOperators
@@ -22,7 +22,7 @@ module Squeel
       alias :<= :lteq
 
       # @return [Symbol] The name of the SQL function to be called
-      attr_reader :name
+      attr_reader :function_name
 
       # @return [Array] The arguments to be passed to the SQL function
       attr_reader :args
@@ -30,8 +30,8 @@ module Squeel
       # Create a node representing an SQL Function with the given name and arguments
       # @param [Symbol] name The function name
       # @param [Array] args The array of arguments to pass to the function.
-      def initialize(name, args)
-        @name, @args = name, args
+      def initialize(function_name, args)
+        @function_name, @args = function_name, args
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be
@@ -48,7 +48,7 @@ module Squeel
 
       def eql?(other)
         self.class == other.class &&
-          self.name.eql?(other.name) &&
+          self.function_name.eql?(other.function_name) &&
           self.args.eql?(other.args)
       end
 

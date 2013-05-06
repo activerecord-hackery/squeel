@@ -6,7 +6,7 @@ ActiveRecord::Base.establish_connection(
   :database => ':memory:'
 )
 
-ActiveRecord::Base.silence do
+silence_stream(STDOUT) do
   ActiveRecord::Migration.verbose = false
 
   ActiveRecord::Schema.define do

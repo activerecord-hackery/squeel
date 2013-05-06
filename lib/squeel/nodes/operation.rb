@@ -15,7 +15,7 @@ module Squeel
       end
 
       # An operation should probably call its "function" name an "operator", shouldn't it?
-      alias :operator :name
+      alias :operator :function_name
 
       # @return The left operand
       def left

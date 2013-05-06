@@ -46,7 +46,7 @@ module Squeel
       it 'creates a named function at its endpoint' do
         @k.third.fourth.fifth.max(1,2,3)
         @k.endpoint.should be_a Function
-        @k.endpoint.name.should eq :max
+        @k.endpoint.function_name.should eq :max
         @k.endpoint.args.should eq [1,2,3]
       end
 
@@ -77,7 +77,7 @@ module Squeel
       it 'creates Or nodes with | if the endpoint responds to |' do
         node = @k.third.fourth.eq('Bob') | Stub.new(:attr).eq('Joe')
         node.should be_a Or
-        node.left.should eq @k
+        node.left.should eql @k
         node.right.should eql Stub.new(:attr).eq('Joe')
       end
 
@@ -99,7 +99,7 @@ module Squeel
       it 'creates NOT nodes with -@ if the endpoint responds to -@' do
         node = - @k.third.fourth.eq('Bob')
         node.should be_a Not
-        node.expr.should eq @k
+        node.expr.should eql @k
       end
 
       it 'raises NoMethodError with -@ if the endpoint does not respond to -@' do

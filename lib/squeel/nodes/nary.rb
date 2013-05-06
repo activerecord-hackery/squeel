@@ -1,7 +1,7 @@
 module Squeel
   module Nodes
     # A node containing multiple children. Just the And node for now.
-    class Nary
+    class Nary < Node
       include PredicateOperators
 
       # @return [Array] This node's children

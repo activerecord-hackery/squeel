@@ -2,10 +2,13 @@ class Person < ActiveRecord::Base
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :children, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :articles
-  has_many   :articles_with_condition, :class_name => 'Article', :conditions => {:title => 'Condition'}
+  has_many   :articles_with_condition, lambda { where :title => 'Condition' },
+    :class_name => 'Article'
   has_many   :comments
   has_many   :condition_article_comments, :through => :articles_with_condition, :source => :comments
-  has_many   :article_comments_with_first_post, :through => :articles, :source => :comments, :conditions => {:body => 'first post'}
+  has_many   :article_comments_with_first_post,
+    lambda { where :body => 'first post' },
+    :through => :articles, :source => :comments
   has_many   :authored_article_comments, :through => :articles,
              :source => :comments
   has_many   :notes, :as => :notable
@@ -37,9 +40,9 @@ end
 class PersonNamedBill < ActiveRecord::Base
   self.table_name = 'people'
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
-  default_scope where{name == 'Bill'}.order{id}
-  scope :highly_compensated, where{salary > 200000}
-  scope :ending_with_ill, where{name =~ '%ill'}
+  default_scope lambda { where{name == 'Bill'}.order{id} }
+  scope :highly_compensated, lambda { where {salary > 200000} }
+  scope :ending_with_ill, lambda { where{name =~ '%ill'} }
   scope :with_salary_equal_to, lambda { |value| where{abs(salary) == value} }
 end
 

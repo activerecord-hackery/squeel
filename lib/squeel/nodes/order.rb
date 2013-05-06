@@ -1,7 +1,7 @@
 module Squeel
   module Nodes
     # A node that represents SQL orderings, such as "people.id DESC"
-    class Order
+    class Order < Node
       # @return The expression being ordered on. Might be an attribute, function, or operation
       attr_reader :expr
 

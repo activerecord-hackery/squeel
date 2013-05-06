@@ -1,5 +1,5 @@
 case ActiveRecord::VERSION::MAJOR
-when 3
+when 3, 4
   ActiveRecord::Relation.send :include, Squeel::Nodes::Aliasing
   require 'squeel/adapters/active_record/join_dependency_extensions'
   require 'squeel/adapters/active_record/base_extensions'

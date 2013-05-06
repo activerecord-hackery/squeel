@@ -155,25 +155,29 @@ module Squeel
           end
 
           it 'maps orders inside a hash to their appropriate association table' do
-            relation = Person.joins({
-              :children => {
+            unless activerecord_version_at_least '4.0.0'
+              relation = Person.joins({
                 :children => {
-                  :parent => :parent
-                }
-              }
-            }).order({
-              :children => {
-                :children => {
-                  :parent => {
-                    :parent => :id.asc
+                  :children => {
+                    :parent => :parent
                   }
                 }
-              }
-            })
+              }).order({
+                :children => {
+                  :children => {
+                    :parent => {
+                      :parent => :id.asc
+                    }
+                  }
+                }
+              })
 
-            arel = relation.build_arel
+              arel = relation.build_arel
 
-            arel.to_sql.should match /ORDER BY "parents_people_2"."id" ASC/
+              arel.to_sql.should match /ORDER BY "parents_people_2"."id" ASC/
+            else
+              pending 'Unsupported in ActiveRecord 4.0.0+'
+            end
           end
 
           it 'does not inadvertently convert KeyPaths to booleans when uniqing where_values' do
@@ -186,7 +190,7 @@ module Squeel
           end
 
           it 'reverses order of Arel::Attributes when #last is called' do
-            sorted_people = Person.all.sort {|a, b| a.name.downcase <=> b.name.downcase}
+            sorted_people = Person.all.to_a.sort {|a, b| a.name.downcase <=> b.name.downcase}
 
             Person.order{name}.last.should eq sorted_people.last
           end
@@ -242,7 +246,7 @@ module Squeel
           it 'eager loads belongs_to associations' do
             queries = queries_for do
               Article.includes(:person).
-                      where{person.name == 'Ernie'}.all
+                      where{person.name == 'Ernie'}.to_a
             end
             queries.should have(1).item
             queries.first.should match /LEFT OUTER JOIN "people"/
@@ -252,7 +256,7 @@ module Squeel
           it 'eager loads belongs_to associations on models with default_scopes' do
             queries = queries_for do
               PersonNamedBill.includes(:parent).
-                              where{parent.name == 'Ernie'}.all
+                              where{parent.name == 'Ernie'}.to_a
             end
             queries.should have(1).item
             queries.first.should match /LEFT OUTER JOIN "people"/
@@ -289,13 +293,13 @@ module Squeel
 
           it 'builds options with a block' do
             relation = Person.preload{children}
-            queries_for {relation.all}.should have(2).items
+            queries_for {relation.to_a}.should have(2).items
             queries_for {relation.first.children}.should have(0).items
           end
 
           it 'builds options with a keypath' do
             relation = Person.preload{articles.comments}
-            queries_for {relation.all}.should have(3).items
+            queries_for {relation.to_a}.should have(3).items
             queries_for {relation.first.articles.first.comments}.should have(0).items
           end
 
@@ -306,7 +310,7 @@ module Squeel
               }
             }}
 
-            queries_for {relation.all}.should have(4).items
+            queries_for {relation.to_a}.should have(4).items
 
             queries_for {
               relation.first.articles
@@ -323,7 +327,7 @@ module Squeel
             standard = Person.eager_load(:children => :children)
             block = Person.eager_load{{children => children}}
             block.debug_sql.should eq standard.debug_sql
-            queries_for {block.all}.should have(1).item
+            queries_for {block.to_a}.should have(1).item
             queries_for {block.first.children}.should have(0).items
           end
 
@@ -572,9 +576,8 @@ module Squeel
         describe '#order' do
 
           it 'builds options with a block' do
-            standard = Person.order(:name)
             block = Person.order{name}
-            block.to_sql.should eq standard.to_sql
+            block.to_sql.should match /ORDER BY "people"\."name"/
           end
 
         end
