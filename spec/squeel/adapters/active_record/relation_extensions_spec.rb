@@ -580,6 +580,15 @@ module Squeel
             block.to_sql.should match /ORDER BY "people"\."name"/
           end
 
+          it 'allows AR 4.0-style hash options' do
+            if activerecord_version_at_least '4.0.0'
+              block = Person.order(:name => :desc)
+              block.to_sql.should match /ORDER BY "people"\."name" DESC/
+            else
+              pending 'Not required in AR versions < 4.0.0'
+            end
+          end
+
         end
 
         describe '#reorder' do

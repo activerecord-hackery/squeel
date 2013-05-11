@@ -39,7 +39,7 @@ module Squeel
         end
 
         def build_order(arel)
-          orders = order_visit(order_values)
+          orders = order_visit(dehashified_order_values)
           orders = reverse_sql_order(attrs_to_orderings(orders)) if reverse_order_value
 
           orders = orders.uniq.reject(&:blank?).flat_map do |order|
@@ -65,6 +65,18 @@ module Squeel
           else
             opts
           end
+        end
+
+        private
+
+        def dehashified_order_values
+          order_values.map { |o|
+            if Hash === o && o.values.all? { |v| [:asc, :desc].include?(v) }
+              o.map { |field, dir| table[field].send(dir) }
+            else
+              o
+            end
+          }
         end
 
       end
