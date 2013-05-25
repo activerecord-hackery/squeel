@@ -3,12 +3,10 @@ require 'sham'
 require 'faker'
 
 module ActiveRecord
+  # Shamelessly swiped from the AR test code
   class SQLCounter
     IGNORED_SQL = [/^PRAGMA /, /^SELECT currval/, /^SELECT CAST/, /^SELECT @@IDENTITY/, /^SELECT @@ROWCOUNT/, /^SAVEPOINT/, /^ROLLBACK TO SAVEPOINT/, /^RELEASE SAVEPOINT/, /^SHOW max_identifier_length/,
       /SELECT name\s+FROM sqlite_master\s+WHERE type = 'table' AND NOT name = 'sqlite_sequence'/]
-
-    # FIXME: this needs to be refactored so specific database can add their own
-    # ignored SQL.  This ignored SQL is for Oracle.
     IGNORED_SQL.concat [/^select .*nextval/i, /^SAVEPOINT/, /^ROLLBACK TO/, /^\s*select .* from all_triggers/im]
 
     def initialize

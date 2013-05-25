@@ -45,6 +45,7 @@ module Squeel
               merge_resolving_duplicate_squeel_equalities(r)
             end
           else
+            puts r.inspect if r.is_a?(Proc)
             super(r)
           end
         end

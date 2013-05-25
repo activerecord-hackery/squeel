@@ -2,13 +2,24 @@ class Person < ActiveRecord::Base
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :children, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :articles
-  has_many   :articles_with_condition, lambda { where :title => 'Condition' },
-    :class_name => 'Article'
   has_many   :comments
+  if ActiveRecord::VERSION::MAJOR == 4
+    has_many   :articles_with_condition, lambda { where :title => 'Condition' },
+      :class_name => 'Article'
+    has_many   :article_comments_with_first_post,
+      lambda { where :body => 'first post' },
+      :through => :articles, :source => :comments
+  else
+    has_many   :articles_with_condition, :conditions => {:title => 'Condition'},
+      :class_name => 'Article'
+    has_many   :article_comments_with_first_post,
+      :conditions => { :body => 'first post' },
+      :through => :articles, :source => :comments
+  end
   has_many   :condition_article_comments, :through => :articles_with_condition, :source => :comments
-  has_many   :article_comments_with_first_post,
-    lambda { where :body => 'first post' },
-    :through => :articles, :source => :comments
+  if ActiveRecord::VERSION::MAJOR == 4
+  else
+  end
   has_many   :authored_article_comments, :through => :articles,
              :source => :comments
   has_many   :notes, :as => :notable
@@ -40,7 +51,11 @@ end
 class PersonNamedBill < ActiveRecord::Base
   self.table_name = 'people'
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
-  default_scope lambda { where{name == 'Bill'}.order{id} }
+  if ActiveRecord::VERSION::MAJOR > 3 || ActiveRecord::VERSION::MINOR > 0
+    default_scope lambda { where{name == 'Bill'}.order{id} }
+  else # 3.0 doesn't support callables for default_scope
+    default_scope where{name == 'Bill'}.order{id}
+  end
   scope :highly_compensated, lambda { where {salary > 200000} }
   scope :ending_with_ill, lambda { where{name =~ '%ill'} }
   scope :with_salary_equal_to, lambda { |value| where{abs(salary) == value} }
