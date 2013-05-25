@@ -26,6 +26,10 @@ module ActiveRecord
   ActiveSupport::Notifications.subscribe('sql.active_record', SQLCounter.new)
 end
 
+unless ENV['DEPRECATIONS']
+  ActiveSupport::Deprecation.silenced = true
+end
+
 Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
   require f
 end
