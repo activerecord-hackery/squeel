@@ -57,7 +57,7 @@ module Squeel
         def visit!
           self.where_values = where_visit((where_values - ['']).uniq)
           self.having_values = having_visit(having_values.uniq.reject{|h| h.blank?})
-          # FIXME: AR barfs on ARel attributes in group_values. Workaround?
+          # FIXME: AR barfs on Arel attributes in group_values. Workaround?
           # self.group_values = group_visit(group_values.uniq.reject{|g| g.blank?})
           self.order_values = order_visit(order_values.uniq.reject{|o| o.blank?})
           self.select_values = select_visit(select_values.uniq)

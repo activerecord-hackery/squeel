@@ -1,8 +1,8 @@
 module Squeel
   module Nodes
-    # This node is essentially a container that will result in ARel predicate nodes
+    # This node is essentially a container that will result in Arel predicate nodes
     # once visited. It stores the expression (normally an attribute name, function, or
-    # operation), the ARel predicate method name, and a value. these are then interpreted
+    # operation), the Arel predicate method name, and a value. these are then interpreted
     # when visited by the PredicateVisitor to generate a condition against the appropriate
     # columns.
     class Predicate < Node
@@ -16,12 +16,12 @@ module Squeel
       # @return The expression on the left side of this predicate.
       attr_reader :expr
 
-      # @return [Symbol] The ARel "predication" method name, such as eq, matches, etc.
+      # @return [Symbol] The Arel "predication" method name, such as eq, matches, etc.
       attr_reader :method_name
 
       # Create a new Predicate node with the given expression, method name, and value
       # @param expr The expression for the left hand side of the predicate.
-      # @param [Symbol] method_name The ARel predication method
+      # @param [Symbol] method_name The Arel predication method
       # @param value An optional value. If not given, one will need to be supplied
       #   before the node can be visited properly.
       def initialize(expr, method_name = :eq, value = :__undefined__)

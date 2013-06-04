@@ -45,7 +45,7 @@ module Squeel
       # @param k The hash key
       # @param v The hash value
       # @param parent The current parent object in the context
-      # @return An ARel predicate
+      # @return An Arel predicate
       def visit_without_hash_context_shift(k, v, parent)
         case v
         when Nodes::Stub, Symbol

@@ -1,7 +1,7 @@
 # Squeel [![Build Status](https://secure.travis-ci.org/ernie/squeel.png)](http://travis-ci.org/ernie/squeel) [![endorse](http://api.coderwall.com/ernie/endorsecount.png)](http://coderwall.com/ernie)
 
 Squeel lets you write your Active Record queries with fewer strings, and more Ruby,
-by making the ARel awesomeness that lies beneath Active Record more accessible.
+by making the Arel awesomeness that lies beneath Active Record more accessible.
 
 Squeel lets you rewrite...
 
@@ -113,8 +113,8 @@ to interpreting functions and the like. We'll cover those later.
 
 ### Predicates
 
-All of the ARel "predication" methods can be accessed inside the Squeel DSL, via
-their method name, an alias, or an an operator, to create ARel predicates, which are
+All of the Arel "predication" methods can be accessed inside the Squeel DSL, via
+their method name, an alias, or an an operator, to create Arel predicates, which are
 used in `WHERE` or `HAVING` clauses.
 
 <table>
@@ -532,7 +532,7 @@ the [Active Record guides](http://edgeguides.rubyonrails.org/active_record_query
 ## Compatibility with MetaWhere
 
 While the Squeel DSL is the preferred way to access advanced query functionality, you can
-still enable methods on symbols to access ARel predications in a similar manner to MetaWhere:
+still enable methods on symbols to access Arel predications in a similar manner to MetaWhere:
 
 ```ruby
 Squeel.configure do |config|

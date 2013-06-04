@@ -42,7 +42,7 @@ module Squeel
     end
 
     # This method, as implemented, just makes use of the table cache, which will
-    # call get_table, where the real work of getting the ARel Table occurs.
+    # call get_table, where the real work of getting the Arel Table occurs.
     #
     # @param object A contextualizable object (this will depend on the subclass's implementation)
     # @return [Arel::Table] A table corresponding to the object param

@@ -63,7 +63,7 @@ module Squeel
       @caller.instance_eval &block
     end
 
-    # Shorthand for creating ARel SqlLiteral nodes.
+    # Shorthand for creating Arel SqlLiteral nodes.
     #
     # @param [String] string The string to convert to an SQL literal.
     # @return [Arel::Nodes::SqlLiteral] The SQL literal.

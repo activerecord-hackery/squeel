@@ -16,7 +16,7 @@ module Squeel
         @v = Visitor.new(@c)
       end
 
-      it 'creates a bare ARel attribute given a symbol with no asc/desc' do
+      it 'creates a bare Arel attribute given a symbol with no asc/desc' do
         attribute = @v.accept(:name)
         attribute.should be_a Arel::Attribute
         attribute.name.should eq :name
@@ -71,12 +71,12 @@ module Squeel
         node.to_sql.should be_like "(SELECT \"people\".\"id\" FROM \"people\"  WHERE \"people\".\"name\" = 'Aric Smith') aric"
       end
 
-      it 'creates an ARel NamedFunction node for a Function node' do
+      it 'creates an Arel NamedFunction node for a Function node' do
         function = @v.accept(:find_in_set.func())
         function.should be_a Arel::Nodes::NamedFunction
       end
 
-      it 'maps symbols in Function args to ARel attributes' do
+      it 'maps symbols in Function args to Arel attributes' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3'))
         function.to_sql.should match /find_in_set\("people"."id", '1,2,3'\)/
       end
@@ -86,7 +86,7 @@ module Squeel
         function.to_sql.should match /find_in_set\("children_people_2"."id", '1,2,3'\)/
       end
 
-      it 'sets the alias on the ARel NamedFunction from the Function alias' do
+      it 'sets the alias on the Arel NamedFunction from the Function alias' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3').as('newname'))
         function.to_sql.should match /newname/
       end
@@ -106,27 +106,27 @@ module Squeel
         as.to_sql.should match /"children_people"."name" AS other_name/
       end
 
-      it 'creates an ARel Grouping node for a Squeel Grouping node' do
+      it 'creates an Arel Grouping node for a Squeel Grouping node' do
         grouping = @v.accept(dsl{_(id)})
         grouping.should be_a Arel::Nodes::Grouping
       end
 
-      it 'creates an ARel Addition node for an Operation node with + as operator' do
+      it 'creates an Arel Addition node for an Operation node with + as operator' do
         operation = @v.accept(dsl{id + 1})
         operation.should be_a Arel::Nodes::Addition
       end
 
-      it 'creates an ARel Subtraction node for an Operation node with - as operator' do
+      it 'creates an Arel Subtraction node for an Operation node with - as operator' do
         operation = @v.accept(dsl{id - 1})
         operation.should be_a Arel::Nodes::Subtraction
       end
 
-      it 'creates an ARel Multiplication node for an Operation node with * as operator' do
+      it 'creates an Arel Multiplication node for an Operation node with * as operator' do
         operation = @v.accept(dsl{id * 1})
         operation.should be_a Arel::Nodes::Multiplication
       end
 
-      it 'creates an ARel Division node for an Operation node with / as operator' do
+      it 'creates an Arel Division node for an Operation node with / as operator' do
         operation = @v.accept(dsl{id / 1})
         operation.should be_a Arel::Nodes::Division
       end

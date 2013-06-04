@@ -327,7 +327,7 @@ module Squeel
         predicate.to_sql.should be_like '"people"."id" IN (SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3)'
       end
 
-      it 'converts ActiveRecord::Relation values in function arguments to their ARel AST' do
+      it 'converts ActiveRecord::Relation values in function arguments to their Arel AST' do
         predicate = @v.accept(dsl{exists(Person.where{name == 'Aric Smith'})})
         predicate.should be_a Arel::Nodes::NamedFunction
         predicate.expressions.first.should be_a Arel::Nodes::SelectStatement
@@ -386,7 +386,7 @@ module Squeel
         predicate.right.should eq 'Joe'
       end
 
-      it 'creates an ARel Grouping node containing an Or node for Or nodes' do
+      it 'creates an Arel Grouping node containing an Or node for Or nodes' do
         left = :name.matches % 'Joe%'
         right = :id.gt % 1
         predicate = @v.accept(left | right)
@@ -396,23 +396,23 @@ module Squeel
         predicate.expr.right.should be_a Arel::Nodes::GreaterThan
       end
 
-      it 'creates an ARel Not node for a Not node' do
+      it 'creates an Arel Not node for a Not node' do
         expr = -(:name.matches % 'Joe%')
         predicate = @v.accept(expr)
         predicate.should be_a Arel::Nodes::Not
       end
 
-      it 'creates an ARel NamedFunction node for a Function node' do
+      it 'creates an Arel NamedFunction node for a Function node' do
         function = @v.accept(:find_in_set.func())
         function.should be_a Arel::Nodes::NamedFunction
       end
 
-      it 'maps symbols in Function args to ARel attributes' do
+      it 'maps symbols in Function args to Arel attributes' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3'))
         function.to_sql.should match /"people"."id"/
       end
 
-      it 'sets the alias on the ARel NamedFunction from the Function alias' do
+      it 'sets the alias on the Arel NamedFunction from the Function alias' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3').as('newname'))
         function.to_sql.should match /newname/
       end
@@ -427,27 +427,27 @@ module Squeel
         as.to_sql.should match /"people"."name" AS other_name/
       end
 
-      it 'creates an ARel Addition node for an Operation node with + as operator' do
+      it 'creates an Arel Addition node for an Operation node with + as operator' do
         operation = @v.accept(dsl{id + 1})
         operation.should be_a Arel::Nodes::Addition
       end
 
-      it 'creates an ARel Subtraction node for an Operation node with - as operator' do
+      it 'creates an Arel Subtraction node for an Operation node with - as operator' do
         operation = @v.accept(dsl{id - 1})
         operation.should be_a Arel::Nodes::Subtraction
       end
 
-      it 'creates an ARel Multiplication node for an Operation node with * as operator' do
+      it 'creates an Arel Multiplication node for an Operation node with * as operator' do
         operation = @v.accept(dsl{id * 1})
         operation.should be_a Arel::Nodes::Multiplication
       end
 
-      it 'creates an ARel Division node for an Operation node with / as operator' do
+      it 'creates an Arel Division node for an Operation node with / as operator' do
         operation = @v.accept(dsl{id / 1})
         operation.should be_a Arel::Nodes::Division
       end
 
-      it 'creates an ARel InfixOperation node for an Operation with a custom operator' do
+      it 'creates an Arel InfixOperation node for an Operation with a custom operator' do
         operation = @v.accept(dsl{id.op(:blah, 1)})
         operation.should be_a Arel::Nodes::InfixOperation
       end

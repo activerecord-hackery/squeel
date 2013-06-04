@@ -12,7 +12,7 @@ module Squeel
 
       # Create a new Join node
       # @param [Symbol] name The association name
-      # @param [Arel::InnerJoin, Arel::OuterJoin] type The ARel join class
+      # @param [Arel::InnerJoin, Arel::OuterJoin] type The Arel join class
       # @param [Class, String, Symbol] klass The polymorphic belongs_to class or class name
       def initialize(name, type = Arel::InnerJoin, klass = nil)
         @_join = Polyamorous::Join.new(name, type, klass)

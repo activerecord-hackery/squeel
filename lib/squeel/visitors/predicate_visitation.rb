@@ -19,11 +19,11 @@ module Squeel
         visit(klass.send("sifter_#{o.name}", *o.args), parent)
       end
 
-      # Visit a Squeel predicate, converting it into an ARel predicate
+      # Visit a Squeel predicate, converting it into an Arel predicate
       #
       # @param [Nodes::Predicate] o The predicate to visit
       # @param parent The parent object in the context
-      # @return An ARel predicate node
+      # @return An Arel predicate node
       #   (Arel::Nodes::Equality, Arel::Nodes::Matches, etc)
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
@@ -59,10 +59,10 @@ module Squeel
       # Determine whether to use IN or equality testing for a predicate,
       # based on its value class, then return the appropriate predicate.
       #
-      # @param attribute The ARel attribute (or function/operation) the
+      # @param attribute The Arel attribute (or function/operation) the
       #   predicate will be created for
       # @param value The value to be compared against
-      # @return [Arel::Nodes::Node] An ARel predicate node
+      # @return [Arel::Nodes::Node] An Arel predicate node
       def arel_predicate_for(attribute, value, parent)
         if ActiveRecord::Relation === value && value.select_values.empty?
           value = visit(value.select(value.klass.arel_table[value.klass.primary_key]), parent)
@@ -102,7 +102,7 @@ module Squeel
         end
       end
 
-      # Certain nodes require us to do the quoting before the ARel
+      # Certain nodes require us to do the quoting before the Arel
       # visitor gets a chance to try, because we want to avoid having our
       # values quoted as a type of the last visited column. Otherwise, we
       # can end up with annoyances like having "joe" quoted to 0, if the

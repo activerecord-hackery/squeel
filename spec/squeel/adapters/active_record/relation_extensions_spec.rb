@@ -78,7 +78,7 @@ module Squeel
             Article.first.uniq_commenters.length.should eq Article.first.uniq_commenters.count
           end
 
-          it 'visits wheres with a PredicateVisitor, converting them to ARel nodes' do
+          it 'visits wheres with a PredicateVisitor, converting them to Arel nodes' do
             relation = Person.where(:name.matches => '%bob%')
             arel = relation.build_arel
             arel.to_sql.should match /"people"."name" LIKE '%bob%'/
@@ -643,7 +643,7 @@ module Squeel
             wheres.should eq ["name like '%bob%'"]
           end
 
-          it 'adds hash where values without converting to ARel predicates' do
+          it 'adds hash where values without converting to Arel predicates' do
             wheres = Person.where({:name => 'bob'}).where_values
             wheres.should eq [{:name => 'bob'}]
           end

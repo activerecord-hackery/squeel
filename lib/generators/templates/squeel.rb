@@ -5,7 +5,7 @@ Squeel.configure do |config|
   # config.load_core_extensions :hash
 
   # To load symbol extensions (for a subset of the old MetaWhere functionality,
-  # via ARel predicate methods on Symbols: :name.matches, etc):
+  # via Arel predicate methods on Symbols: :name.matches, etc):
   #
   # NOTE: Not recommended. Learn the new DSL. Use it. Love it.
   #

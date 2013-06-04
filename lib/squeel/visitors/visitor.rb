@@ -22,7 +22,7 @@ module Squeel
       # @param object The object to visit
       # @param parent The parent of this object, to track the object's place in
       #   any association hierarchy.
-      # @return The results of the node visitation, typically an ARel object of some kind.
+      # @return The results of the node visitation, typically an Arel object of some kind.
       def accept(object, parent = context.base)
         visit(object, parent)
       end
@@ -100,13 +100,13 @@ module Squeel
         v
       end
 
-      # Important to avoid accidentally allowing the default ARel visitor's
+      # Important to avoid accidentally allowing the default Arel visitor's
       # last_column quoting behavior (where a value is quoted as though it
       # is of the type of the last visited column). This can wreak havoc with
       # Functions and Operations.
       #
       # @param object The object to check
-      # @return [Boolean] Whether or not the ARel visitor will try to quote the
+      # @return [Boolean] Whether or not the Arel visitor will try to quote the
       #   object if not passed as an SqlLiteral.
       def quoted?(object)
         case object
@@ -119,7 +119,7 @@ module Squeel
       end
 
       # Quote a value based on its type, not on the last column used by the
-      # ARel visitor. This is occasionally necessary to avoid having ARel
+      # Arel visitor. This is occasionally necessary to avoid having Arel
       # quote a value according to an integer column, converting 'My String' to 0.
       #
       # @param value The value to quote
@@ -159,7 +159,7 @@ module Squeel
 
       # Pass an object through the visitor unmodified. This is
       # in order to allow objects that don't require modification
-      # to be handled by ARel directly.
+      # to be handled by Arel directly.
       #
       # @param object The object to visit
       # @param parent The object's parent within the context
@@ -231,7 +231,7 @@ module Squeel
         visit(o.endpoint, parent)
       end
 
-      # Visit a Literal by converting it to an ARel SqlLiteral
+      # Visit a Literal by converting it to an Arel SqlLiteral
       #
       # @param [Nodes::Literal] o The Literal to visit
       # @param parent The parent object in the context (unused)
@@ -240,7 +240,7 @@ module Squeel
         Arel.sql(o.expr)
       end
 
-      # Visit a Squeel As node, resulting in am ARel As node.
+      # Visit a Squeel As node, resulting in am Arel As node.
       #
       # @param [Nodes::As] The As node to visit
       # @param parent The parent object in the context
@@ -256,46 +256,46 @@ module Squeel
         end
       end
 
-      # Visit a Squeel And node, returning an ARel Grouping containing an
-      # ARel And node.
+      # Visit a Squeel And node, returning an Arel Grouping containing an
+      # Arel And node.
       #
       # @param [Nodes::And] o The And node to visit
       # @param parent The parent object in the context
-      # @return [Arel::Nodes::Grouping] A grouping node, containnig an ARel
+      # @return [Arel::Nodes::Grouping] A grouping node, containnig an Arel
       #   And node as its expression. All children will be visited before
       #   being passed to the And.
       def visit_Squeel_Nodes_And(o, parent)
         Arel::Nodes::Grouping.new(Arel::Nodes::And.new(visit(o.children, parent)))
       end
 
-      # Visit a Squeel Or node, returning an ARel Or node.
+      # Visit a Squeel Or node, returning an Arel Or node.
       #
       # @param [Nodes::Or] o The Or node to visit
       # @param parent The parent object in the context
-      # @return [Arel::Nodes::Or] An ARel Or node, with left and right sides visited
+      # @return [Arel::Nodes::Or] An Arel Or node, with left and right sides visited
       def visit_Squeel_Nodes_Or(o, parent)
         Arel::Nodes::Grouping.new(Arel::Nodes::Or.new(visit(o.left, parent), (visit(o.right, parent))))
       end
 
-      # Visit a Squeel Not node, returning an ARel Not node.
+      # Visit a Squeel Not node, returning an Arel Not node.
       #
       # @param [Nodes::Not] o The Not node to visit
       # @param parent The parent object in the context
-      # @return [Arel::Nodes::Not] An ARel Not node, with expression visited
+      # @return [Arel::Nodes::Not] An Arel Not node, with expression visited
       def visit_Squeel_Nodes_Not(o, parent)
         Arel::Nodes::Not.new(visit(o.expr, parent))
       end
 
-      # Visit a Squeel Grouping node, returning an ARel Grouping node.
+      # Visit a Squeel Grouping node, returning an Arel Grouping node.
       #
       # @param [Nodes::Grouping] o The Grouping node to visit
       # @param parent The parent object in the context
-      # @return [Arel::Nodes::Grouping] An ARel Grouping node, with expression visited
+      # @return [Arel::Nodes::Grouping] An Arel Grouping node, with expression visited
       def visit_Squeel_Nodes_Grouping(o, parent)
         Arel::Nodes::Grouping.new(visit(o.expr, parent))
       end
       #
-      # Visit a Squeel function, returning an ARel NamedFunction node.
+      # Visit a Squeel function, returning an Arel NamedFunction node.
       #
       # @param [Nodes::Function] o The function node to visit
       # @param parent The parent object in the context
@@ -318,7 +318,7 @@ module Squeel
         Arel::Nodes::NamedFunction.new(o.function_name, args)
       end
 
-      # Visit a Squeel operation node, convering it to an ARel InfixOperation
+      # Visit a Squeel operation node, convering it to an Arel InfixOperation
       # (or subclass, as appropriate)
       #
       # @param [Nodes::Operation] o The Operation node to visit
@@ -356,7 +356,7 @@ module Squeel
       # Visit an Active Record Relation, returning an Arel::SelectManager
       # @param [ActiveRecord::Relation] o The Relation to visit
       # @param parent The parent object in the context
-      # @return [Arel::SelectManager] The ARel select manager that represents
+      # @return [Arel::SelectManager] The Arel select manager that represents
       #   the relation's query
       def visit_ActiveRecord_Relation(o, parent)
         o.arel

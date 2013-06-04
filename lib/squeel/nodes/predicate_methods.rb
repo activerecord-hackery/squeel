@@ -1,6 +1,6 @@
 module Squeel
   module Nodes
-    # Defines Predicate factories named for each of the ARel predication methods
+    # Defines Predicate factories named for each of the Arel predication methods
     module PredicateMethods
 
       (Constants::PREDICATES - [:eq]).each do |method_name|

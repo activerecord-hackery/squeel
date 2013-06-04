@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://erniemiller.org/projects/squeel"
   s.summary     = %q{Active Record 3, improved.}
   s.description = %q{
-      Squeel unlocks the power of ARel in your Rails 3 application with
+      Squeel unlocks the power of Arel in your Rails 3 application with
       a handy block-based syntax. You can write subqueries, access named
       functions provided by your RDBMS, and more, all without writing
       SQL strings.
