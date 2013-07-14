@@ -1,7 +1,10 @@
 ## 1.1.0 (unreleased)
 
+* Support for Active Record 4.0.0!
 * Deprecated core extensions. In Squeel 2.0, the DSL will be the way to
   construct queries, and Symbol/Hash extensions will go away.
+* Prefix generated sifter methods with `sifter_` so as not to interfere with
+  similarly-named scopes.
 
 ## 1.0.18 (2013-03-07)
 

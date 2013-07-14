@@ -603,6 +603,11 @@ module Squeel
             end
           end
 
+          it 'allows ordering by an attributes of a joined table' do
+            relation = Article.joins(:person).order { person.id.asc }
+            relation.to_sql.should match /ORDER BY "people"\."id" ASC/
+          end
+
         end
 
         describe '#reorder' do

@@ -84,6 +84,28 @@ module Squeel
           end
         end
 
+        # This is copied directly from 4.0.0's implementation, but adds an extra
+        # exclusion for Squeel::Nodes::Node to fix #248. Can be removed if/when
+        # rails/rails#11439 is merged.
+        def order!(*args)
+          args.flatten!
+          validate_order_args args
+
+          references = args.reject { |arg|
+            Arel::Node === arg || Squeel::Nodes::Node === arg
+          }
+          references.map! { |arg| arg =~ /^([a-zA-Z]\w*)\.(\w+)/ && $1 }.compact!
+          references!(references) if references.any?
+
+          # if a symbol is given we prepend the quoted table name
+          args = args.map { |arg|
+            arg.is_a?(Symbol) ? "#{quoted_table_name}.#{arg} ASC" : arg
+          }
+
+          self.order_values = args + self.order_values
+          self
+        end
+
         private
 
         def dehashified_order_values
