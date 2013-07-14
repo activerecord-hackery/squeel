@@ -5,11 +5,28 @@ module Squeel
     module ActiveRecord
       module RelationExtensions
 
+        # where.not is a pain. It calls the private `build_where` method on its
+        # scope, and since ActiveRecord::Relation already includes the original
+        # ActiveRecord::QueryMethods module, we have to find a way to trick the
+        # scope passed to the WhereChain initializer into having the original
+        # behavior. This is a way to do it that avoids using alias_method_chain.
+        module WhereChainCompatibility
+          include ::ActiveRecord::QueryMethods
+          define_method :build_where,
+            ::ActiveRecord::QueryMethods.instance_method(:build_where)
+        end
+
         def where(opts = :chain, *rest)
           if block_given?
             super(DSL.eval &Proc.new)
           else
-            super
+            if opts == :chain
+              scope = spawn
+              scope.extend(WhereChainCompatibility)
+              ::ActiveRecord::QueryMethods::WhereChain.new(scope)
+            else
+              super
+            end
           end
         end
 

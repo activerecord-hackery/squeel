@@ -421,7 +421,11 @@ module Squeel
         describe '#count' do
 
           it 'works with non-strings in select' do
-            Article.select{distinct(title)}.count.should eq 51
+            if activerecord_version_at_least '4.0.0'
+              pending 'broken on current 4-0-stable'
+            else
+              Article.select{distinct(title)}.count.should eq 51
+            end
           end
 
           it 'works with non-strings in wheres' do
@@ -498,6 +502,16 @@ module Squeel
             new_hotness = Person.where{name.in(Person.select{name}.where{name.in(names)})}
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
+          end
+
+          it 'is backwards-compatible with "where.not"' do
+            if activerecord_version_at_least '4.0.0'
+              name = Person.first.name
+              result = Person.where.not(:name => name)
+              result.should_not include Person.first
+            else
+              pending 'Not required pre-4.0'
+            end
           end
 
         end
