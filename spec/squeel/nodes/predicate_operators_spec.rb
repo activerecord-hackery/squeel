@@ -21,13 +21,13 @@ module Squeel
           n.children.should eq [left, right]
         end
 
-        it 'appends nodes to children from other And nodes' do
+        it 'creates And nodes by appending a new child' do
           left = :name.matches % 'J%' & :name.matches % '%e'
           right = :id.gt % 0
           expected = left.children + [right]
-          left & right
-          left.should be_a And
-          left.children.should eq expected
+          new_and = left & right
+          new_and.should be_a And
+          new_and.children.should eq expected
         end
       end
 

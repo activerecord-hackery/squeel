@@ -17,20 +17,18 @@ module Squeel
         @children = children
       end
 
-      # Add a new child to the node's children
+      # Returns a new Nary node, with an additional child.
       # @param other A new child node
       # @return [Nary] This node, with its updated children.
       def &(other)
-        @children << other
-        self
+        self.class.new(@children + [other])
       end
 
-      # Append a new Not node to this node's children
+      # Returns a new Nary node, with an additional (negated) child.
       # @param other A new child node
       # @return [Nary] This node, with its new, negated child
       def -(other)
-        @children << Not.new(other)
-        self
+        self.class.new(@children + [Not.new(other)])
       end
 
       # Implemented for equality testing
