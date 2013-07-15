@@ -421,11 +421,7 @@ module Squeel
         describe '#count' do
 
           it 'works with non-strings in select' do
-            if activerecord_version_at_least '4.0.0'
-              pending 'broken on current 4-0-stable'
-            else
-              Article.select{distinct(title)}.count.should eq 51
-            end
+            Article.select{distinct(title)}.count.should eq 51
           end
 
           it 'works with non-strings in wheres' do
