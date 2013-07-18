@@ -49,7 +49,15 @@ module Squeel
           build_select(arel, select_visit(select_values.uniq))
 
           arel.distinct(distinct_value)
-          arel.from(from_visit(from_value)) if from_value
+
+          if from_value
+            if from_value[0].is_a? ::Squeel::Nodes::Node
+              arel.from(from_visit(from_value))
+            else
+              arel.from(build_from)
+            end
+          end
+
           arel.lock(lock_value) if lock_value
 
           arel
@@ -76,7 +84,7 @@ module Squeel
         def build_from
           opts, name = from_value
           case opts
-          when Relation
+          when ::ActiveRecord::Relation
             name ||= 'subquery'
             opts.arel.as(name.to_s)
           else

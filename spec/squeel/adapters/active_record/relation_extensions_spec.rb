@@ -639,6 +639,20 @@ module Squeel
             sql = block.to_sql
             sql.should match expected
           end
+
+          it 'creates froms from literals' do
+            expected = /SELECT "people".* FROM sub/
+            block = Person.from('sub')
+            sql = block.to_sql
+            sql.should match expected
+          end
+
+          it 'creates froms from relations' do
+            expected = "SELECT \"people\".* FROM (SELECT \"people\".* FROM \"people\") alias"
+            block = Person.from(Person.all, 'alias')
+            sql = block.to_sql
+            sql.should == expected
+          end
         end
 
         describe '#build_where' do
