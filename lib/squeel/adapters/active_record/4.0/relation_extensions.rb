@@ -49,10 +49,24 @@ module Squeel
           build_select(arel, select_visit(select_values.uniq))
 
           arel.distinct(distinct_value)
-          arel.from(from_visit(from_value)) if from_value
+          arel.from(build_from) if from_value
           arel.lock(lock_value) if lock_value
 
           arel
+        end
+
+        def build_from
+          opts, name = from_visit(from_value)
+          case opts
+          when ::ActiveRecord::Relation
+            name ||= 'subquery'
+            opts.arel.as(name.to_s)
+          when ::Arel::SelectManager
+            name ||= 'subquery'
+            opts.as(name.to_s)
+          else
+            opts
+          end
         end
 
         def build_order(arel)
@@ -71,17 +85,6 @@ module Squeel
           end
 
           arel.order(*orders) unless orders.empty?
-        end
-
-        def build_from
-          opts, name = from_value
-          case opts
-          when Relation
-            name ||= 'subquery'
-            opts.arel.as(name.to_s)
-          else
-            opts
-          end
         end
 
         # This is copied directly from 4.0.0's implementation, but adds an extra

@@ -639,6 +639,24 @@ module Squeel
             sql = block.to_sql
             sql.should match expected
           end
+
+          it 'creates froms from literals' do
+            expected = /SELECT "people".* FROM sub/
+            relation = Person.from('sub')
+            sql = relation.to_sql
+            sql.should match expected
+          end
+
+          it 'creates froms from relations' do
+            if activerecord_version_at_least '4.0.0'
+              expected = "SELECT \"people\".* FROM (SELECT \"people\".* FROM \"people\") alias"
+              relation = Person.from(Person.all, 'alias')
+              sql = relation.to_sql
+              sql.should == expected
+            else
+              pending 'Unsupported before ActiveRecord 4.0'
+            end
+          end
         end
 
         describe '#build_where' do
