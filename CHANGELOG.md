@@ -2,6 +2,7 @@
 
 * Update relation extensions to support new count behavior in Active Record
   4.0.1 (see rails/rails@da9b5d4a)
+* Support two-argument version of Relation#from in AR4
 
 ## 1.1.0 (2013-07-14)
 
