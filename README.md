@@ -205,7 +205,7 @@ Person.where{name == 'Joe Blow'}
 Not a very exciting example since equality is handled just fine via the
 first example in standard Active Record. But consider the following query:
 
-```
+```sql
 SELECT "people".* FROM people
 WHERE ("people"."name" LIKE 'Ernie%' AND "people"."salary" < 50000)
   OR  ("people"."name" LIKE 'Joe%' AND "people"."salary" > 100000)
