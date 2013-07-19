@@ -493,13 +493,13 @@ Person.where(:first_name => :last_name)
 
 produces this SQL query in plain Active Record:
 
-```
+```sql
 SELECT people.* FROM people WHERE people.first_name = 'last_name'.
 ```
 
 but produces this SQL query if you are using Squeel:
 
-```
+```sql
 SELECT people.* FROM people WHERE people.first_name = people.last_name
 ```
 
