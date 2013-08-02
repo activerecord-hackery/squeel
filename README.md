@@ -467,6 +467,18 @@ p.flanderized_name
 
 As you can see, just like functions, these operations can be given aliases.
 
+To select more than one attribute (or calculated attribute) simply put them into an array:
+
+```ruby
+p = Person.select{[ name.op('||', '-diddly').as(flanderized_name), 
+                    coalesce(name, '<no name given>').as(name_with_default) ]}.first
+p.flanderized_name
+# => "Aric Smith-diddly"
+p.name_with_default
+# => "Aric Smith"
+```
+
+
 ## Compatibility with Active Record
 
 Most of the new functionality provided by Squeel is accessed with the new block-style `where{}`
