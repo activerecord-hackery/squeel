@@ -196,3 +196,14 @@ module Arel
   end
 
 end
+
+module ActiveRecord
+  module Reflection
+    class AssociationReflection < MacroReflection
+      alias :foreign_key :primary_key_name
+      def foreign_type
+        options[:foreign_type]
+      end
+    end
+  end
+end
