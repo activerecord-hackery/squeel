@@ -1,4 +1,4 @@
-## 1.1.1 (unreleased)
+## 1.1.1 (2013-09-03)
 
 * Update relation extensions to support new count behavior in Active Record
   4.0.1 (see rails/rails@da9b5d4a)
