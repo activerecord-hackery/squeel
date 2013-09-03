@@ -26,7 +26,7 @@ module Squeel
         if association.options[:polymorphic]
           conditions << [
             context[association.foreign_type].send(
-              o.method_name, ar_base.class.base_class
+              o.method_name, ar_base.class.base_class.name
             )
           ]
         end
