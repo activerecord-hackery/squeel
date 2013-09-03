@@ -3,7 +3,7 @@ class Person < ActiveRecord::Base
   has_many   :children, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :articles
   has_many   :comments
-  if ActiveRecord::VERSION::MAJOR == 4
+  if ActiveRecord::VERSION::MAJOR > 3
     has_many   :articles_with_condition, lambda { where :title => 'Condition' },
       :class_name => 'Article'
     has_many   :article_comments_with_first_post,
@@ -17,9 +17,6 @@ class Person < ActiveRecord::Base
       :through => :articles, :source => :comments
   end
   has_many   :condition_article_comments, :through => :articles_with_condition, :source => :comments
-  if ActiveRecord::VERSION::MAJOR == 4
-  else
-  end
   has_many   :authored_article_comments, :through => :articles,
              :source => :comments
   has_many   :notes, :as => :notable

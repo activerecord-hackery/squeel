@@ -1,6 +1,7 @@
 module Squeel
   module Visitors
     module PredicateVisitation
+      EXPAND_BELONGS_TO_METHODS = [:eq, :not_eq]
 
       private
 
@@ -27,6 +28,16 @@ module Squeel
       #   (Arel::Nodes::Equality, Arel::Nodes::Matches, etc)
       def visit_Squeel_Nodes_Predicate(o, parent)
         value = o.value
+
+        # Short-circuit for stuff like `where{ author.eq User.first }`
+        # This filthy hack emulates similar behavior in AR PredicateBuilder
+        if ActiveRecord::Base === value &&
+          EXPAND_BELONGS_TO_METHODS.include?(o.method_name) &&
+          association = classify(parent).reflect_on_association(
+            symbolify(o.expr)
+          )
+          return expand_belongs_to(o, parent, association)
+        end
 
         case value
         when Nodes::KeyPath

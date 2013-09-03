@@ -514,6 +514,42 @@ module Squeel
             end
           end
 
+          it 'allows equality conditions against a belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Article.where { person.eq first_person }
+            relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
+          end
+
+          it 'allows equality conditions against a polymorphic belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Note.where { notable.eq first_person }
+            relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
+          end
+
+          it 'allows inequality conditions against a belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Article.where { person.not_eq first_person }
+            relation.to_sql.should match /"articles"."person_id" != #{first_person.id}/
+          end
+
+          it 'allows inequality conditions against a polymorphic belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Note.where { notable.not_eq first_person }
+            relation.to_sql.should match /\("notes"."notable_id" != #{first_person.id} OR "notes"."notable_type" != 'Person'\)/
+          end
+
+          it 'allows hash equality conditions against a belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Article.where(:person => first_person)
+            relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
+          end
+
+          it 'allows hash equality conditions against a polymorphic belongs_to with an AR::Base value' do
+            first_person = Person.first
+            relation = Note.where(:notable => first_person)
+            relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
+          end
+
         end
 
         describe '#joins' do

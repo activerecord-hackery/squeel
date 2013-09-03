@@ -3,6 +3,8 @@
 * Update relation extensions to support new count behavior in Active Record
   4.0.1 (see rails/rails@da9b5d4a)
 * Support two-argument version of Relation#from in AR4
+* Allow equality/inequality conditions against the name of a belongs_to
+  association with an AR::Base value object. Fixes issue #265.
 
 ## 1.1.0 (2013-07-14)
 

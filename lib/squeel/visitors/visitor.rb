@@ -46,6 +46,15 @@ module Squeel
 
       private
 
+      def symbolify(o)
+        case o
+        when Symbol, String, Nodes::Stub
+          o.to_sym
+        else
+          nil
+        end
+      end
+
       # A hash that caches the method name to use for a visitor for a given class
       DISPATCH = Hash.new do |hash, klass|
         hash[klass] = "visit_#{(klass.name || '').gsub('::', '_')}"

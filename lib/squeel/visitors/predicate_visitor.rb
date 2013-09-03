@@ -8,6 +8,31 @@ module Squeel
 
       private
 
+      # Expand a belongs_to association that has an AR::Base value. This allows
+      # for queries like:
+      #
+      #   Post.where(:author => User.first)
+      #   Post.where{author.eq User.first}
+      #
+      # @param [Squeel::Nodes::Predicate] o A predicate node (eq/not_eq)
+      # @param parent The current parent object in the context
+      # @return [Arel::Nodes::Node] An Arel predicate node
+      def expand_belongs_to(o, parent, association)
+        context = contextualize(parent)
+        ar_base = o.value
+        conditions = [
+          context[association.foreign_key.to_s].send(o.method_name, ar_base.id)
+        ]
+        if association.polymorphic?
+          conditions << [
+            context[association.foreign_type].send(
+              o.method_name, ar_base.class.base_class
+            )
+          ]
+        end
+        conditions.inject(o.method_name == :not_eq ? :or : :and)
+      end
+
       # Visit a Hash. This entails iterating through each key and value and
       # visiting each value in turn.
       #
@@ -47,6 +72,13 @@ module Squeel
       # @param parent The current parent object in the context
       # @return An Arel predicate
       def visit_without_hash_context_shift(k, v, parent)
+        # Short-circuit for stuff like `where(:author => User.first)`
+        # This filthy hack emulates similar behavior in AR PredicateBuilder
+        if ActiveRecord::Base === v &&
+          association = classify(parent).reflect_on_association(k.to_sym)
+          return expand_belongs_to(Nodes::Predicate.new(k, :eq, v), parent, association)
+        end
+
         case v
         when Nodes::Stub, Symbol
           v = contextualize(parent)[v.to_s]
