@@ -389,6 +389,10 @@ module Squeel
             expect { people.first.name }.to raise_error ActiveModel::MissingAttributeError
           end
 
+          it 'works with multiple fields in select' do
+            Article.select("title, body").count.should eq 51
+          end
+
           it 'allows a function in the select values via Symbol#func' do
             relation = Person.select(:max.func(:id).as('max_id'))
             relation.first.max_id.should eq 332
