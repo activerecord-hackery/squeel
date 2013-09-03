@@ -99,6 +99,8 @@ module Squeel
             end
 
             str_select if str_select && str_select !~ /[,*]/
+          else
+            :all
           end
         end
 
