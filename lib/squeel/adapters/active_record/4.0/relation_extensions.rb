@@ -55,6 +55,33 @@ module Squeel
           arel
         end
 
+        def build_where(opts, other = [])
+          case opts
+          when String, Array
+            super
+          else  # Let's prevent PredicateBuilder from doing its thing
+            [opts, *other].map do |arg|
+              case arg
+              when Array  # Just in case there's an array in there somewhere
+                @klass.send(:sanitize_sql, arg)
+              when Hash
+                attrs = @klass.send(:expand_hash_conditions_for_aggregates, arg)
+                attrs.values.grep(::ActiveRecord::Relation) do |rel|
+                  self.bind_values += rel.bind_values
+                end
+                attrs
+              when Squeel::Nodes::Node
+                arg.grep(::ActiveRecord::Relation) do |rel|
+                  self.bind_values += rel.bind_values
+                end
+                arg
+              else
+                arg
+              end
+            end
+          end
+        end
+
         def build_from
           opts, name = from_visit(from_value)
           case opts

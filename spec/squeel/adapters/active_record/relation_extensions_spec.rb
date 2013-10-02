@@ -504,6 +504,18 @@ module Squeel
             old_and_busted.to_a.should eq new_hotness.to_a
           end
 
+          it 'allows a subquery from an association in a hash' do
+            scope = Person.first.articles
+            articles = Article.where(:id => scope)
+            articles.should have(3).articles
+          end
+
+          it 'allows a subquery from an association in a Squeel node' do
+            scope = Person.first.articles
+            articles = Article.where{id.in scope}
+            articles.should have(3).articles
+          end
+
           it 'is backwards-compatible with "where.not"' do
             if activerecord_version_at_least '4.0.0'
               name = Person.first.name

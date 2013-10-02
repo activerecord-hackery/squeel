@@ -8,3 +8,5 @@ require 'squeel/visitors/order_visitor'
 require 'squeel/visitors/select_visitor'
 require 'squeel/visitors/from_visitor'
 require 'squeel/visitors/preload_visitor'
+
+require 'squeel/visitors/enumeration_visitor'
