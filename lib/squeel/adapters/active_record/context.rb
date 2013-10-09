@@ -23,7 +23,7 @@ module Squeel
               }
             when Nodes::Join
               @object.join_associations.detect { |j|
-                j.reflection.name == object.name && j.parent == parent &&
+                j.reflection.name == object._name && j.parent == parent &&
                 (object.polymorphic? ? j.reflection.klass == object._klass : true)
               }
             else

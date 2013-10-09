@@ -1,3 +1,8 @@
+## 1.1.2 (unreleased)
+
+* Properly append binds from a relation used in a subquery. Fixes #272.
+* Use the correct attribute name when finding a Join node. Fixes #273.
+
 ## 1.1.1 (2013-09-03)
 
 * Update relation extensions to support new count behavior in Active Record

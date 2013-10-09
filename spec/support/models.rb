@@ -71,7 +71,7 @@ class Article < ActiveRecord::Base
   belongs_to              :person
   has_many                :comments
   has_and_belongs_to_many :tags
-  has_many   :notes, :as => :notable
+  has_many :notes, :as => :notable
   has_many :commenters, :through => :comments, :source => :person
   has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
 end

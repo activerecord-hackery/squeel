@@ -496,6 +496,12 @@ module Squeel
             people_and_article_notes.should have(40).items
           end
 
+          it 'maps conditions onto their proper table with a polymorphic belongs_to join followed by a polymorphic has_many join' do
+            relation = Note.joins{notable(Article).notes}.
+              where{notable(Article).notes.note.eq('zomg')}
+            relation.to_sql.should match /"notes_articles"\."note" = 'zomg'/
+          end
+
           it 'allows a subquery on the value side of a predicate' do
             names = [Person.first.name, Person.last.name]
             old_and_busted = Person.where(:name => names)
