@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ernie Miller"]
   s.email       = ["ernie@erniemiller.org"]
-  s.homepage    = "http://erniemiller.org/projects/squeel"
+  s.homepage    = "https://github.com/ernie/squeel"
   s.summary     = %q{Active Record 3, improved.}
   s.description = %q{
       Squeel unlocks the power of Arel in your Rails 3 application with
