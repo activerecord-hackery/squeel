@@ -363,7 +363,7 @@ module Squeel
       end
 
       def visit_Squeel_Nodes_Sifter(o, parent)
-        Arel::Nodes::Grouping.new(visit(context.base.active_record.send("sifter_#{o.name}", *o.args), parent))
+        visit(context.base.active_record.send("sifter_#{o.name}", *o.args), parent)
       end
 
       # Visit an Active Record Relation, returning an Arel::SelectManager
