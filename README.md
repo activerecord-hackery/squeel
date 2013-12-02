@@ -1,4 +1,4 @@
-# Squeel [![Build Status](https://secure.travis-ci.org/ernie/squeel.png)](http://travis-ci.org/ernie/squeel) [![endorse](http://api.coderwall.com/ernie/endorsecount.png)](http://coderwall.com/ernie)
+# Squeel [![Build Status](https://secure.travis-ci.org/activerecord-hackery/squeel.png)](http://travis-ci.org/activerecord-hackery/squeel)
 
 Squeel lets you write your Active Record queries with fewer strings, and more Ruby,
 by making the Arel awesomeness that lies beneath Active Record more accessible.
