@@ -108,7 +108,7 @@ module Squeel
       # Create a keypath with a sifter as its endpoint
       # @return [KeyPath] The new KeyPath
       def sift(name, *args)
-        KeyPath.new([self, Sifter.new(name, args)])
+        Grouping.new(KeyPath.new([self, Sifter.new(name, args)]))
       end
 
       # Create an outer Join node for the association named by this Stub

@@ -125,7 +125,7 @@ module Squeel
       def sift(name, *args)
         if Stub === endpoint || Join === endpoint
           @path << Sifter.new(name, args)
-          self
+          Grouping.new(self)
         else
           no_method_error :sift
         end
