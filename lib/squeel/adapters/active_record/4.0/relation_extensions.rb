@@ -132,7 +132,17 @@ module Squeel
             arg.is_a?(Symbol) ? "#{quoted_table_name}.#{arg} ASC" : arg
           }
 
-          self.order_values = args + self.order_values
+          if ::ActiveRecord::VERSION::MAJOR == 4 and
+             ::ActiveRecord::VERSION::MINOR == 0 and
+             ::ActiveRecord::VERSION::TINY == 0
+
+            self.order_values = args + self.order_values
+
+          else
+            self.order_values += args
+
+          end
+
           self
         end
 
