@@ -73,7 +73,7 @@ start the block, the second are the hash braces):
 
 ```ruby
 Person.where{{name => 'Ernie'}}
-# => SELECT "people".* FROM "people"  WHERE "people"."name" = 'Ernie'
+# => SELECT "persons".* FROM "persons"  WHERE "persons"."name" = 'Ernie'
 ```
 
 You normally wouldn't bother using the DSL in this case, as a simple hash would
@@ -88,10 +88,10 @@ associations like this to perform a query:
 
 ```ruby
 Person.joins(:articles => {:comments => :person})
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 #    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-#    INNER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+#    INNER JOIN "persons" "person_comments" ON "person_comments"."id" = "comments"."person_id"
 ```
 
 With a keypath, this would look like:
@@ -189,7 +189,7 @@ used in `WHERE` or `HAVING` clauses.
 Let's say we want to generate this simple query:
 
 ```
-SELECT "people".* FROM people WHERE "people"."name" = 'Joe Blow'
+SELECT "persons".* FROM persons WHERE "persons"."name" = 'Joe Blow'
 ```
 
 All of the following will generate the above SQL:
@@ -206,9 +206,9 @@ Not a very exciting example since equality is handled just fine via the
 first example in standard Active Record. But consider the following query:
 
 ```sql
-SELECT "people".* FROM people
-WHERE ("people"."name" LIKE 'Ernie%' AND "people"."salary" < 50000)
-  OR  ("people"."name" LIKE 'Joe%' AND "people"."salary" > 100000)
+SELECT "persons".* FROM persons
+WHERE ("persons"."name" LIKE 'Ernie%' AND "persons"."salary" < 50000)
+  OR  ("persons"."name" LIKE 'Joe%' AND "persons"."salary" > 100000)
 ```
 
 To do this with standard Active Record, we'd do something like:
@@ -261,7 +261,7 @@ end
 ```
 ```ruby
 Person.where{salary.is_less_than 50000}.to_sql
-# => SELECT "people".* FROM "people"  WHERE "people"."salary" < 50000
+# => SELECT "persons".* FROM "persons"  WHERE "persons"."salary" < 50000
 ```
 
 And while we're on the topic of helping you make your code more expressive...
@@ -286,8 +286,8 @@ Yeah... that's readable, all right. How about:
 
 ```ruby
 Person.where{name.like_any names}
-# => SELECT "people".* FROM "people"
-#    WHERE (("people"."name" LIKE 'Ernie%' OR "people"."name" LIKE 'Joe%' OR "people"."name" LIKE 'Mary%'))
+# => SELECT "persons".* FROM "persons"
+#    WHERE (("persons"."name" LIKE 'Ernie%' OR "persons"."name" LIKE 'Joe%' OR "persons"."name" LIKE 'Mary%'))
 ```
 
 I'm not sure about you, but I much prefer the latter. In short, you can add `_any` or
@@ -306,7 +306,7 @@ def self.title_or_body_contains(string)
 end
 ```
 
-But then you want to query for people who wrote an article that matches these conditions,
+But then you want to query for persons who wrote an article that matches these conditions,
 but the scope only works against the model where it was defined. So instead, you write a
 sifter:
 
@@ -336,8 +336,8 @@ Person.joins(:articles).
        where{
          {articles => sift(:title_or_body_contains, 'awesome')}
        }
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 #    WHERE ((
 #      "articles"."title" LIKE '%awesome%'
 #      OR "articles"."body" LIKE '%awesome%'
@@ -358,10 +358,10 @@ You can supply an `ActiveRecord::Relation` as a value for a predicate in order t
 a subquery. So, for example:
 
 ```ruby
-awesome_people = Person.where{awesome == true}
-Article.where{author_id.in(awesome_people.select{id})}
+awesome_persons = Person.where{awesome == true}
+Article.where{author_id.in(awesome_persons.select{id})}
 # => SELECT "articles".* FROM "articles"
-#    WHERE "articles"."author_id" IN (SELECT "people"."id" FROM "people"  WHERE "people"."awesome" = 't')
+#    WHERE "articles"."author_id" IN (SELECT "persons"."id" FROM "persons"  WHERE "persons"."awesome" = 't')
 ```
 
 ### Joins
@@ -372,12 +372,12 @@ in the case of a polymorphic belongs_to relationship.
 
 ```ruby
 Person.joins{articles.outer}
-# => SELECT "people".* FROM "people"
-#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 Note.joins{notable(Person).outer}
 # => SELECT "notes".* FROM "notes"
-#    LEFT OUTER JOIN "people"
-#      ON "people"."id" = "notes"."notable_id"
+#    LEFT OUTER JOIN "persons"
+#      ON "persons"."id" = "notes"."notable_id"
 #      AND "notes"."notable_type" = 'Person'
 ```
 
@@ -386,9 +386,9 @@ These can also be used inside keypaths:
 ```ruby
 Note.joins{notable(Person).articles}
 # => SELECT "notes".* FROM "notes"
-#    INNER JOIN "people" ON "people"."id" = "notes"."notable_id"
+#    INNER JOIN "persons" ON "persons"."id" = "notes"."notable_id"
 #      AND "notes"."notable_type" = 'Person'
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 ```
 
 You can refer to these associations when constructing other parts of your query, and
@@ -402,13 +402,13 @@ Person.joins{children.parent.children}.
          (children.parent.name.like 'Ernie%') |
          (children.parent.children.name.like 'Ernie%')
        }
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"
-#    INNER JOIN "people" "parents_people" ON "parents_people"."id" = "children_people"."parent_id"
-#    INNER JOIN "people" "children_people_2" ON "children_people_2"."parent_id" = "parents_people"."id"
-#    WHERE ((("children_people"."name" LIKE 'Ernie%'
-#          OR "parents_people"."name" LIKE 'Ernie%')
-#          OR "children_people_2"."name" LIKE 'Ernie%'))
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "persons" "children_persons" ON "children_persons"."parent_id" = "persons"."id"
+#    INNER JOIN "persons" "parents_persons" ON "parents_persons"."id" = "children_persons"."parent_id"
+#    INNER JOIN "persons" "children_persons_2" ON "children_persons_2"."parent_id" = "parents_persons"."id"
+#    WHERE ((("children_persons"."name" LIKE 'Ernie%'
+#          OR "parents_persons"."name" LIKE 'Ernie%')
+#          OR "children_persons_2"."name" LIKE 'Ernie%'))
 ```
 
 Keypaths were used here for clarity, but nested hashes would work just as well.
@@ -419,7 +419,7 @@ You can call SQL functions just like you would call a method in Ruby...
 
 ```ruby
 Person.select{coalesce(name, '<no name given>')}
-# => SELECT coalesce("people"."name", '<no name given>') FROM "people"
+# => SELECT coalesce("persons"."name", '<no name given>') FROM "persons"
 ```
 
 ...and you can easily give it an alias:
@@ -436,8 +436,8 @@ its place inside any nested associations:
 
 ```ruby
 Person.joins{articles}.group{articles.title}.having{{articles => {max(id) => id}}}
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 #    GROUP BY "articles"."title"
 #    HAVING max("articles"."id") = "articles"."id"
 ```
@@ -447,10 +447,10 @@ keypath (~) as done here:
 
 ```ruby
 Person.joins{articles}.group{articles.title}.having{{articles => {max(~id) => id}}}
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 #    GROUP BY "articles"."title"
-#    HAVING max("people"."id") = "articles"."id"
+#    HAVING max("persons"."id") = "articles"."id"
 ```
 
 ### SQL Operators
@@ -470,7 +470,7 @@ As you can see, just like functions, these operations can be given aliases.
 To select more than one attribute (or calculated attribute) simply put them into an array:
 
 ```ruby
-p = Person.select{[ name.op('||', '-diddly').as(flanderized_name), 
+p = Person.select{[ name.op('||', '-diddly').as(flanderized_name),
                     coalesce(name, '<no name given>').as(name_with_default) ]}.first
 p.flanderized_name
 # => "Aric Smith-diddly"
@@ -506,13 +506,13 @@ Person.where(:first_name => :last_name)
 produces this SQL query in plain Active Record:
 
 ```sql
-SELECT people.* FROM people WHERE people.first_name = 'last_name'.
+SELECT persons.* FROM persons WHERE persons.first_name = 'last_name'.
 ```
 
 but produces this SQL query if you are using Squeel:
 
 ```sql
-SELECT people.* FROM people WHERE people.first_name = people.last_name
+SELECT persons.* FROM persons WHERE persons.first_name = persons.last_name
 ```
 
 Note that this new behavior applies to the plain `where()`-style expressions in addition to the new
@@ -554,8 +554,8 @@ end
 ```ruby
 Person.joins(:articles => :comments).
        where(:articles => {:comments => {:body.matches => 'Hello!'}})
-# => SELECT "people".* FROM "people"
-#    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
+# => SELECT "persons".* FROM "persons"
+#    INNER JOIN "articles" ON "articles"."person_id" = "persons"."id"
 #    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
 #    WHERE "comments"."body" LIKE 'Hello!'
 ```
@@ -576,4 +576,4 @@ To support the project in other ways:
 
 ## Copyright
 
-Copyright &copy; 2011 [Ernie Miller](http://twitter.com/erniemiller)
+Copyright &copy; 2014 [Ernie Miller](http://twitter.com/erniemiller)
