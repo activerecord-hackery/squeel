@@ -74,6 +74,7 @@ module Squeel
       def visit_without_hash_context_shift(k, v, parent)
         # Short-circuit for stuff like `where(:author => User.first)`
         # This filthy hack emulates similar behavior in AR PredicateBuilder
+
         if ActiveRecord::Base === v &&
           association = classify(parent).reflect_on_association(k.to_sym)
           return expand_belongs_to(Nodes::Predicate.new(k, :eq, v), parent, association)

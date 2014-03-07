@@ -53,6 +53,25 @@ silence_stream(STDOUT) do
       t.string  :note
     end
 
+    # Test for polymorphic with source_type
+    create_table :users do |t|
+      t.string :name
+    end
+
+    create_table :memberships do |t|
+      t.references :group
+      t.integer   :member_id
+      t.string    :member_type
+    end
+
+    create_table :packages do |t|
+      t.string :name
+    end
+
+    create_table :groups do |t|
+      t.string :name
+    end
+
   end
 end
 
