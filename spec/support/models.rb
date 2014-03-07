@@ -89,6 +89,27 @@ class Note < ActiveRecord::Base
   belongs_to :notable, :polymorphic => true
 end
 
+class User < ActiveRecord::Base
+  has_many :memberships, as: :member
+  has_many :groups, through: :memberships
+  has_many :packages, through: :groups
+end
+
+class Package < ActiveRecord::Base
+  has_many :memberships, as: :member
+end
+
+class Membership < ActiveRecord::Base
+  belongs_to :group
+  belongs_to :member, polymorphic: true
+end
+
+class Group < ActiveRecord::Base
+  has_many :memberships
+  has_many :users, through: :memberships, source: :member, source_type: 'User'
+  has_many :packages, through: :memberships, source: :member, source_type: 'Package'
+end
+
 Dir[File.expand_path('../../blueprints/*.rb', __FILE__)].each do |f|
   require f
 end
@@ -118,5 +139,12 @@ class Models
 
     Comment.make(:body => 'First post!', :article => Article.make(:title => 'Hello, world!'))
     Comment.make(:body => 'Last post!', :article => Article.first, :person => Article.first.commenters.first)
+
+    users = User.create([{ name: 'batman' }, { name: 'robin' }])
+    groups = Group.create([{ name: 'justice league'}, { name: 'batcave stalagmite counting club'}])
+    users.first.groups << groups.first
+    users.first.groups << groups.last
+    users.last.groups << groups.last
+
   end
 end
