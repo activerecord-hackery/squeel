@@ -3,7 +3,7 @@ gemspec
 
 gem 'rake'
 
-rails = ENV['RAILS'] || '4-0-stable'
+rails = ENV['RAILS'] || '4-1-stable'
 arel = ENV['AREL'] || 'master'
 
 arel_opts = case arel

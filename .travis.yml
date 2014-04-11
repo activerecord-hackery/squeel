@@ -1,7 +1,10 @@
 rvm:
   - 1.9.3
+  - 2.0.0
+  - 2.1.1
 
 env:
+  - RAILS=4-1-stable AREL=master
   - RAILS=4-0-stable AREL=master
   - RAILS=3-2-stable AREL=3-0-stable
   - RAILS=3-1-stable AREL=2-2-stable
