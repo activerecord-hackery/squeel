@@ -10,7 +10,7 @@ module Squeel
           it 'returns nil when passed an empty string' do
             Person.find_by_id('').should be_nil
           end
-          
+
           it 'casts an empty string to the proper value' do
             queries = queries_for do
               Person.find_by_id('')
@@ -31,13 +31,13 @@ module Squeel
                 }
               }
             })
-        
+
             arel = relation.build_arel
-        
+
             relation.join_dependency.join_associations.should have(4).items
             arel.to_sql.should match /INNER JOIN "people" "parents_people_2" ON "parents_people_2"."id" = "parents_people"."parent_id"/
           end
-        
+
           it 'joins associations with custom join types' do
             relation = Person.joins({
               :children.outer => {
@@ -46,14 +46,14 @@ module Squeel
                 }
               }
             })
-        
+
             arel = relation.build_arel
-        
+
             relation.join_dependency.join_associations.should have(4).items
             arel.to_sql.should match /LEFT OUTER JOIN "people" "children_people"/
             arel.to_sql.should match /LEFT OUTER JOIN "people" "parents_people_2" ON "parents_people_2"."id" = "parents_people"."parent_id"/
           end
-        
+
           it 'only joins an association once, even if two overlapping joins_values hashes are given' do
             relation = Person.joins({
               :children => {
@@ -68,12 +68,12 @@ module Squeel
                 }
               }
             })
-        
+
             arel = relation.build_arel
             relation.join_dependency.join_associations.should have(6).items
             arel.to_sql.should match /INNER JOIN "people" "parents_people_3" ON "parents_people_3"."id" = "children_people_3"."parent_id"/
           end
-        
+
           it 'respects :uniq option on associations' do
             Article.first.uniq_commenters.length.should eq Article.first.uniq_commenters.count
           end
@@ -89,7 +89,7 @@ module Squeel
                                where{articles.body == 'World'}
              arel = relation.build_arel
              arel.to_sql.should match /articles/
-           end
+          end
 
           it 'maps wheres inside a hash to their appropriate association table' do
             relation = Person.joins({
@@ -107,31 +107,30 @@ module Squeel
                 }
               }
             })
-    
+
             arel = relation.build_arel
-    
             arel.to_sql.should match /"parents_people_2"."name" = 'bob'/
           end
-    
+
           it 'combines multiple conditions of the same type against the same column with AND' do
             relation = Person.where(:name.matches => '%bob%')
             relation = relation.where(:name.matches => '%joe%')
             arel = relation.build_arel
             arel.to_sql.should match /"people"."name" LIKE '%bob%' AND "people"."name" LIKE '%joe%'/
           end
-    
+
           it 'handles ORs between predicates' do
             relation = Person.joins{articles}.where{(name =~ 'Joe%') | (articles.title =~ 'Hello%')}
             arel = relation.build_arel
             arel.to_sql.should match /OR/
           end
-    
+
           it 'maintains groupings as given' do
             relation = Person.where(dsl{(name == 'Ernie') | ((name =~ 'Bob%') & (name =~ '%by'))})
             arel = relation.build_arel
             arel.to_sql.should match /"people"."name" = 'Ernie' OR \("people"."name" LIKE 'Bob%' AND "people"."name" LIKE '%by'\)/
           end
-    
+
           it 'maps havings inside a hash to their appropriate association table' do
             relation = Person.joins({
               :children => {
@@ -148,12 +147,11 @@ module Squeel
                 }
               }
             })
-    
+
             arel = relation.build_arel
-    
             arel.to_sql.should match /HAVING "parents_people_2"."name" = 'joe'/
           end
-    
+
           it 'maps orders inside a hash to their appropriate association table' do
             unless activerecord_version_at_least '4.0.0'
               relation = Person.joins({
@@ -171,15 +169,14 @@ module Squeel
                   }
                 }
               })
-    
+
               arel = relation.build_arel
-    
               arel.to_sql.should match /ORDER BY "parents_people_2"."id" ASC/
             else
               pending 'Unsupported in ActiveRecord 4.0.0+'
             end
           end
-    
+
           it 'does not inadvertently convert KeyPaths to booleans when uniqing where_values' do
             100.times do # Doesn't happen reliably because of #hash behavior
               persons = Person.joins{[outgoing_messages.outer, incoming_messages.outer]}
@@ -188,13 +185,12 @@ module Squeel
               expect { persons.to_sql }.not_to raise_error TypeError
             end
           end
-    
+
           it 'reverses order of Arel::Attributes when #last is called' do
             sorted_people = Person.all.to_a.sort {|a, b| a.name.downcase <=> b.name.downcase}
-    
             Person.order{name}.last.should eq sorted_people.last
           end
-    
+
           it 'removed duplicate order values' do
             ordered = Person.order{name.asc}.order{name.asc}
             ordered.to_sql.scan('name').should have(1).item
@@ -311,7 +307,6 @@ module Squeel
             }}
 
             queries_for {relation.to_a}.should have(4).items
-
             queries_for {
               relation.first.articles
               relation.first.articles.first.comments
@@ -577,38 +572,38 @@ module Squeel
             block = Person.joins{{children => children}}
             block.to_sql.should eq standard.to_sql
           end
-          
+
           it 'accepts multiple top-level associations with a block' do
             standard = Person.joins(:children, :articles, :comments)
             block = Person.joins{[children, articles, comments]}
             block.to_sql.should eq standard.to_sql
           end
-          
+
           it 'joins has_many :through associations' do
             relation = Person.joins(:authored_article_comments)
             relation.first.authored_article_comments.first.should eq Comment.first
           end
-          
+
           it 'creates a unique join when joining a table used in a has_many :through association' do
             Person.first.authored_article_comments.joins(:article).first.should eq Comment.first
           end
-          
+
           it 'joins polymorphic belongs_to associations' do
             relation = Note.joins{notable(Article)}
             relation.to_sql.should match /"notes"."notable_type" = 'Article'/
           end
-          
+
           it 'joins multiple polymorphic belongs_to associations' do
             relation = Note.joins{[notable(Article), notable(Person)]}
             relation.to_sql.should match /"notes"."notable_type" = 'Article'/
             relation.to_sql.should match /"notes"."notable_type" = 'Person'/
           end
-          
+
           it "only joins once, even if two join types are used" do
             relation = Person.joins(:articles.inner, :articles.outer)
             relation.to_sql.scan("JOIN").size.should eq 1
           end
-          
+
           it 'joins a keypath' do
             relation = Note.joins{notable(Article).person.children}
             relation.to_sql.should match /SELECT "notes".* FROM "notes" INNER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' INNER JOIN "people" ON "people"."id" = "articles"."person_id" INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
