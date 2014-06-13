@@ -278,12 +278,12 @@ module Squeel
           end
         end
 
-        def find_equality_predicates(nodes)
+        def find_equality_predicates(nodes, relation_table_name = table_name)
           nodes.map { |node|
             case node
             when Arel::Nodes::Equality
               if node.left.respond_to?(:relation) &&
-                node.left.relation.name == table_name
+                node.left.relation.name == relation_table_name
                 node
               end
             when Arel::Nodes::Grouping
@@ -394,9 +394,8 @@ module Squeel
         # your model's default scope. We hijack it in order to dig down into
         # And and Grouping nodes, which are equivalent to seeing top-level
         # Equality nodes in stock AR terms.
-        def where_values_hash_with_squeel
-          equalities = find_equality_predicates(where_visit(with_default_scope.where_values))
-
+        def where_values_hash_with_squeel(relation_table_name = table_name)
+          equalities = find_equality_predicates(where_visit(with_default_scope.where_values), relation_table_name)
           binds = Hash[bind_values.find_all(&:first).map { |column, v| [column.name, v] }]
 
           Hash[equalities.map { |where|
