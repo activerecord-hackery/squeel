@@ -4,7 +4,7 @@ gemspec
 gem 'rake'
 
 rails = ENV['RAILS'] || '4-0-stable'
-arel = ENV['AREL'] || 'master'
+arel = ENV['AREL'] || '4-0-stable'
 
 arel_opts = case arel
 when /\// # A path

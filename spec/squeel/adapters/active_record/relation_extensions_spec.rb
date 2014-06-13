@@ -84,12 +84,12 @@ module Squeel
             arel.to_sql.should match /"people"."name" LIKE '%bob%'/
           end
 
-	  it 'handles multiple wheres using a keypath' do
-	    relation = Person.joins{articles}.where{articles.title == 'Hello'}.
-	                      where{articles.body == 'World'}
-	    arel = relation.build_arel
-	    arel.to_sql.should match /articles/
-	  end
+          it 'handles multiple wheres using a keypath' do
+             relation = Person.joins{articles}.where{articles.title == 'Hello'}.
+                               where{articles.body == 'World'}
+             arel = relation.build_arel
+             arel.to_sql.should match /articles/
+          end
 
           it 'maps wheres inside a hash to their appropriate association table' do
             relation = Person.joins({
@@ -109,7 +109,6 @@ module Squeel
             })
 
             arel = relation.build_arel
-
             arel.to_sql.should match /"parents_people_2"."name" = 'bob'/
           end
 
@@ -150,7 +149,6 @@ module Squeel
             })
 
             arel = relation.build_arel
-
             arel.to_sql.should match /HAVING "parents_people_2"."name" = 'joe'/
           end
 
@@ -173,7 +171,6 @@ module Squeel
               })
 
               arel = relation.build_arel
-
               arel.to_sql.should match /ORDER BY "parents_people_2"."id" ASC/
             else
               pending 'Unsupported in ActiveRecord 4.0.0+'
@@ -191,7 +188,6 @@ module Squeel
 
           it 'reverses order of Arel::Attributes when #last is called' do
             sorted_people = Person.all.to_a.sort {|a, b| a.name.downcase <=> b.name.downcase}
-
             Person.order{name}.last.should eq sorted_people.last
           end
 
@@ -311,7 +307,6 @@ module Squeel
             }}
 
             queries_for {relation.to_a}.should have(4).items
-
             queries_for {
               relation.first.articles
               relation.first.articles.first.comments
@@ -460,14 +455,14 @@ module Squeel
             block = Person.where{{name => 'bob'}}
             block.to_sql.should eq standard.to_sql
           end
-
+ 
           it 'builds compound conditions with a block' do
             block = Person.where{(name == 'bob') & (salary == 100000)}
             block.to_sql.should match /"people"."name" = 'bob'/
             block.to_sql.should match /AND/
             block.to_sql.should match /"people"."salary" = 100000/
           end
-
+ 
           it 'allows mixing hash and operator syntax inside a block' do
             block = Person.joins(:comments).
                            where{(name == 'bob') & {comments => (body == 'First post!')}}
@@ -475,17 +470,17 @@ module Squeel
             block.to_sql.should match /AND/
             block.to_sql.should match /"comments"."body" = 'First post!'/
           end
-
+ 
           it 'allows a condition on a function via block' do
             relation = Person.where{coalesce(nil,id) == 5}
             relation.first.id.should eq 5
           end
-
+ 
           it 'allows a condition on an operation via block' do
             relation = Person.where{(id + 1) == 2}
             relation.first.id.should eq 1
           end
-
+ 
           it 'maps conditions onto their proper table with multiple polymorphic joins' do
             relation = Note.joins{[notable(Article).outer, notable(Person).outer]}
             people_notes = relation.where{notable(Person).salary > 30000}
@@ -495,13 +490,13 @@ module Squeel
             article_notes.should have(30).items
             people_and_article_notes.should have(40).items
           end
-
+ 
           it 'maps conditions onto their proper table with a polymorphic belongs_to join followed by a polymorphic has_many join' do
             relation = Note.joins{notable(Article).notes}.
               where{notable(Article).notes.note.eq('zomg')}
             relation.to_sql.should match /"notes_articles"\."note" = 'zomg'/
           end
-
+ 
           it 'allows a subquery on the value side of a predicate' do
             names = [Person.first.name, Person.last.name]
             old_and_busted = Person.where(:name => names)
@@ -509,19 +504,19 @@ module Squeel
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
           end
-
+ 
           it 'allows a subquery from an association in a hash' do
             scope = Person.first.articles
             articles = Article.where(:id => scope)
             articles.should have(3).articles
           end
-
+ 
           it 'allows a subquery from an association in a Squeel node' do
             scope = Person.first.articles
             articles = Article.where{id.in scope}
             articles.should have(3).articles
           end
-
+ 
           it 'is backwards-compatible with "where.not"' do
             if activerecord_version_at_least '4.0.0'
               name = Person.first.name
@@ -531,37 +526,37 @@ module Squeel
               pending 'Not required pre-4.0'
             end
           end
-
+ 
           it 'allows equality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where { person.eq first_person }
             relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
           end
-
+ 
           it 'allows equality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where { notable.eq first_person }
             relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
           end
-
+ 
           it 'allows inequality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where { person.not_eq first_person }
             relation.to_sql.should match /"articles"."person_id" != #{first_person.id}/
           end
-
+ 
           it 'allows inequality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where { notable.not_eq first_person }
             relation.to_sql.should match /\("notes"."notable_id" != #{first_person.id} OR "notes"."notable_type" != 'Person'\)/
           end
-
+ 
           it 'allows hash equality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where(:person => first_person)
             relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
           end
-
+ 
           it 'allows hash equality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where(:notable => first_person)
@@ -612,6 +607,14 @@ module Squeel
           it 'joins a keypath' do
             relation = Note.joins{notable(Article).person.children}
             relation.to_sql.should match /SELECT "notes".* FROM "notes" INNER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' INNER JOIN "people" ON "people"."id" = "articles"."person_id" INNER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
+          end
+
+          it 'validates polymorphic relationship with source type' do
+            if activerecord_version_at_least '3.2.7'
+              Group.first.users.to_sql.should match /"memberships"."member_type" = 'User'/
+            else
+              Group.first.users.size.should eq 1
+            end
           end
 
         end
@@ -697,14 +700,14 @@ module Squeel
             sql = block.to_sql
             sql.should match expected
           end
-
+ 
           it 'creates froms from literals' do
             expected = /SELECT "people".* FROM sub/
             relation = Person.from('sub')
             sql = relation.to_sql
             sql.should match expected
           end
-
+ 
           it 'creates froms from relations' do
             if activerecord_version_at_least '4.0.0'
               expected = "SELECT \"people\".* FROM (SELECT \"people\".* FROM \"people\") alias"

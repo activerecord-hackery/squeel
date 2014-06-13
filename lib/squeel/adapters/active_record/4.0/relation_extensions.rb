@@ -69,7 +69,14 @@ module Squeel
                 attrs.values.grep(::ActiveRecord::Relation) do |rel|
                   self.bind_values += rel.bind_values
                 end
-                attrs
+
+                case attrs.flatten.first
+                when Symbol, Squeel::Nodes::Stub, Squeel::Nodes::Predicate
+                  attrs
+                else
+                  super
+                end
+
               when Squeel::Nodes::Node
                 arg.grep(::ActiveRecord::Relation) do |rel|
                   self.bind_values += rel.bind_values
