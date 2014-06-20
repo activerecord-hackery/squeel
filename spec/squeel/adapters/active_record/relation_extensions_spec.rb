@@ -662,6 +662,18 @@ module Squeel
             relation.to_sql.should match /ORDER BY "people"\."id" ASC/
           end
 
+          it "correctly mimics the precedence of order statements for the various flavors of Rails 4.0.x" do
+            if activerecord_version_equals('4.0.0')
+              relation = Person.order{name}.order{id}
+              relation.to_sql.should match /ORDER BY "people"\."id", "people"\."name"/
+
+            elsif activerecord_version_greater_than('4.0.0')
+              relation = Person.order{name}.order{id}
+              relation.to_sql.should match /ORDER BY "people"\."name", "people"\."id"/
+
+            end
+          end
+
         end
 
         describe '#reorder' do

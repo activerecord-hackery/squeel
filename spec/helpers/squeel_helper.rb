@@ -24,6 +24,18 @@ module SqueelHelper
   end
 
   def activerecord_version_at_least(version_string)
+    active_record_version_test(version_string, :>=)
+  end
+
+  def activerecord_version_equals(version_string)
+    active_record_version_test(version_string, :==)
+  end
+
+  def activerecord_version_greater_than(version_string)
+    active_record_version_test(version_string, :>)
+  end
+
+  def active_record_version_test(version_string, operand)
     required_version_parts = version_string.split('.', 3).map(&:to_i)
     (0..2).each do |index|
       required_version_parts[index] ||= 0
@@ -33,6 +45,6 @@ module SqueelHelper
       ActiveRecord::VERSION::MINOR,
       ActiveRecord::VERSION::TINY
     ]
-    (actual_version_parts <=> required_version_parts) >= 0
+    (actual_version_parts <=> required_version_parts).send(operand, 0)
   end
 end
