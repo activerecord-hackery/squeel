@@ -194,7 +194,7 @@ module Squeel
           if args.empty?
             @path << Stub.new(method_id)
           elsif (args.size == 1) && (Class === args[0])
-            @path << Join.new(method_id, Arel::InnerJoin, args[0])
+            @path << Join.new(method_id, InnerJoin, args[0])
           else
             @path << Nodes::Function.new(method_id, args)
           end

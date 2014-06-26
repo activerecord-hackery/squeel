@@ -73,7 +73,11 @@ class Article < ActiveRecord::Base
   has_and_belongs_to_many :tags
   has_many :notes, :as => :notable
   has_many :commenters, :through => :comments, :source => :person
-  has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
+  if ActiveRecord::VERSION::MAJOR > 3 && ActiveRecord::VERSION::MINOR >= 1
+    has_many :uniq_commenters, lambda { uniq }, :through => :comments, :source => :person
+  else
+    has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
+  end
 end
 
 class Comment < ActiveRecord::Base
@@ -110,41 +114,39 @@ class Group < ActiveRecord::Base
   has_many :packages, through: :memberships, source: :member, source_type: 'Package'
 end
 
-Dir[File.expand_path('../../blueprints/*.rb', __FILE__)].each do |f|
-  require f
-end
-
 class Models
   def self.make
-    10.times do
-      person = Person.make
+    10.times do |i|
+      person = Person.create(name: Faker::Name.name, salary: 30000 + i * 1000)
       2.times do
-        UnidentifiedObject.create(:person => person, :name => Sham.object_name)
+        person.unidentified_objects.create(name: Faker::Lorem.words(1).first)
       end
-      Note.make(:notable => person)
+      person.notes.create(note: Faker::Lorem.words(7).join(' '))
       3.times do
-        article = Article.make(:person => person)
+        article = person.articles.create(title: Faker::Lorem.sentence, body: Faker::Lorem.paragraph)
         3.times do
-          article.tags = [Tag.make, Tag.make, Tag.make]
+          article.tags << Tag.create(name: Faker::Lorem.words(3).join(' '))
         end
-        Note.make(:notable => article)
+        article.notes.create(note: Faker::Lorem.words(7).join(' '))
         10.times do
-          Comment.make(:article => article)
+          article.comments.create(body: Faker::Lorem.paragraph)
         end
       end
       2.times do
-        Comment.make(:person => person)
+        person.comments.create(body: Faker::Lorem.paragraph)
       end
     end
 
-    Comment.make(:body => 'First post!', :article => Article.make(:title => 'Hello, world!'))
-    Comment.make(:body => 'Last post!', :article => Article.first, :person => Article.first.commenters.first)
+    Article.create(title: 'Hello, world!', body: Faker::Lorem.paragraph).
+      comments.create(body: 'First post!', person: Person.last)
+    Article.first.comments.create(body: 'Last post!', person: Article.last.commenters.first)
 
+    # has many through polymorphic model examples
     users = User.create([{ name: 'batman' }, { name: 'robin' }])
     groups = Group.create([{ name: 'justice league'}, { name: 'batcave stalagmite counting club'}])
     users.first.groups << groups.first
     users.first.groups << groups.last
     users.last.groups << groups.last
-
   end
 end
+

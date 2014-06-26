@@ -33,6 +33,7 @@ module Squeel
             }
           }
         })
+
         attributes.should be_a Array
         attribute = attributes.first
         attribute.should be_a Arel::Attributes::Attribute

@@ -23,6 +23,8 @@ just a simple example -- Squeel's capable of a whole lot more. Keep reading.
 In your Gemfile:
 
 ```ruby
+# Make sure you are using the latest version of polyamorous
+gem "polyamorous", :git => "git://github.com/activerecord-hackery/polyamorous.git"
 gem "squeel"  # Last officially released gem
 # gem "squeel", :git => "git://github.com/activerecord-hackery/squeel.git" # Track git repo
 ```
@@ -85,6 +87,24 @@ very handy.
 A Squeel keypath is essentially a more concise and readable alternative to a
 deeply nested hash. For instance, in standard Active Record, you might join several
 associations like this to perform a query:
+
+#### Rails 4+
+
+```ruby
+Person.joins(:articles => {:comments => :person}).references(:all)
+# => SELECT "people".* FROM "people"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```
+
+With a keypath, this would look like:
+
+```ruby
+Person.joins{articles.comments.person}.references(:all)
+```
+
+#### Rails 3.x
 
 ```ruby
 Person.joins(:articles => {:comments => :person})
@@ -470,7 +490,7 @@ As you can see, just like functions, these operations can be given aliases.
 To select more than one attribute (or calculated attribute) simply put them into an array:
 
 ```ruby
-p = Person.select{[ name.op('||', '-diddly').as(flanderized_name), 
+p = Person.select{[ name.op('||', '-diddly').as(flanderized_name),
                     coalesce(name, '<no name given>').as(name_with_default) ]}.first
 p.flanderized_name
 # => "Aric Smith-diddly"

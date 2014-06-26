@@ -16,6 +16,14 @@ module Squeel
             ::ActiveRecord::QueryMethods.instance_method(:build_where)
         end
 
+        def references(*args)
+          if block_given? && args.empty?
+            super(DSL.eval &Proc.new)
+          else
+            super
+          end
+        end
+
         def where(opts = :chain, *rest)
           if block_given?
             super(DSL.eval &Proc.new)
@@ -28,6 +36,24 @@ module Squeel
               super
             end
           end
+        end
+
+        def where_unscoping(target_value)
+          target_value = target_value.to_s
+
+          where_values.reject! do |rel|
+            case rel
+            when Arel::Nodes::In, Arel::Nodes::NotIn, Arel::Nodes::Equality, Arel::Nodes::NotEqual
+              subrelation = (rel.left.kind_of?(Arel::Attributes::Attribute) ? rel.left : rel.right)
+              subrelation.name == target_value
+            when Hash
+              rel.stringify_keys.has_key?(target_value)
+            when Squeel::Nodes::Predicate
+              rel.expr.symbol.to_s == target_value
+            end
+          end
+
+          bind_values.reject! { |col,_| col.name == target_value }
         end
 
         def build_arel
@@ -70,8 +96,7 @@ module Squeel
                   self.bind_values += rel.bind_values
                 end
 
-                case attrs.flatten.first
-                when Symbol, Squeel::Nodes::Stub, Squeel::Nodes::Predicate
+                unless attrs.keys.grep(Squeel::Nodes::Node).empty? && attrs.keys.grep(Symbol).empty?
                   attrs
                 else
                   super
@@ -141,6 +166,17 @@ module Squeel
 
           self.order_values = args + self.order_values
           self
+        end
+
+        def where_values_hash_with_squeel(relation_table_name = table_name)
+          equalities = find_equality_predicates(where_visit(with_default_scope.where_values), relation_table_name)
+
+          binds = Hash[bind_values.find_all(&:first).map { |column, v| [column.name, v] }]
+
+          Hash[equalities.map { |where|
+            name = where.left.name
+            [name, binds.fetch(name.to_s) { where.right }]
+          }]
         end
 
         private

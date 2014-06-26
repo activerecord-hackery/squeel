@@ -1,6 +1,15 @@
 require 'squeel/configuration'
+require 'polyamorous'
 
 module Squeel
+
+  if defined?(Arel::InnerJoin)
+    InnerJoin = Arel::InnerJoin
+    OuterJoin = Arel::OuterJoin
+  else
+    InnerJoin = Arel::Nodes::InnerJoin
+    OuterJoin = Arel::Nodes::OuterJoin
+  end
 
   extend Configuration
 
@@ -30,7 +39,6 @@ module Squeel
       alias_predicate aliaz, original
     end
   end
-
 end
 
 require 'squeel/dsl'

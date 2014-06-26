@@ -147,7 +147,7 @@ module Squeel
 
           manager
         end
-        # For 4.x adapters
+        # For 4.0 adapters
         alias :build_joins :build_join_dependency
 
         def includes(*args)

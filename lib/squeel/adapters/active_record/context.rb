@@ -3,6 +3,12 @@ require 'squeel/context'
 module Squeel
   module Adapters
     module ActiveRecord
+      JoinPart = if defined?(::ActiveRecord::Associations::JoinDependency::JoinPart)
+          ::ActiveRecord::Associations::JoinDependency::JoinPart
+        elsif defined?(::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinBase)
+          ::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinBase
+        end
+
       class Context < ::Squeel::Context
 
         def initialize(object)
@@ -72,12 +78,6 @@ module Squeel
           @engine.connection.visitor
         end
 
-      end
-
-      if defined?(::ActiveRecord::Associations::JoinDependency::JoinPart)
-        JoinPart = ::ActiveRecord::Associations::JoinDependency::JoinPart
-      elsif defined?(::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinBase)
-        JoinPart = ::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinBase
       end
     end
   end

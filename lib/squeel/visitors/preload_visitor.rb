@@ -11,12 +11,24 @@ module Squeel
         visit(object, parent)
       end
 
+      def accept!(object, parent = nil)
+        visit!(object, parent)
+      end
+
       private
 
       def visit_Hash(o, parent)
         {}.tap do |hash|
           o.each do |key, value|
             hash[visit(key, parent)] = visit(value, parent)
+          end
+        end
+      end
+
+      def visit_Hash!(o, parent)
+        {}.tap do |hash|
+          o.each do |key, value|
+            hash[visit!(key, parent)] = visit!(value, parent)
           end
         end
       end

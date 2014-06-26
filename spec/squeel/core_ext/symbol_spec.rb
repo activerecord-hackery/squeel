@@ -33,7 +33,7 @@ describe Symbol do
       join = :blah.inner
       join.should be_a Squeel::Nodes::Join
       join._name.should eq :blah
-      join._type.should eq Arel::InnerJoin
+      join._type.should eq Squeel::InnerJoin
     end
   end
 
@@ -42,7 +42,7 @@ describe Symbol do
       join = :blah.outer
       join.should be_a Squeel::Nodes::Join
       join._name.should eq :blah
-      join._type.should eq Arel::OuterJoin
+      join._type.should eq Squeel::OuterJoin
     end
   end
 
@@ -51,7 +51,7 @@ describe Symbol do
       join = :blah.of_class(Person)
       join.should be_a Squeel::Nodes::Join
       join._name.should eq :blah
-      join._type.should eq Arel::InnerJoin
+      join._type.should eq Squeel::InnerJoin
       join._klass.should eq Person
     end
   end

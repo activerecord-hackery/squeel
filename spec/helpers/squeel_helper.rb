@@ -1,4 +1,11 @@
 module SqueelHelper
+  JoinDependency =
+    if defined?(::ActiveRecord::Associations::JoinDependency)
+      ::ActiveRecord::Associations::JoinDependency
+    else
+      ::ActiveRecord::Associations::ClassMethods::JoinDependency
+    end
+
   def dsl(&block)
     Squeel::DSL.eval(&block)
   end
@@ -16,11 +23,7 @@ module SqueelHelper
   end
 
   def new_join_dependency(*args)
-    if defined?(ActiveRecord::Associations::JoinDependency)
-      ActiveRecord::Associations::JoinDependency.new(*args)
-    else
-      ActiveRecord::Associations::ClassMethods::JoinDependency.new(*args)
-    end
+    JoinDependency.new(*args)
   end
 
   def activerecord_version_at_least(version_string)

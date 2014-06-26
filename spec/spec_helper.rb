@@ -1,6 +1,6 @@
-require 'machinist/active_record'
-require 'sham'
 require 'faker'
+require 'active_record'
+require 'active_support'
 
 module ActiveRecord
   # Shamelessly swiped from the AR test code
@@ -21,11 +21,11 @@ module ActiveRecord
       end
     end
   end
-  ActiveSupport::Notifications.subscribe('sql.active_record', SQLCounter.new)
+  ::ActiveSupport::Notifications.subscribe('sql.active_record', SQLCounter.new)
 end
 
 unless ENV['DEPRECATIONS']
-  ActiveSupport::Deprecation.silenced = true
+  ::ActiveSupport::Deprecation.silenced = true
 end
 
 Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
@@ -33,16 +33,7 @@ Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
 end
 require File.expand_path('../support/schema.rb', __FILE__)
 require File.expand_path('../support/models.rb', __FILE__)
-
-Sham.define do
-  name     { Faker::Name.name }
-  title    { Faker::Lorem.sentence }
-  body     { Faker::Lorem.paragraph }
-  salary   {|index| 30000 + (index * 1000)}
-  tag_name { Faker::Lorem.words(3).join(' ') }
-  note     { Faker::Lorem.words(7).join(' ') }
-  object_name { Faker::Lorem.words(1).first }
-end
+Dir["./spec/support/shared_examples/**/*.rb"].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.before(:suite) do
@@ -51,8 +42,6 @@ RSpec.configure do |config|
     puts '=' * 80
     Models.make
   end
-  config.before(:all)   { Sham.reset(:before_all) }
-  config.before(:each)  { Sham.reset(:before_each) }
 
   config.include SqueelHelper
 end

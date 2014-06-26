@@ -48,7 +48,7 @@ module Squeel
       it 'creates a KeyPath with a join endpoint when sent a method with a Class param' do
         keypath = @s.another(Person)
         keypath.should be_a KeyPath
-        keypath.path.should eq [@s, Join.new(:another, Arel::InnerJoin, Person)]
+        keypath.path.should eq [@s, Join.new(:another, Squeel::InnerJoin, Person)]
       end
 
       it 'creates a KeyPath with a sifter endpoint when sent #sift' do
@@ -189,13 +189,13 @@ module Squeel
       it 'creates inner joins' do
         join = @s.inner
         join.should be_a Join
-        join._type.should eq Arel::InnerJoin
+        join._type.should eq Squeel::InnerJoin
       end
 
       it 'creates outer joins' do
         join = @s.outer
         join.should be_a Join
-        join._type.should eq Arel::OuterJoin
+        join._type.should eq Squeel::OuterJoin
       end
 
       it 'creates functions with #func' do

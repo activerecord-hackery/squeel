@@ -14,21 +14,21 @@ module Squeel
       # @param [Symbol] name The association name
       # @param [Arel::InnerJoin, Arel::OuterJoin] type The Arel join class
       # @param [Class, String, Symbol] klass The polymorphic belongs_to class or class name
-      def initialize(name, type = Arel::InnerJoin, klass = nil)
+      def initialize(name, type = InnerJoin, klass = nil)
         @_join = Polyamorous::Join.new(name, type, klass)
       end
 
       # Set the join type to an inner join
       # @return [Join] The join, with an updated join type.
       def inner
-        self._type = Arel::InnerJoin
+        self._type = InnerJoin
         self
       end
 
       # Set the join type to an outer join
       # @return [Join] The join, with an updated join type.
       def outer
-        self._type = Arel::OuterJoin
+        self._type = OuterJoin
         self
       end
 
@@ -61,7 +61,7 @@ module Squeel
       def method_missing(method_id, *args)
         super if method_id == :to_ary
         if (args.size == 1) && (Class === args[0])
-          KeyPath.new([self, Join.new(method_id, Arel::InnerJoin, args[0])])
+          KeyPath.new([self, Join.new(method_id, InnerJoin, args[0])])
         else
           KeyPath.new([self, method_id])
         end
