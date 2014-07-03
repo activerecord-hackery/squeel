@@ -89,6 +89,10 @@ module Squeel
       Nodes::Sifter.new name.to_sym, args
     end
 
+    def to_s(string)
+      Nodes::String.new(string)
+    end
+
     # Node generation inside DSL blocks.
     #
     # @overload node_name

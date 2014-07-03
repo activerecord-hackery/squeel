@@ -56,6 +56,8 @@ module Squeel
         attribute = case o.expr
         when Nodes::Stub, Nodes::Function, Nodes::Literal, Nodes::Grouping
           visit(o.expr, parent)
+        when Nodes::String
+          o.expr.to_s
         else
           contextualize(parent)[o.expr]
         end
@@ -97,8 +99,10 @@ module Squeel
         elsif array.include? nil
           array = array.compact
           array.empty? ? attribute.eq(nil) : attribute.in(array).or(attribute.eq nil)
-        else
+        elsif attribute.respond_to?(:in)
           attribute.in array
+        else
+          Arel::Nodes::In.new(attribute, array)
         end
       end
 
