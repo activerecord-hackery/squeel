@@ -33,7 +33,6 @@ Dir[File.expand_path('../helpers/*.rb', __FILE__)].each do |f|
 end
 require File.expand_path('../support/schema.rb', __FILE__)
 require File.expand_path('../support/models.rb', __FILE__)
-Dir["./spec/support/shared_examples/**/*.rb"].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.before(:suite) do

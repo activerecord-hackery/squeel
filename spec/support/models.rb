@@ -117,29 +117,47 @@ end
 class Models
   def self.make
     10.times do |i|
-      person = Person.create(name: Faker::Name.name, salary: 30000 + i * 1000)
+      # 10 people total, salary gt 30000
+      person = Person.create(name: Faker::Name.name, salary: 30000 + (i + 1) * 1000)
       2.times do
+        # 20 unidentified object total, 2 per person
         person.unidentified_objects.create(name: Faker::Lorem.words(1).first)
       end
+      # 10 notes based on people total
       person.notes.create(note: Faker::Lorem.words(7).join(' '))
       3.times do
+        # 30 articles total
         article = person.articles.create(title: Faker::Lorem.sentence, body: Faker::Lorem.paragraph)
         3.times do
+          # 30 * 3 tags total
           article.tags << Tag.create(name: Faker::Lorem.words(3).join(' '))
         end
+        # 30 notes based on articles total
         article.notes.create(note: Faker::Lorem.words(7).join(' '))
         10.times do
+          # 30 * 10 comments based on articles total
           article.comments.create(body: Faker::Lorem.paragraph)
         end
       end
       2.times do
+        # 20 comments based on people total
         person.comments.create(body: Faker::Lorem.paragraph)
       end
     end
 
+    # an article, a comment based on articles and people
     Article.create(title: 'Hello, world!', body: Faker::Lorem.paragraph).
       comments.create(body: 'First post!', person: Person.last)
+    # a comment based on articles and people
     Article.first.comments.create(body: 'Last post!', person: Article.last.commenters.first)
+
+    # So, we created
+    # 10 people
+    # 31 articles
+    # 322 comments(22 p + 302 a, 2 overlaps)
+    # 40 notes(10 p + 30 a)
+    # 90 tags
+    # 20 unidentified objects
 
     # has many through polymorphic model examples
     users = User.create([{ name: 'batman' }, { name: 'robin' }])

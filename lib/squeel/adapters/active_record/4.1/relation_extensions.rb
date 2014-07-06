@@ -42,14 +42,6 @@ module Squeel
           visit!
         end
 
-        def references(*args)
-          if block_given? && args.empty?
-            super(DSL.eval &Proc.new)
-          else
-            super
-          end
-        end
-
         def where_unscoping(target_value)
           target_value = target_value.to_s
 

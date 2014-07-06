@@ -16,14 +16,6 @@ module Squeel
             ::ActiveRecord::QueryMethods.instance_method(:build_where)
         end
 
-        def references(*args)
-          if block_given? && args.empty?
-            super(DSL.eval &Proc.new)
-          else
-            super
-          end
-        end
-
         def where(opts = :chain, *rest)
           if block_given?
             super(DSL.eval &Proc.new)

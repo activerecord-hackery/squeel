@@ -113,22 +113,6 @@ module Squeel
             }]
           }]
         end
-
-        def debug_sql
-          eager_loading? ? to_sql : arel.to_sql
-        end
-
-        private
-
-          def dehashified_order_values
-            order_values.map { |o|
-              if Hash === o && o.values.all? { |v| [:asc, :desc].include?(v) }
-                o.map { |field, dir| table[field].send(dir) }
-              else
-                o
-              end
-            }
-          end
       end
     end
   end
