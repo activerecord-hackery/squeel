@@ -54,8 +54,9 @@ module Squeel
           end
 
           stashed_association_joins = joins.grep(::ActiveRecord::Associations::ClassMethods::JoinDependency::JoinAssociation)
+          subquery_joins = joins.grep(Nodes::SubqueryJoin)
 
-          non_association_joins = (joins - association_joins - stashed_association_joins)
+          non_association_joins = (joins - association_joins - stashed_association_joins - subquery_joins)
           custom_joins = custom_join_sql(*non_association_joins)
 
           self.join_dependency = JoinDependency.new(@klass, association_joins, custom_joins)
@@ -77,6 +78,16 @@ module Squeel
 
           to_join.uniq.each do |left, join_type, right|
             relation = relation.join(left, join_type).on(*right)
+          end
+
+          subquery_joins.each do |join|
+            relation = relation.
+              join(
+                Arel::Nodes::TableAlias.new(
+                  join.subquery.right,
+                  Arel::Nodes::Grouping.new(join.subquery.left.arel.ast)),
+                join.type).
+              on(*where_visit(join.constraints))
           end
 
           relation = relation.join(custom_joins)

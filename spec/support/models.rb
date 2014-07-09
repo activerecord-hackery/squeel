@@ -114,6 +114,23 @@ class Group < ActiveRecord::Base
   has_many :packages, through: :memberships, source: :member, source_type: 'Package'
 end
 
+class Seat < ActiveRecord::Base
+  belongs_to :payment, dependent: :destroy
+  has_many(:order_items,
+    as: :orderable,
+    autosave: true,
+    dependent: :destroy
+  )
+end
+
+class OrderItem < ActiveRecord::Base
+  belongs_to :orderable, polymorphic: true
+end
+
+class Payment < ActiveRecord::Base
+  has_many :seats
+end
+
 class Models
   def self.make
     10.times do |i|
@@ -165,6 +182,13 @@ class Models
     users.first.groups << groups.first
     users.first.groups << groups.last
     users.last.groups << groups.last
+
+    10.times do |i|
+      seat = Seat.create(no: i+1)
+      seat.order_items.create(unit_price: 10, quantity: 1)
+
+      seat.create_payment if i%2 == 0
+    end
   end
 end
 

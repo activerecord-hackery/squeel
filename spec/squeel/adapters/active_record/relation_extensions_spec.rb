@@ -666,6 +666,21 @@ module Squeel
             end
           end
 
+          it 'joins a subquery', focus: true do
+            subquery = OrderItem.
+              group(:orderable_id).
+              select { [orderable_id, sum(quantity * unit_price).as(amount)] }
+
+            relation = Seat.
+              joins { [payment.outer,
+                       subquery.as('seat_order_items').on { id == seat_order_items.orderable_id}.outer] }.
+              select { [seat_order_items.amount, "seats.*"] }.
+              where { seat_order_items.amount > 0 }
+
+            relation.debug_sql.should match /SELECT "seat_order_items"."amount", seats.\* FROM "seats" LEFT OUTER JOIN "payments" ON "payments"."id" = "seats"."payment_id" LEFT OUTER JOIN \(SELECT "order_items"."orderable_id", sum\("order_items"."quantity" \* "order_items"."unit_price"\) AS amount FROM "order_items"\s+GROUP BY "order_items"."orderable_id"\) seat_order_items ON "seats"."id" = "seat_order_items"."orderable_id" WHERE "seat_order_items"."amount" > 0/
+            relation.to_a.should have(10).seats
+            relation.to_a.second.amount.should eq(10)
+          end
         end
 
         describe '#having' do

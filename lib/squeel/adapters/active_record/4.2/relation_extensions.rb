@@ -60,6 +60,8 @@ module Squeel
               :stashed_join
             when Arel::Nodes::Join
               :join_node
+            when Nodes::SubqueryJoin
+              :subquery_join
             else
               raise 'unknown class: %s' % join.class.name
             end
@@ -68,6 +70,7 @@ module Squeel
           association_joins         = buckets[:association_join] || []
           stashed_association_joins = buckets[:stashed_join] || []
           join_nodes                = (buckets[:join_node] || []).uniq
+          subquery_joins            = buckets[:subquery_join] || []
           string_joins              = (buckets[:string_join] || []).map { |x|
             x.strip
           }.uniq
@@ -90,7 +93,8 @@ module Squeel
             manager.bind_values.concat info.binds
           end
 
-          manager.join_sources.concat join_list
+          manager.join_sources.concat(join_list)
+          manager.join_sources.concat(build_join_from_subquery(subquery_joins))
 
           manager
         end

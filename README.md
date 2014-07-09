@@ -433,6 +433,27 @@ Person.joins{children.parent.children}.
 
 Keypaths were used here for clarity, but nested hashes would work just as well.
 
+You can also use a subquery in a join.
+
+Notice:
+1. Squeel can only accept an ActiveRecord::Relation class of subqueries in a join.
+2. Use the chain with caution. You should call `as` first to get a Nodes::As, then call `on` to get a join node.
+
+```ruby
+subquery = OrderItem.group(:orderable_id).select { [orderable_id, sum(quantity * unit_price).as(amount)] }
+Seat.joins { [payment.outer, subquery.as('seat_order_items').on { id == seat_order_items.orderable_id}.outer] }.
+              select { [seat_order_items.amount, "seats.*"] }
+# => SELECT "seat_order_items"."amount", seats.*
+#    FROM "seats"
+#    LEFT OUTER JOIN "payments" ON "payments"."id" = "seats"."payment_id"
+#    LEFT OUTER JOIN (
+#      SELECT "order_items"."orderable_id",
+#             sum("order_items"."quantity" * "order_items"."unit_price") AS amount
+#      FROM "order_items"
+#      GROUP BY "order_items"."orderable_id"
+#    ) seat_order_items ON "seats"."id" = "seat_order_items"."orderable_id"
+```
+
 ### Functions
 
 You can call SQL functions just like you would call a method in Ruby...

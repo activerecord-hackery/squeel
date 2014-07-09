@@ -109,6 +109,8 @@ module Squeel
               :stashed_join
             when Arel::Nodes::Join
               :join_node
+            when Nodes::SubqueryJoin
+              :subquery_join
             else
               raise 'unknown class: %s' % join.class.name
             end
@@ -117,6 +119,7 @@ module Squeel
           association_joins         = buckets[:association_join] || []
           stashed_association_joins = buckets[:stashed_join] || []
           join_nodes                = (buckets[:join_node] || []).uniq
+          subquery_joins            = (buckets[:subquery_join] || []).uniq
           string_joins              = (buckets[:string_join] || []).map { |x|
             x.strip
           }.uniq
@@ -136,7 +139,8 @@ module Squeel
 
           joins.each { |join| manager.from(join) }
 
-          manager.join_sources.concat join_list
+          manager.join_sources.concat(join_list)
+          manager.join_sources.concat(build_join_from_subquery(subquery_joins))
 
           manager
         end
@@ -163,7 +167,9 @@ module Squeel
               end
             end
 
-            []
+            # Fail Safe, call the normal accept method.
+            context = Adapters::ActiveRecord::Context.new(join_dependency)
+            Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept(values)
           end
         end
 
@@ -248,6 +254,15 @@ module Squeel
                 o
               end
             }
+          end
+
+          def build_join_from_subquery(subquery_joins)
+            subquery_joins.map do |join|
+              join.type.new(
+                Arel::Nodes::TableAlias.new(join.subquery.left.arel, join.subquery.right),
+                Arel::Nodes::On.new(where_visit(join.constraints))
+              )
+            end
           end
       end
     end
