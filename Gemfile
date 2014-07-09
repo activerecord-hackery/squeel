@@ -36,4 +36,4 @@ else
   end
 end
 
-gem 'polyamorous', git: 'git://github.com/activerecord-hackery/polyamorous.git', branch: 'master'
+gem 'polyamorous', git: 'git://github.com/activerecord-hackery/polyamorous.git'

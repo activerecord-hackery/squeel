@@ -9,33 +9,7 @@ module Squeel
             class << self
               alias_method_chain :walk_tree, :squeel
             end
-            alias_method_chain :build, :squeel
             alias_method_chain :join_constraints, :squeel
-          end
-        end
-
-        # Should it been put into polyamorous gem?
-        def build_with_squeel(associations, base_klass)
-          associations.map do |name, right|
-            if name.is_a? Polyamorous::Join
-              reflection = find_reflection base_klass, name.name
-              reflection.check_validity!
-
-              if reflection.options[:polymorphic]
-                JoinAssociation.new reflection, build(right, name.klass || base_klass), name.klass, name.type
-              else
-                JoinAssociation.new reflection, build(right, reflection.klass), name.klass, name.type
-              end
-            else
-              reflection = find_reflection base_klass, name
-              reflection.check_validity!
-
-              if reflection.polymorphic?
-                raise EagerLoadPolymorphicError.new(reflection)
-              end
-
-              JoinAssociation.new reflection, build(right, reflection.klass)
-            end
           end
         end
 
