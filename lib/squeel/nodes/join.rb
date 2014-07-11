@@ -83,6 +83,10 @@ module Squeel
         nil
       end
 
+      def add_to_tree(hash)
+        hash[_join] ||= {}
+      end
+
     end
   end
 end

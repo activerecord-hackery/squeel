@@ -3,7 +3,7 @@ require 'spec_helper'
 module Squeel
   module Adapters
     module ActiveRecord
-      describe JoinDependencyExtensions do
+      describe "JoinDependencyExtensions" do
         it 'joins with symbols' do
           @jd = new_join_dependency(Person, { :articles => :comments }, [])
 

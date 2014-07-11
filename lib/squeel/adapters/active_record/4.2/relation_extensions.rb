@@ -56,7 +56,7 @@ module Squeel
               :string_join
             when Hash, Symbol, Array, Nodes::Stub, Nodes::Join, Nodes::KeyPath
               :association_join
-            when JoinDependency
+            when ::ActiveRecord::Associations::JoinDependency
               :stashed_join
             when Arel::Nodes::Join
               :join_node
@@ -78,7 +78,7 @@ module Squeel
           join_list = join_nodes + custom_join_ast(manager, string_joins)
 
           # All of that duplication just to do this...
-          self.join_dependency = JoinDependency.new(
+          self.join_dependency = ::ActiveRecord::Associations::JoinDependency.new(
             @klass,
             association_joins,
             join_list

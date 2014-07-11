@@ -124,6 +124,10 @@ module Squeel
         Join.new(self.symbol, InnerJoin, klass)
       end
 
+      def add_to_tree(hash)
+        hash[symbol] ||= {}
+      end
+
     end
   end
 end

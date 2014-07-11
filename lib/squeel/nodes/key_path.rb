@@ -177,6 +177,10 @@ module Squeel
       end
       alias :to_str :to_s
 
+      def add_to_tree(hash)
+        walk_through_path(path.dup, hash)
+      end
+
       # Appends to the KeyPath or delegates to the endpoint, as appropriate
       # @return [KeyPath] The updated KeyPath
       def method_missing(method_id, *args, &block)
@@ -211,6 +215,11 @@ module Squeel
       def initialize_copy(orig)
         super
         @path = @path.dup
+      end
+
+      def walk_through_path(path, hash)
+        cache = path.shift.add_to_tree(hash)
+        path.empty? ? cache : walk_through_path(path, cache)
       end
 
       # Raises a NoMethodError manually, bypassing #method_missing.
