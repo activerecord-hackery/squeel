@@ -608,6 +608,14 @@ module Squeel
             relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
           end
 
+          it 'keeps original AR hashes behavior' do
+            relation = Person.joins(:articles).where(articles: { person_id: Person.first })
+            relation.to_sql.should match /SELECT "people".* FROM "people" INNER JOIN "articles" ON "articles"."person_id" = "people"."id" WHERE "articles"."person_id" = 1/
+
+            relation = Person.joins(:articles).where(articles: { person_id: Person.all.to_a })
+            relation.to_sql.should match /SELECT "people".\* FROM "people" INNER JOIN "articles" ON "articles"."person_id" = "people"."id" WHERE "articles"."person_id" IN \(1, 2, 3, 4, 5, 6, 7, 8, 9, 10\)/
+          end
+
         end
 
         describe '#joins' do
