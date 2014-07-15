@@ -5,6 +5,8 @@ module Squeel
     module ActiveRecord
       module RelationExtensions
 
+        undef_method 'to_sql_with_binding_params'
+
         attr_accessor :reverse_order_value
         private :reverse_order_value, :reverse_order_value=
 

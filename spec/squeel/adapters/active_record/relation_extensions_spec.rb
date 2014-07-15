@@ -666,7 +666,7 @@ module Squeel
             end
           end
 
-          it 'joins a subquery', focus: true do
+          it 'joins an ActiveRecord::Relation subquery' do
             subquery = OrderItem.
               group(:orderable_id).
               select { [orderable_id, sum(quantity * unit_price).as(amount)] }
@@ -780,6 +780,17 @@ module Squeel
               sql.should == expected
             else
               pending 'Unsupported before ActiveRecord 4.0'
+            end
+          end
+
+          it 'binds params from CollectionProxy subquery' do
+            if activerecord_version_at_least('3.1.0')
+              first_article = Article.first
+              expected_tags = Tag.where(id: [1,2,3]).order{name}.to_a
+
+              expected_tags.should == Tag.from{first_article.tags.as(Tag.table_name)}.order{tags.name}.to_a
+            else
+              pending "ActiveRecord 3.0.x doesn't support CollectionProxy chain."
             end
           end
         end

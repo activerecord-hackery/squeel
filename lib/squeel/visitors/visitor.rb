@@ -307,13 +307,25 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::As] The resulting as node.
       def visit_Squeel_Nodes_As(o, parent)
-        left = visit(o.left, parent)
-        # Some nodes, like Arel::SelectManager, have their own #as methods,
-        # with behavior that we don't want to clobber.
-        if left.respond_to?(:as)
-          left.as(o.right)
+        # patch for 4+, binds params using native to_sql before transforms to sql string
+        if ::ActiveRecord::VERSION::MAJOR >= 4 && o.left.is_a?(::ActiveRecord::Relation)
+          Arel::Nodes::TableAlias.new(
+            Arel::Nodes::Grouping.new(
+              Arel::Nodes::SqlLiteral.new(
+                o.left.respond_to?(:to_sql_with_binding_params) ? o.left.to_sql_with_binding_params : o.left.to_sql
+              )
+            ),
+            o.right
+          )
         else
-          Arel::Nodes::As.new(left, o.right)
+          left = visit(o.left, parent)
+          # Some nodes, like Arel::SelectManager, have their own #as methods,
+          # with behavior that we don't want to clobber.
+          if left.respond_to?(:as)
+            left.as(o.right)
+          else
+            Arel::Nodes::As.new(left, o.right)
+          end
         end
       end
 

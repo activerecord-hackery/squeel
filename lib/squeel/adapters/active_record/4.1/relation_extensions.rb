@@ -231,7 +231,6 @@ module Squeel
 
         def where_values_hash_with_squeel(relation_table_name = table_name)
           equalities = find_equality_predicates(where_visit(where_values), relation_table_name)
-
           binds = Hash[bind_values.find_all(&:first).map { |column, v| [column.name, v] }]
 
           Hash[equalities.map { |where|
@@ -242,6 +241,29 @@ module Squeel
 
         def debug_sql
           eager_loading? ? to_sql : arel.to_sql
+        end
+
+        def to_sql_with_binding_params
+          @to_sql ||= begin
+            relation   = self
+            connection = klass.connection
+
+            if eager_loading?
+              find_with_associations { |rel| relation = rel }
+            end
+
+            ast   = relation.arel.ast
+            binds = relation.bind_values.dup
+
+            visitor = connection.visitor.clone
+            visitor.class_eval do
+              include ::Arel::Visitors::BindVisitor
+            end
+
+            visitor.accept(ast) do
+              connection.quote(*binds.shift.reverse)
+            end
+          end
         end
 
         private
