@@ -49,6 +49,16 @@ module Squeel
         end
       end
 
+      def visit_Hash!(o, parent)
+        predicates = super
+
+        if predicates.size > 1
+          Arel::Nodes::Grouping.new(Arel::Nodes::And.new predicates)
+        else
+          predicates.first
+        end
+      end
+
 
       # @return [Boolean] Whether the given value implies a context change
       # @param v The value to consider

@@ -3,7 +3,7 @@ gemspec
 
 gem 'rake'
 
-rails = ENV['RAILS'] || '4-1-stable'
+rails = ENV['RAILS'] || 'master'
 arel = ENV['AREL'] || 'master'
 
 arel_opts = case arel
@@ -35,3 +35,5 @@ else
     gem 'activerecord'
   end
 end
+
+gem 'polyamorous', git: 'git://github.com/activerecord-hackery/polyamorous.git'

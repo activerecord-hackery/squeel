@@ -72,6 +72,22 @@ silence_stream(STDOUT) do
       t.string :name
     end
 
+    create_table :seats do |t|
+      t.string :no
+      t.integer :payment_id
+    end
+
+    create_table :order_items do |t|
+      t.string :orderable_type
+      t.integer :orderable_id
+      t.integer :quantity
+      t.integer :unit_price
+    end
+
+    create_table :payments do |t|
+
+    end
+
   end
 end
 

@@ -5,6 +5,14 @@ module Squeel
     module ActiveRecord
       module RelationExtensions
 
+        attr_accessor :stashed_join_dependencies
+        private :stashed_join_dependencies, :stashed_join_dependencies=
+
+        def reset
+          @stashed_join_dependencies = nil
+          super
+        end
+
         # where.not is a pain. It calls the private `build_where` method on its
         # scope, and since ActiveRecord::Relation already includes the original
         # ActiveRecord::QueryMethods module, we have to find a way to trick the
@@ -30,6 +38,10 @@ module Squeel
           end
         end
 
+        def visited
+          visit!
+        end
+
         def where_unscoping(target_value)
           target_value = target_value.to_s
 
@@ -48,10 +60,23 @@ module Squeel
           bind_values.reject! { |col,_| col.name == target_value }
         end
 
+        def reverse_sql_order(order_query)
+          return super if order_query.empty?
+
+          order_query.flat_map do |o|
+            case o
+              when Arel::Attributes::Attribute
+                Arel::Nodes::Ascending.new(o).reverse
+              else
+                super
+              end
+          end
+        end
+
         def build_arel
           arel = Arel::SelectManager.new(table.engine, table)
 
-          build_joins(arel, joins_values) unless joins_values.empty?
+          build_joins(arel, joins_values.flatten) unless joins_values.empty?
 
           collapse_wheres(arel, where_visit((where_values - ['']).uniq))
 
@@ -71,6 +96,81 @@ module Squeel
           arel.lock(lock_value) if lock_value
 
           arel
+        end
+
+        def build_join_dependency(manager, joins)
+          buckets = joins.group_by do |join|
+            case join
+            when String
+              :string_join
+            when Hash, Symbol, Array, Nodes::Stub, Nodes::Join, Nodes::KeyPath
+              :association_join
+            when ::ActiveRecord::Associations::JoinDependency
+              :stashed_join
+            when Arel::Nodes::Join
+              :join_node
+            when Nodes::SubqueryJoin
+              :subquery_join
+            else
+              raise 'unknown class: %s' % join.class.name
+            end
+          end
+
+          association_joins         = buckets[:association_join] || []
+          stashed_association_joins = buckets[:stashed_join] || []
+          join_nodes                = (buckets[:join_node] || []).uniq
+          subquery_joins            = (buckets[:subquery_join] || []).uniq
+          string_joins              = (buckets[:string_join] || []).map { |x|
+            x.strip
+          }.uniq
+
+          join_list = join_nodes + custom_join_ast(manager, string_joins)
+
+          # All of that duplication just to do this...
+          self.join_dependency = ::ActiveRecord::Associations::JoinDependency.new(
+            @klass,
+            association_joins,
+            join_list
+          )
+
+          self.stashed_join_dependencies = stashed_association_joins
+
+          joins = join_dependency.join_constraints stashed_association_joins
+
+          joins.each { |join| manager.from(join) }
+
+          manager.join_sources.concat(join_list)
+          manager.join_sources.concat(build_join_from_subquery(subquery_joins))
+
+          manager
+        end
+
+        alias :build_joins :build_join_dependency
+
+        # Redefine all visiting methods that depends on build_join
+        # All includes_values and eager_loading_values are pushed into a new
+        # JoinDependency class after Rails 4.1 and never are grafted,
+        # so that we need to walk through all JoinDependency
+        # to find proper alias table names.
+        #
+        # And use a ! method in Context, so we can throw an error when we can't
+        # find proper value in a JoinDependency
+        %w(where having group order).each do |visitor|
+          define_method "#{visitor}_visit" do |values|
+            join_dependencies = [join_dependency] + stashed_join_dependencies
+            join_dependencies.each do |jd|
+              context = Adapters::ActiveRecord::Context.new(jd)
+              begin
+                return Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept!(values)
+              rescue Adapters::ActiveRecord::Context::NoParentFoundError => e
+                next
+              end
+            end
+
+            # Fail Safe, call the normal accept method.
+            context = Adapters::ActiveRecord::Context.new(join_dependency)
+            Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept(values)
+          end
         end
 
         def build_where(opts, other = [])
@@ -111,6 +211,7 @@ module Squeel
           case opts
           when ::ActiveRecord::Relation
             name ||= 'subquery'
+            self.bind_values = opts.bind_values + self.bind_values
             opts.arel.as(name.to_s)
           when ::Arel::SelectManager
             name ||= 'subquery'
@@ -122,53 +223,24 @@ module Squeel
 
         def build_order(arel)
           orders = order_visit(dehashified_order_values)
-          orders = reverse_sql_order(attrs_to_orderings(orders)) if reverse_order_value
-
-          orders = orders.uniq.reject(&:blank?).flat_map do |order|
-            case order
-            when Symbol
-              table[order].asc
-            when Hash
-              order.map { |field, dir| table[field].send(dir) }
-            else
-              order
-            end
-          end
+          orders = orders.uniq.reject(&:blank?)
+          orders = reverse_sql_order(orders) if reverse_order_value && !reordering_value
 
           arel.order(*orders) unless orders.empty?
         end
 
-        # This is copied directly from 4.0.0's implementation, but adds an extra
-        # exclusion for Squeel::Nodes::Node to fix #248. Can be removed if/when
-        # rails/rails#11439 is merged.
-        def order!(*args)
-          args.flatten!
-          validate_order_args args
-
-          references = args.reject { |arg|
-            Arel::Node === arg || Squeel::Nodes::Node === arg
-          }
-          references.map! { |arg| arg =~ /^([a-zA-Z]\w*)\.(\w+)/ && $1 }.compact!
-          references!(references) if references.any?
-
-          # if a symbol is given we prepend the quoted table name
-          args = args.map { |arg|
-            arg.is_a?(Symbol) ? "#{quoted_table_name}.#{arg} ASC" : arg
-          }
-
-          self.order_values = args + self.order_values
-          self
-        end
-
         def where_values_hash_with_squeel(relation_table_name = table_name)
-          equalities = find_equality_predicates(where_visit(with_default_scope.where_values), relation_table_name)
-
+          equalities = find_equality_predicates(where_visit(where_values), relation_table_name)
           binds = Hash[bind_values.find_all(&:first).map { |column, v| [column.name, v] }]
 
           Hash[equalities.map { |where|
             name = where.left.name
             [name, binds.fetch(name.to_s) { where.right }]
           }]
+        end
+
+        def debug_sql
+          eager_loading? ? to_sql : arel.to_sql
         end
 
         def to_sql_with_binding_params
@@ -196,15 +268,24 @@ module Squeel
 
         private
 
-        def dehashified_order_values
-          order_values.map { |o|
-            if Hash === o && o.values.all? { |v| [:asc, :desc].include?(v) }
-              o.map { |field, dir| table[field].send(dir) }
-            else
-              o
+          def dehashified_order_values
+            order_values.map { |o|
+              if Hash === o && o.values.all? { |v| [:asc, :desc].include?(v) }
+                o.map { |field, dir| table[field].send(dir) }
+              else
+                o
+              end
+            }
+          end
+
+          def build_join_from_subquery(subquery_joins)
+            subquery_joins.map do |join|
+              join.type.new(
+                Arel::Nodes::TableAlias.new(join.subquery.left.arel, join.subquery.right),
+                Arel::Nodes::On.new(where_visit(join.constraints))
+              )
             end
-          }
-        end
+          end
       end
     end
   end

@@ -1,6 +1,10 @@
+require 'polyamorous/tree_node'
+
 module Squeel
   module Nodes
     class Node
+      include ::Polyamorous::TreeNode
+
       def each(&block)
         return enum_for(:each) unless block_given?
 

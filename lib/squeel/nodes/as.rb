@@ -12,6 +12,18 @@ module Squeel
       def initialize(left, right)
         @left, @right = left, right
       end
+
+      def on(*args)
+        raise "only can convert ActiveRecord::Relation to a join node" unless left.is_a?(ActiveRecord::Relation)
+        proc =
+          if block_given?
+            DSL.eval(&Proc.new)
+          else
+            args
+          end
+
+        SubqueryJoin.new(self, proc)
+      end
     end
   end
 end

@@ -6,7 +6,7 @@ module Squeel
     # The Base visitor class, containing the default behavior common to subclasses.
     class Visitor
       attr_accessor :context
-      delegate :contextualize, :classify, :find, :traverse, :engine, :arel_visitor, :to => :context
+      delegate :contextualize, :classify, :find, :traverse, :engine, :arel_visitor, :find!, :traverse!, :to => :context
 
       # Create a new Visitor that uses the supplied context object to contextualize
       # visited nodes.
@@ -25,6 +25,10 @@ module Squeel
       # @return The results of the node visitation, typically an Arel object of some kind.
       def accept(object, parent = context.base)
         visit(object, parent)
+      end
+
+      def accept!(object, parent = context.base)
+        visit!(object, parent)
       end
 
       # @param object The object to check
@@ -98,6 +102,21 @@ module Squeel
         @hash_context_depth -= 1
       end
 
+      def visit_with_hash_context_shift!(k, v, parent)
+        @hash_context_depth += 1
+
+        parent = case k
+          when Nodes::KeyPath
+            traverse!(k, parent, true)
+          else
+            find!(k, parent)
+          end
+
+        can_visit?(v) ? visit!(v, parent || k) : v
+      ensure
+        @hash_context_depth -= 1
+      end
+
       # If there is no context change, the default behavior is to return the
       # value unchanged. Subclasses will alter this behavior as needed.
       #
@@ -119,9 +138,11 @@ module Squeel
       #   object if not passed as an SqlLiteral.
       def quoted?(object)
         case object
-        when NilClass, Arel::Nodes::SqlLiteral, Bignum, Fixnum,
+        when Arel::Nodes::SqlLiteral, Bignum, Fixnum,
           Arel::SelectManager
           false
+        when NilClass
+          defined?(Arel::Nodes::Quoted) ? true : false
         else
           true
         end
@@ -142,7 +163,11 @@ module Squeel
           when Range
             Range.new(quote(value.begin), quote(value.end), value.exclude_end?)
           else
-            Arel.sql(arel_visitor.accept value)
+            if defined?(Arel::Collectors::SQLString)
+              Arel.sql(arel_visitor.compile(Arel::Nodes.build_quoted(value)))
+            else
+              Arel.sql(arel_visitor.accept value)
+            end
           end
         else
           value
@@ -166,6 +191,12 @@ module Squeel
         retry
       end
 
+      def visit!(object, parent)
+        send("#{DISPATCH[object.class]}!", object, parent)
+      rescue NoMethodError => e
+        visit(object, parent)
+      end
+
       # Pass an object through the visitor unmodified. This is
       # in order to allow objects that don't require modification
       # to be handled by Arel directly.
@@ -176,6 +207,7 @@ module Squeel
       def visit_passthrough(object, parent)
         object
       end
+
       alias :visit_Fixnum :visit_passthrough
       alias :visit_Bignum :visit_passthrough
 
@@ -189,6 +221,10 @@ module Squeel
         o.map { |v| can_visit?(v) ? visit(v, parent) : v }.flatten
       end
 
+      def visit_Array!(o, parent)
+        o.map { |v| can_visit?(v) ? visit!(v, parent) : v }.flatten
+      end
+
       # Visit a Hash. This entails iterating through each key and value and
       # visiting each value in turn.
       #
@@ -199,6 +235,16 @@ module Squeel
         o.map do |k, v|
           if implies_hash_context_shift?(v)
             visit_with_hash_context_shift(k, v, parent)
+          else
+            visit_without_hash_context_shift(k, v, parent)
+          end
+        end.flatten
+      end
+
+      def visit_Hash!(o, parent)
+        o.map do |k, v|
+          if implies_hash_context_shift?(v)
+            visit_with_hash_context_shift!(k, v, parent)
           else
             visit_without_hash_context_shift(k, v, parent)
           end
@@ -240,6 +286,12 @@ module Squeel
         visit(o.endpoint, parent)
       end
 
+      def visit_Squeel_Nodes_KeyPath!(o, parent)
+        parent = traverse!(o, parent)
+
+        visit!(o.endpoint, parent)
+      end
+
       # Visit a Literal by converting it to an Arel SqlLiteral
       #
       # @param [Nodes::Literal] o The Literal to visit
@@ -255,13 +307,25 @@ module Squeel
       # @param parent The parent object in the context
       # @return [Arel::Nodes::As] The resulting as node.
       def visit_Squeel_Nodes_As(o, parent)
-        left = visit(o.left, parent)
-        # Some nodes, like Arel::SelectManager, have their own #as methods,
-        # with behavior that we don't want to clobber.
-        if left.respond_to?(:as)
-          left.as(o.right)
+        # patch for 4+, binds params using native to_sql before transforms to sql string
+        if ::ActiveRecord::VERSION::MAJOR >= 4 && o.left.is_a?(::ActiveRecord::Relation)
+          Arel::Nodes::TableAlias.new(
+            Arel::Nodes::Grouping.new(
+              Arel::Nodes::SqlLiteral.new(
+                o.left.respond_to?(:to_sql_with_binding_params) ? o.left.to_sql_with_binding_params : o.left.to_sql
+              )
+            ),
+            o.right
+          )
         else
-          Arel::Nodes::As.new(left, o.right)
+          left = visit(o.left, parent)
+          # Some nodes, like Arel::SelectManager, have their own #as methods,
+          # with behavior that we don't want to clobber.
+          if left.respond_to?(:as)
+            left.as(o.right)
+          else
+            Arel::Nodes::As.new(left, o.right)
+          end
         end
       end
 
@@ -313,18 +377,22 @@ module Squeel
       def visit_Squeel_Nodes_Function(o, parent)
         args = o.args.map do |arg|
           case arg
-          when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping, Nodes::KeyPath, Nodes::KeyPath
+          when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping, Nodes::KeyPath
             visit(arg, parent)
           when ActiveRecord::Relation
             arg.arel.ast
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
+            if defined?(Arel::Collectors::SQLString)
+              Arel.sql(arel_visitor.compile(contextualize(parent)[arg.to_s]))
+            else
+              Arel.sql(arel_visitor.accept(contextualize(parent)[arg.to_s]))
+            end
           else
             quote arg
           end
         end
 
-        Arel::Nodes::NamedFunction.new(o.function_name, args)
+        Arel::Nodes::NamedFunction.new(o.function_name.to_s, args)
       end
 
       # Visit a Squeel operation node, convering it to an Arel InfixOperation
@@ -340,7 +408,11 @@ module Squeel
           when Nodes::Function, Nodes::As, Nodes::Literal, Nodes::Grouping, Nodes::KeyPath
             visit(arg, parent)
           when Symbol, Nodes::Stub
-            Arel.sql(arel_visitor.accept contextualize(parent)[arg.to_s])
+            if defined?(Arel::Collectors::SQLString)
+              Arel.sql(arel_visitor.compile(contextualize(parent)[arg.to_s]))
+            else
+              Arel.sql(arel_visitor.accept(contextualize(parent)[arg.to_s]))
+            end
           else
             quote arg
           end

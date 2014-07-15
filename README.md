@@ -23,6 +23,8 @@ just a simple example -- Squeel's capable of a whole lot more. Keep reading.
 In your Gemfile:
 
 ```ruby
+# Make sure you are using the latest version of polyamorous
+gem "polyamorous", :git => "git://github.com/activerecord-hackery/polyamorous.git"
 gem "squeel"  # Last officially released gem
 # gem "squeel", :git => "git://github.com/activerecord-hackery/squeel.git" # Track git repo
 ```
@@ -85,6 +87,24 @@ very handy.
 A Squeel keypath is essentially a more concise and readable alternative to a
 deeply nested hash. For instance, in standard Active Record, you might join several
 associations like this to perform a query:
+
+#### Rails 4+
+
+```ruby
+Person.joins(:articles => {:comments => :person}).references(:all)
+# => SELECT "people".* FROM "people"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```
+
+With a keypath, this would look like:
+
+```ruby
+Person.joins{articles.comments.person}.references(:all)
+```
+
+#### Rails 3.x
 
 ```ruby
 Person.joins(:articles => {:comments => :person})
@@ -413,6 +433,27 @@ Person.joins{children.parent.children}.
 
 Keypaths were used here for clarity, but nested hashes would work just as well.
 
+You can also use a subquery in a join.
+
+Notice:
+1. Squeel can only accept an ActiveRecord::Relation class of subqueries in a join.
+2. Use the chain with caution. You should call `as` first to get a Nodes::As, then call `on` to get a join node.
+
+```ruby
+subquery = OrderItem.group(:orderable_id).select { [orderable_id, sum(quantity * unit_price).as(amount)] }
+Seat.joins { [payment.outer, subquery.as('seat_order_items').on { id == seat_order_items.orderable_id}.outer] }.
+              select { [seat_order_items.amount, "seats.*"] }
+# => SELECT "seat_order_items"."amount", seats.*
+#    FROM "seats"
+#    LEFT OUTER JOIN "payments" ON "payments"."id" = "seats"."payment_id"
+#    LEFT OUTER JOIN (
+#      SELECT "order_items"."orderable_id",
+#             sum("order_items"."quantity" * "order_items"."unit_price") AS amount
+#      FROM "order_items"
+#      GROUP BY "order_items"."orderable_id"
+#    ) seat_order_items ON "seats"."id" = "seat_order_items"."orderable_id"
+```
+
 ### Functions
 
 You can call SQL functions just like you would call a method in Ruby...
@@ -470,7 +511,7 @@ As you can see, just like functions, these operations can be given aliases.
 To select more than one attribute (or calculated attribute) simply put them into an array:
 
 ```ruby
-p = Person.select{[ name.op('||', '-diddly').as(flanderized_name), 
+p = Person.select{[ name.op('||', '-diddly').as(flanderized_name),
                     coalesce(name, '<no name given>').as(name_with_default) ]}.first
 p.flanderized_name
 # => "Aric Smith-diddly"

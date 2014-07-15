@@ -11,9 +11,16 @@ module Squeel
       # @param parent The node's parent within the context
       # @return [Arel::Nodes::Ordering] An ascending or desending ordering
       def visit_Squeel_Nodes_Order(o, parent)
-        visit(o.expr, parent).send(o.descending? ? :desc : :asc)
+        if defined?(Arel::Nodes::Descending)
+          if o.descending?
+            Arel::Nodes::Descending.new(visit(o.expr, parent))
+          else
+            Arel::Nodes::Ascending.new(visit(o.expr, parent))
+          end
+        else
+          visit(o.expr, parent).send(o.descending? ? :desc : :asc)
+        end
       end
-
     end
   end
 end

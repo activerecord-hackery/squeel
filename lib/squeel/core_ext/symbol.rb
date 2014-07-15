@@ -15,15 +15,15 @@ class Symbol
   end
 
   def inner
-    Squeel::Nodes::Join.new(self, Arel::InnerJoin)
+    Squeel::Nodes::Join.new(self, Squeel::InnerJoin)
   end
 
   def outer
-    Squeel::Nodes::Join.new(self, Arel::OuterJoin)
+    Squeel::Nodes::Join.new(self, Squeel::OuterJoin)
   end
 
   def of_class(klass)
-    Squeel::Nodes::Join.new(self, Arel::InnerJoin, klass)
+    Squeel::Nodes::Join.new(self, Squeel::InnerJoin, klass)
   end
 
 end

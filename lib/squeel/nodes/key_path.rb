@@ -177,6 +177,10 @@ module Squeel
       end
       alias :to_str :to_s
 
+      def add_to_tree(hash)
+        walk_through_path(path.dup, hash)
+      end
+
       # Appends to the KeyPath or delegates to the endpoint, as appropriate
       # @return [KeyPath] The updated KeyPath
       def method_missing(method_id, *args, &block)
@@ -194,7 +198,7 @@ module Squeel
           if args.empty?
             @path << Stub.new(method_id)
           elsif (args.size == 1) && (Class === args[0])
-            @path << Join.new(method_id, Arel::InnerJoin, args[0])
+            @path << Join.new(method_id, InnerJoin, args[0])
           else
             @path << Nodes::Function.new(method_id, args)
           end
@@ -211,6 +215,11 @@ module Squeel
       def initialize_copy(orig)
         super
         @path = @path.dup
+      end
+
+      def walk_through_path(path, hash)
+        cache = path.shift.add_to_tree(hash)
+        path.empty? ? cache : walk_through_path(path, cache)
       end
 
       # Raises a NoMethodError manually, bypassing #method_missing.

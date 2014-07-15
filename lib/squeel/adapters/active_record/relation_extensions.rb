@@ -114,6 +114,8 @@ module Squeel
               :stashed_join
             when Arel::Nodes::Join
               :join_node
+            when Nodes::SubqueryJoin
+              :subquery_join
             else
               raise 'unknown class: %s' % join.class.name
             end
@@ -122,6 +124,7 @@ module Squeel
           association_joins         = buckets[:association_join] || []
           stashed_association_joins = buckets[:stashed_join] || []
           join_nodes                = (buckets[:join_node] || []).uniq
+          subquery_joins            = (buckets[:subquery_join] || []).uniq
           string_joins              = (buckets[:string_join] || []).map { |x|
             x.strip
           }.uniq
@@ -143,11 +146,12 @@ module Squeel
             association.join_to(manager)
           end
 
-          manager.join_sources.concat join_list
+          manager.join_sources.concat(join_list)
+          manager.join_sources.concat(build_join_from_subquery(subquery_joins))
 
           manager
         end
-        # For 4.x adapters
+        # For 4.0 adapters
         alias :build_joins :build_join_dependency
 
         def includes(*args)
@@ -402,6 +406,17 @@ module Squeel
             name = where.left.name
             [name, binds.fetch(name.to_s) { where.right }]
           }]
+        end
+
+        def build_join_from_subquery(subquery_joins)
+          subquery_joins.map do |join|
+            join.type.new(
+              Arel::Nodes::TableAlias.new(
+                Arel::Nodes::Grouping.new(join.subquery.left.arel.ast),
+                join.subquery.right),
+              Arel::Nodes::On.new(where_visit(join.constraints))
+            )
+          end
         end
 
       end

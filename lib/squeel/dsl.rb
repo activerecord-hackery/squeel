@@ -110,7 +110,7 @@ module Squeel
       if args.empty?
         Nodes::Stub.new method_id
       elsif (args.size == 1) && (Class === args[0])
-        Nodes::Join.new(method_id, Arel::InnerJoin, args[0])
+        Nodes::Join.new(method_id, InnerJoin, args[0])
       else
         Nodes::Function.new method_id, args
       end

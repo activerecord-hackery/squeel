@@ -73,7 +73,11 @@ class Article < ActiveRecord::Base
   has_and_belongs_to_many :tags
   has_many :notes, :as => :notable
   has_many :commenters, :through => :comments, :source => :person
-  has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
+  if ActiveRecord::VERSION::MAJOR > 3 && ActiveRecord::VERSION::MINOR >= 1
+    has_many :uniq_commenters, lambda { uniq }, :through => :comments, :source => :person
+  else
+    has_many :uniq_commenters, :through => :comments, :source => :person, :uniq => true
+  end
 end
 
 class Comment < ActiveRecord::Base
@@ -110,41 +114,81 @@ class Group < ActiveRecord::Base
   has_many :packages, through: :memberships, source: :member, source_type: 'Package'
 end
 
-Dir[File.expand_path('../../blueprints/*.rb', __FILE__)].each do |f|
-  require f
+class Seat < ActiveRecord::Base
+  belongs_to :payment, dependent: :destroy
+  has_many(:order_items,
+    as: :orderable,
+    autosave: true,
+    dependent: :destroy
+  )
+end
+
+class OrderItem < ActiveRecord::Base
+  belongs_to :orderable, polymorphic: true
+end
+
+class Payment < ActiveRecord::Base
+  has_many :seats
 end
 
 class Models
   def self.make
-    10.times do
-      person = Person.make
+    10.times do |i|
+      # 10 people total, salary gt 30000
+      person = Person.create(name: Faker::Name.name, salary: 30000 + (i + 1) * 1000)
       2.times do
-        UnidentifiedObject.create(:person => person, :name => Sham.object_name)
+        # 20 unidentified object total, 2 per person
+        person.unidentified_objects.create(name: Faker::Lorem.words(1).first)
       end
-      Note.make(:notable => person)
+      # 10 notes based on people total
+      person.notes.create(note: Faker::Lorem.words(7).join(' '))
       3.times do
-        article = Article.make(:person => person)
+        # 30 articles total
+        article = person.articles.create(title: Faker::Lorem.sentence, body: Faker::Lorem.paragraph)
         3.times do
-          article.tags = [Tag.make, Tag.make, Tag.make]
+          # 30 * 3 tags total
+          article.tags << Tag.create(name: Faker::Lorem.words(3).join(' '))
         end
-        Note.make(:notable => article)
+        # 30 notes based on articles total
+        article.notes.create(note: Faker::Lorem.words(7).join(' '))
         10.times do
-          Comment.make(:article => article)
+          # 30 * 10 comments based on articles total
+          article.comments.create(body: Faker::Lorem.paragraph)
         end
       end
       2.times do
-        Comment.make(:person => person)
+        # 20 comments based on people total
+        person.comments.create(body: Faker::Lorem.paragraph)
       end
     end
 
-    Comment.make(:body => 'First post!', :article => Article.make(:title => 'Hello, world!'))
-    Comment.make(:body => 'Last post!', :article => Article.first, :person => Article.first.commenters.first)
+    # an article, a comment based on articles and people
+    Article.create(title: 'Hello, world!', body: Faker::Lorem.paragraph).
+      comments.create(body: 'First post!', person: Person.last)
+    # a comment based on articles and people
+    Article.first.comments.create(body: 'Last post!', person: Article.last.commenters.first)
 
+    # So, we created
+    # 10 people
+    # 31 articles
+    # 322 comments(22 p + 302 a, 2 overlaps)
+    # 40 notes(10 p + 30 a)
+    # 90 tags
+    # 20 unidentified objects
+
+    # has many through polymorphic model examples
     users = User.create([{ name: 'batman' }, { name: 'robin' }])
     groups = Group.create([{ name: 'justice league'}, { name: 'batcave stalagmite counting club'}])
     users.first.groups << groups.first
     users.first.groups << groups.last
     users.last.groups << groups.last
 
+    10.times do |i|
+      seat = Seat.create(no: i+1)
+      seat.order_items.create(unit_price: 10, quantity: 1)
+
+      seat.create_payment if i%2 == 0
+    end
   end
 end
+

@@ -79,7 +79,7 @@ module Squeel
         if args.empty?
           KeyPath.new([self, method_id])
         elsif (args.size == 1) && (Class === args[0])
-          KeyPath.new([self, Join.new(method_id, Arel::InnerJoin, args[0])])
+          KeyPath.new([self, Join.new(method_id, InnerJoin, args[0])])
         else
           KeyPath.new([self, Nodes::Function.new(method_id, args)])
         end
@@ -102,7 +102,7 @@ module Squeel
       # Create an inner Join node for the association named by this Stub
       # @return [Join] The new inner Join node
       def inner
-        Join.new(self.symbol, Arel::InnerJoin)
+        Join.new(self.symbol, InnerJoin)
       end
 
       # Create a keypath with a sifter as its endpoint
@@ -114,14 +114,18 @@ module Squeel
       # Create an outer Join node for the association named by this Stub
       # @return [Join] The new outer Join node
       def outer
-        Join.new(self.symbol, Arel::OuterJoin)
+        Join.new(self.symbol, OuterJoin)
       end
 
       # Create a polymorphic Join node for the association named by this Stub,
       # @param [Class] klass The polymorphic belongs_to class for this Join
       # @return [Join] The new polymorphic Join node
       def of_class(klass)
-        Join.new(self.symbol, Arel::InnerJoin, klass)
+        Join.new(self.symbol, InnerJoin, klass)
+      end
+
+      def add_to_tree(hash)
+        hash[symbol] ||= {}
       end
 
     end

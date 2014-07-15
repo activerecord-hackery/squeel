@@ -16,7 +16,12 @@ module Squeel
               Person.find_by_id('')
             end
             queries.should have(1).query
-            queries.first.should match /"people"."id" = 0/
+
+            if activerecord_version_at_least('4.2.0')
+              queries.first.should match /"people"."id" = NULL/
+            else
+              queries.first.should match /"people"."id" = 0/
+            end
           end
 
         end
@@ -34,7 +39,11 @@ module Squeel
 
             arel = relation.build_arel
 
-            relation.join_dependency.join_associations.should have(4).items
+            if activerecord_version_at_least('4.1.0')
+              relation.join_dependency.join_constraints([]).should have(4).items
+            else
+              relation.join_dependency.join_associations.should have(4).items
+            end
             arel.to_sql.should match /INNER JOIN "people" "parents_people_2" ON "parents_people_2"."id" = "parents_people"."parent_id"/
           end
 
@@ -49,7 +58,11 @@ module Squeel
 
             arel = relation.build_arel
 
-            relation.join_dependency.join_associations.should have(4).items
+            if activerecord_version_at_least('4.1.0')
+              relation.join_dependency.join_constraints([]).should have(4).items
+            else
+              relation.join_dependency.join_associations.should have(4).items
+            end
             arel.to_sql.should match /LEFT OUTER JOIN "people" "children_people"/
             arel.to_sql.should match /LEFT OUTER JOIN "people" "parents_people_2" ON "parents_people_2"."id" = "parents_people"."parent_id"/
           end
@@ -70,7 +83,11 @@ module Squeel
             })
 
             arel = relation.build_arel
-            relation.join_dependency.join_associations.should have(6).items
+            if activerecord_version_at_least('4.1.0')
+              relation.join_dependency.join_constraints([]).should have(6).items
+            else
+              relation.join_dependency.join_associations.should have(6).items
+            end
             arel.to_sql.should match /INNER JOIN "people" "parents_people_3" ON "parents_people_3"."id" = "children_people_3"."parent_id"/
           end
 
@@ -241,9 +258,15 @@ module Squeel
 
           it 'eager loads belongs_to associations' do
             queries = queries_for do
-              Article.includes(:person).
-                      where{person.name == 'Ernie'}.to_a
+              if activerecord_version_at_least('4.1.0')
+                Article.includes(:person).references(:person).
+                        where{person.name == 'Ernie'}.to_a
+              else
+                Article.includes(:person).
+                        where{person.name == 'Ernie'}.to_a
+              end
             end
+
             queries.should have(1).item
             queries.first.should match /LEFT OUTER JOIN "people"/
             queries.first.should match /"people"."name" = 'Ernie'/
@@ -251,8 +274,14 @@ module Squeel
 
           it 'eager loads belongs_to associations on models with default_scopes' do
             queries = queries_for do
-              PersonNamedBill.includes(:parent).
-                              where{parent.name == 'Ernie'}.to_a
+              if activerecord_version_at_least('4.1.0')
+                PersonNamedBill.includes(:parent).references(:parent).
+                                where{parent.name == 'Ernie'}.to_a
+              else
+                PersonNamedBill.includes(:parent).
+                                where{parent.name == 'Ernie'}.to_a
+              end
+
             end
             queries.should have(1).item
             queries.first.should match /LEFT OUTER JOIN "people"/
@@ -275,12 +304,20 @@ module Squeel
 
           it "only includes once, even if two join types are used" do
             relation = Person.includes(:articles.inner, :articles.outer).where(:articles => {:title => 'hey'})
-            relation.debug_sql.scan("JOIN").size.should eq 1
+            if activerecord_version_at_least('4.1.0')
+              pending ":article != :article.inner != :article.outer, you shouldn't pass two same tables into includes again"
+            else
+              relation.debug_sql.scan("JOIN").size.should eq 1
+            end
           end
 
           it 'includes a keypath' do
-            relation = Note.includes{notable(Article).person.children}.where{notable(Article).person.children.name == 'Ernie'}
-            relation.debug_sql.should match /SELECT "notes".* FROM "notes" LEFT OUTER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' LEFT OUTER JOIN "people" ON "people"."id" = "articles"."person_id" LEFT OUTER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id"/
+            if activerecord_version_at_least('4.1.0')
+              relation = Note.includes{notable(Article).person.children}.references(:all).where{notable(Article).person.children.name == 'Ernie'}
+            else
+              relation = Note.includes{notable(Article).person.children}.where{notable(Article).person.children.name == 'Ernie'}
+            end
+            relation.debug_sql.should match /SELECT "notes".* FROM "notes" LEFT OUTER JOIN "articles" ON "articles"."id" = "notes"."notable_id" AND "notes"."notable_type" = 'Article' LEFT OUTER JOIN "people" ON "people"."id" = "articles"."person_id" LEFT OUTER JOIN "people" "children_people" ON "children_people"."parent_id" = "people"."id" WHERE "children_people"."name" = 'Ernie'/
           end
 
         end
@@ -345,7 +382,11 @@ module Squeel
 
           it "only eager_load once, even if two join types are used" do
             relation = Person.eager_load(:articles.inner, :articles.outer)
-            relation.debug_sql.scan("JOIN").size.should eq 1
+            if activerecord_version_at_least('4.1.0')
+              pending ":article != :article.inner != :article.outer, you shouldn't pass two same tables into eager_load again"
+            else
+              relation.debug_sql.scan("JOIN").size.should eq 1
+            end
           end
 
           it 'eager_load a keypath' do
@@ -380,22 +421,26 @@ module Squeel
 
           it 'behaves as normal with standard parameters' do
             people = Person.select(:id)
-            people.should have(332).people
-            expect { people.first.name }.to raise_error ActiveModel::MissingAttributeError
+            people.should have(10).people
+            if ::ActiveRecord::VERSION::MAJOR == 3 && ::ActiveRecord::VERSION::MINOR == 0 && RUBY_VERSION >= '2.0.0'
+              people.first.name.should be_nil
+            else
+              expect { people.first.name }.to raise_error ActiveModel::MissingAttributeError
+            end
           end
 
           it 'works with multiple fields in select' do
-            Article.select("title, body").count.should eq 51
+            Article.select("title, body").count.should eq 31
           end
 
           it 'allows a function in the select values via Symbol#func' do
             relation = Person.select(:max.func(:id).as('max_id'))
-            relation.first.max_id.should eq 332
+            relation.first.max_id.should eq 10
           end
 
           it 'allows a function in the select values via block' do
             relation = Person.select{max(id).as(max_id)}
-            relation.first.max_id.should eq 332
+            relation.first.max_id.should eq 10
           end
 
           it 'allows an operation in the select values via block' do
@@ -420,7 +465,7 @@ module Squeel
         describe '#count' do
 
           it 'works with non-strings in select' do
-            Article.select{distinct(title)}.count.should eq 51
+            Article.select{distinct(title)}.count.should eq 31
           end
 
           it 'works with non-strings in wheres' do
@@ -455,14 +500,14 @@ module Squeel
             block = Person.where{{name => 'bob'}}
             block.to_sql.should eq standard.to_sql
           end
- 
+
           it 'builds compound conditions with a block' do
             block = Person.where{(name == 'bob') & (salary == 100000)}
             block.to_sql.should match /"people"."name" = 'bob'/
             block.to_sql.should match /AND/
             block.to_sql.should match /"people"."salary" = 100000/
           end
- 
+
           it 'allows mixing hash and operator syntax inside a block' do
             block = Person.joins(:comments).
                            where{(name == 'bob') & {comments => (body == 'First post!')}}
@@ -470,17 +515,17 @@ module Squeel
             block.to_sql.should match /AND/
             block.to_sql.should match /"comments"."body" = 'First post!'/
           end
- 
+
           it 'allows a condition on a function via block' do
             relation = Person.where{coalesce(nil,id) == 5}
             relation.first.id.should eq 5
           end
- 
+
           it 'allows a condition on an operation via block' do
             relation = Person.where{(id + 1) == 2}
             relation.first.id.should eq 1
           end
- 
+
           it 'maps conditions onto their proper table with multiple polymorphic joins' do
             relation = Note.joins{[notable(Article).outer, notable(Person).outer]}
             people_notes = relation.where{notable(Person).salary > 30000}
@@ -490,13 +535,13 @@ module Squeel
             article_notes.should have(30).items
             people_and_article_notes.should have(40).items
           end
- 
+
           it 'maps conditions onto their proper table with a polymorphic belongs_to join followed by a polymorphic has_many join' do
             relation = Note.joins{notable(Article).notes}.
               where{notable(Article).notes.note.eq('zomg')}
             relation.to_sql.should match /"notes_articles"\."note" = 'zomg'/
           end
- 
+
           it 'allows a subquery on the value side of a predicate' do
             names = [Person.first.name, Person.last.name]
             old_and_busted = Person.where(:name => names)
@@ -504,19 +549,19 @@ module Squeel
             new_hotness.should have(2).items
             old_and_busted.to_a.should eq new_hotness.to_a
           end
- 
+
           it 'allows a subquery from an association in a hash' do
             scope = Person.first.articles
             articles = Article.where(:id => scope)
             articles.should have(3).articles
           end
- 
+
           it 'allows a subquery from an association in a Squeel node' do
             scope = Person.first.articles
             articles = Article.where{id.in scope}
             articles.should have(3).articles
           end
- 
+
           it 'is backwards-compatible with "where.not"' do
             if activerecord_version_at_least '4.0.0'
               name = Person.first.name
@@ -526,41 +571,49 @@ module Squeel
               pending 'Not required pre-4.0'
             end
           end
- 
+
           it 'allows equality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where { person.eq first_person }
             relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
           end
- 
+
           it 'allows equality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where { notable.eq first_person }
             relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
           end
- 
+
           it 'allows inequality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where { person.not_eq first_person }
             relation.to_sql.should match /"articles"."person_id" != #{first_person.id}/
           end
- 
+
           it 'allows inequality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where { notable.not_eq first_person }
             relation.to_sql.should match /\("notes"."notable_id" != #{first_person.id} OR "notes"."notable_type" != 'Person'\)/
           end
- 
+
           it 'allows hash equality conditions against a belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Article.where(:person => first_person)
             relation.to_sql.should match /"articles"."person_id" = #{first_person.id}/
           end
- 
+
           it 'allows hash equality conditions against a polymorphic belongs_to with an AR::Base value' do
             first_person = Person.first
             relation = Note.where(:notable => first_person)
             relation.to_sql.should match /"notes"."notable_id" = #{first_person.id} AND "notes"."notable_type" = 'Person'/
+          end
+
+          it 'keeps original AR hashes behavior' do
+            relation = Person.joins(:articles).where(articles: { person_id: Person.first })
+            relation.to_sql.should match /SELECT "people".* FROM "people" INNER JOIN "articles" ON "articles"."person_id" = "people"."id" WHERE "articles"."person_id" = 1/
+
+            relation = Person.joins(:articles).where(articles: { person_id: Person.all.to_a })
+            relation.to_sql.should match /SELECT "people".\* FROM "people" INNER JOIN "articles" ON "articles"."person_id" = "people"."id" WHERE "articles"."person_id" IN \(1, 2, 3, 4, 5, 6, 7, 8, 9, 10\)/
           end
 
         end
@@ -600,8 +653,12 @@ module Squeel
           end
 
           it "only joins once, even if two join types are used" do
-            relation = Person.joins(:articles.inner, :articles.outer)
-            relation.to_sql.scan("JOIN").size.should eq 1
+            if activerecord_version_at_least('4.1.0')
+              pending "It's unreasonable to join once only, in some cases, we need twice."
+            else
+              relation = Person.joins(:articles.inner, :articles.outer)
+              relation.to_sql.scan("JOIN").size.should eq 1
+            end
           end
 
           it 'joins a keypath' do
@@ -617,6 +674,21 @@ module Squeel
             end
           end
 
+          it 'joins an ActiveRecord::Relation subquery' do
+            subquery = OrderItem.
+              group(:orderable_id).
+              select { [orderable_id, sum(quantity * unit_price).as(amount)] }
+
+            relation = Seat.
+              joins { [payment.outer,
+                       subquery.as('seat_order_items').on { id == seat_order_items.orderable_id}.outer] }.
+              select { [seat_order_items.amount, "seats.*"] }.
+              where { seat_order_items.amount > 0 }
+
+            relation.debug_sql.should match /SELECT "seat_order_items"."amount", seats.\* FROM "seats" LEFT OUTER JOIN "payments" ON "payments"."id" = "seats"."payment_id" LEFT OUTER JOIN \(SELECT "order_items"."orderable_id", sum\("order_items"."quantity" \* "order_items"."unit_price"\) AS amount FROM "order_items"\s+GROUP BY "order_items"."orderable_id"\) seat_order_items ON "seats"."id" = "seat_order_items"."orderable_id" WHERE "seat_order_items"."amount" > 0/
+            relation.to_a.should have(10).seats
+            relation.to_a.second.amount.should eq(10)
+          end
         end
 
         describe '#having' do
@@ -700,14 +772,14 @@ module Squeel
             sql = block.to_sql
             sql.should match expected
           end
- 
+
           it 'creates froms from literals' do
             expected = /SELECT "people".* FROM sub/
             relation = Person.from('sub')
             sql = relation.to_sql
             sql.should match expected
           end
- 
+
           it 'creates froms from relations' do
             if activerecord_version_at_least '4.0.0'
               expected = "SELECT \"people\".* FROM (SELECT \"people\".* FROM \"people\") alias"
@@ -716,6 +788,17 @@ module Squeel
               sql.should == expected
             else
               pending 'Unsupported before ActiveRecord 4.0'
+            end
+          end
+
+          it 'binds params from CollectionProxy subquery' do
+            if activerecord_version_at_least('3.1.0')
+              first_article = Article.first
+              expected_tags = Tag.where(id: [1,2,3]).order{name}.to_a
+
+              expected_tags.should == Tag.from{first_article.tags.as(Tag.table_name)}.order{tags.name}.to_a
+            else
+              pending "ActiveRecord 3.0.x doesn't support CollectionProxy chain."
             end
           end
         end
@@ -750,7 +833,11 @@ module Squeel
             relation = Person.includes(:comments, :articles).
               where(:comments => {:body => 'First post!'}).
               where(:articles => {:title => 'Hello, world!'})
-            relation.debug_sql.should_not eq relation.to_sql
+            if activerecord_version_at_least('4.1.0')
+              relation.debug_sql.should_not eq relation.arel.to_sql
+            else
+              relation.debug_sql.should_not eq relation.to_sql
+            end
             relation.debug_sql.should match /SELECT "people"."id" AS t0_r0/
           end
 
@@ -837,7 +924,12 @@ module Squeel
 
           it 'does not break hm:t with conditions' do
             relation = Person.first.condition_article_comments
-            sql = relation.scoped.to_sql
+            sql =
+              if activerecord_version_at_least('4.1.0')
+                relation.to_sql
+              else
+                relation.scoped.to_sql
+              end
             sql.should match /"articles"."title" = 'Condition'/
           end
 
@@ -852,7 +944,13 @@ module Squeel
 
           it 'uses the given equality condition in the case of a conflicting where from a default scope' do
             if activerecord_version_at_least '3.1'
-              relation = PersonNamedBill.where{name == 'Ernie'}
+              relation =
+                if activerecord_version_at_least('4.1.0')
+                  PersonNamedBill.rewhere(name: 'Ernie')
+                  # Or PersonNamedBill.unscope(where: :name).where { name == 'Ernie' }
+                else
+                  PersonNamedBill.where{name == 'Ernie'}
+                end
               sql = relation.to_sql
               sql.should_not match /Bill/
               sql.should match /Ernie/
@@ -871,20 +969,36 @@ module Squeel
 
           it "doesn't ruin everything when a scope returns nil" do
             relation = Person.nil_scope
-            relation.should eq Person.scoped
+            if activerecord_version_at_least('4.1.0')
+              relation.should eq Person.all
+            else
+              relation.should eq Person.scoped
+            end
           end
 
           it "doesn't ruin everything when a group exists" do
-            relation = Person.scoped.merge(Person.group{name})
             count_hash = {}
-            expect { count_hash = relation.count }.should_not raise_error
-            count_hash.size.should eq Person.scoped.size
+            if activerecord_version_at_least('4.1.0')
+              relation = Person.all.merge(Person.group{name})
+              expect { count_hash = relation.count }.should_not raise_error
+              count_hash.size.should eq Person.all.size
+            else
+              relation = Person.scoped.merge(Person.group{name})
+              expect { count_hash = relation.count }.should_not raise_error
+              count_hash.size.should eq Person.scoped.size
+            end
+
             count_hash.values.all? {|v| v == 1}.should be_true
             count_hash.keys.should =~ Person.select{name}.map(&:name)
           end
 
           it "doesn't merge the default scope more than once" do
-            relation = PersonNamedBill.scoped.highly_compensated.ending_with_ill
+            relation =
+              if activerecord_version_at_least('4.1.0')
+                PersonNamedBill.all.highly_compensated.ending_with_ill
+              else
+                PersonNamedBill.scoped.highly_compensated.ending_with_ill
+              end
             sql = relation.to_sql
             sql.scan(/"people"."name" = 'Bill'/).should have(1).item
             sql.scan(/"people"."name" LIKE '%ill'/).should have(1).item
@@ -893,25 +1007,38 @@ module Squeel
           end
 
           it "doesn't hijack the table name when merging a relation with different base and default_scope" do
-            relation = Article.joins(:person).merge(PersonNamedBill.scoped)
+            relation =
+              if activerecord_version_at_least('4.1.0')
+                Article.joins(:person).merge(PersonNamedBill.all)
+              else
+                Article.joins(:person).merge(PersonNamedBill.scoped)
+              end
             sql = relation.to_sql
             sql.scan(/"people"."name" = 'Bill'/).should have(1).item
           end
 
           it 'merges scopes that contain functions' do
-            relation = PersonNamedBill.scoped.with_salary_equal_to(100)
+            relation =
+              if activerecord_version_at_least('4.1.0')
+                PersonNamedBill.all.with_salary_equal_to(100)
+              else
+                PersonNamedBill.scoped.with_salary_equal_to(100)
+              end
             sql = relation.to_sql
             sql.should match /abs\("people"."salary"\) = 100/
           end
 
           it 'uses last equality when merging two scopes with identical function equalities' do
-            relation = PersonNamedBill.scoped.with_salary_equal_to(100).
-                                              with_salary_equal_to(200)
-            sql = relation.to_sql
-            sql.should_not match /abs\("people"."salary"\) = 100/
-            sql.should match /abs\("people"."salary"\) = 200/
+            if activerecord_version_at_least('4.1.0')
+              pending "Named Functions can't be unscoped"
+            else
+              relation = PersonNamedBill.scoped.with_salary_equal_to(100).
+                                                with_salary_equal_to(200)
+              sql = relation.to_sql
+              sql.should_not match /abs\("people"."salary"\) = 100/
+              sql.should match /abs\("people"."salary"\) = 200/
+            end
           end
-
         end
 
         describe '#to_a' do
@@ -929,14 +1056,14 @@ module Squeel
             relation = UnidentifiedObject.where{person_id < 120}.includes(:person)
             queries = queries_for do
               vals = relation.to_a
-              vals.should have(8).items
+              vals.should have(20).items
             end
 
             queries.should have(2).queries
 
             matched_ids = queries.last.match(/IN \(([^)]*)/).captures.first
             matched_ids = matched_ids.split(/,\s*/).map(&:to_i)
-            matched_ids.should =~ [1, 34, 67, 100]
+            matched_ids.should =~ [1, 2, 3, 4, 5 ,6 ,7 ,8 ,9 ,10]
           end
 
         end

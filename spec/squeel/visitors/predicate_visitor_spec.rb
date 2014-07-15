@@ -23,25 +23,38 @@ module Squeel
         node.right.should be_a Arel::Nodes::SelectStatement
       end
 
-      it 'does not quote nil values in Predicate nodes' do
+      it 'quote nil values in Predicate nodes' do
         predicate = Nodes::Predicate.new(Nodes::Function.new(:blah, [1, 2]), :in, nil)
         node = @v.accept(predicate)
         node.should be_a Arel::Nodes::In
-        node.right.should be_nil
+        if defined?(Arel::Nodes::Quoted)
+          node.right.expr.should == 'NULL'
+        else
+          node.right.should be_nil
+        end
+
       end
 
       it 'creates Equality nodes for simple hashes' do
         predicate = @v.accept(:name => 'Joe')
         predicate.should be_a Arel::Nodes::Equality
         predicate.left.name.to_s.should eq 'name'
-        predicate.right.should eq 'Joe'
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.val.should eq 'Joe'
+        else
+          predicate.right.should eq 'Joe'
+        end
       end
 
       it 'creates In nodes for simple hashes with an array as a value' do
         predicate = @v.accept(:name => ['Joe', 'Bob'])
         predicate.should be_a Arel::Nodes::In
         predicate.left.name.to_s.should eq 'name'
-        predicate.right.should eq ['Joe', 'Bob']
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.map(&:val).should eq ['Joe', 'Bob']
+        else
+          predicate.right.should eq ['Joe', 'Bob']
+        end
       end
 
       it 'generates "1=0" when given an empty array value in a hash' do
@@ -158,14 +171,22 @@ module Squeel
         predicate = @v.accept(:id => Person.first)
         predicate.should be_a Arel::Nodes::Equality
         predicate.left.name.to_s.should eq 'id'
-        predicate.right.should eq 1
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.val.should eq 1
+        else
+          predicate.right.should eq 1
+        end
       end
 
       it 'converts arrays of ActiveRecord::Base objects to their ids' do
         predicate = @v.accept(:id => [Person.first, Person.last])
         predicate.should be_a Arel::Nodes::In
         predicate.left.name.to_s.should eq 'id'
-        predicate.right.should eq [1, 332]
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.map(&:val).should eq [Person.first.id, Person.last.id]
+        else
+          predicate.right.should eq [Person.first.id, Person.last.id]
+        end
       end
 
       it 'creates the node against the proper table for nested hashes' do
@@ -182,7 +203,11 @@ module Squeel
         })
         predicate.should be_a Arel::Nodes::Equality
         predicate.left.relation.table_alias.should eq 'parents_people_2'
-        predicate.right.should eq 'Joe'
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.val.should eq 'Joe'
+        else
+          predicate.right.should eq 'Joe'
+        end
       end
 
       it 'treats keypath keys like nested hashes' do
@@ -345,7 +370,11 @@ module Squeel
         predicate = @v.accept(:name.matches => 'Joe%')
         predicate.should be_a Arel::Nodes::Matches
         predicate.left.name.should eq :name
-        predicate.right.should eq 'Joe%'
+        if defined?(Arel::Nodes::Casted)
+          predicate.right.val.should eq 'Joe%'
+        else
+          predicate.right.should eq 'Joe%'
+        end
       end
 
       it 'treats hash keys as an association when there is an Or on the value side' do
@@ -383,7 +412,11 @@ module Squeel
         predicate.should be_a Arel::Nodes::Equality
         predicate.left.relation.table_alias.should eq 'children_people_2'
         predicate.left.name.to_s.should eq 'name'
-        predicate.right.should eq 'Joe'
+        if defined?(Arel::Nodes::Casted)
+        predicate.right.val.should eq 'Joe'
+        else
+          predicate.right.should eq 'Joe'
+        end
       end
 
       it 'creates an Arel Grouping node containing an Or node for Or nodes' do
