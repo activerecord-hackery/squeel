@@ -106,6 +106,18 @@ end
 class Membership < ActiveRecord::Base
   belongs_to :group
   belongs_to :member, polymorphic: true
+
+  if ActiveRecord::VERSION::MAJOR > 3
+    default_scope -> { where(active: true) }
+  else
+    default_scope where(active: true)
+  end
+
+  before_save :set_active
+
+  def set_active
+    self.active = true
+  end
 end
 
 class Group < ActiveRecord::Base

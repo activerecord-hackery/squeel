@@ -704,6 +704,14 @@ module Squeel
             relation.to_a.should have(10).seats
             relation.to_a.second.amount.should eq(10)
           end
+
+          it 'joins from an association with default scopes', focus: true do
+            if activerecord_version_at_least('3.1.0')
+              User.first.memberships.to_sql.should match /"memberships"."active" = 't'/
+            else
+              pending "Rails 3.0.x doesn't support to_sql in an association."
+            end
+          end
         end
 
         describe '#having' do

@@ -62,6 +62,7 @@ silence_stream(STDOUT) do
       t.references :group
       t.integer   :member_id
       t.string    :member_type
+      t.boolean   :active
     end
 
     create_table :packages do |t|
