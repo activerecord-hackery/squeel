@@ -616,6 +616,13 @@ module Squeel
             relation.to_sql.should match /SELECT "people".\* FROM "people" INNER JOIN "articles" ON "articles"."person_id" = "people"."id" WHERE "articles"."person_id" IN \(1, 2, 3, 4, 5, 6, 7, 8, 9, 10\)/
           end
 
+          it 'returns ActiveRecord::Relation after complex associations, joins and wheres' do
+            relation = Note.first.notable.articles.joins(:comments).where{comments.article_id != nil}
+
+            relation.should be_kind_of(::ActiveRecord::Relation)
+            relation.first.should be_kind_of(Article)
+          end
+
         end
 
         describe '#joins' do
