@@ -453,6 +453,10 @@ module Squeel
         o.id
       end
 
+      def visit_Arel_Nodes_Node(o, parent)
+        o
+      end
+
     end
   end
 end

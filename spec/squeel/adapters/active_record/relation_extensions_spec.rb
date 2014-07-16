@@ -623,6 +623,14 @@ module Squeel
             relation.first.should be_kind_of(Article)
           end
 
+          it 'uses Squeel and Arel at the same time' do
+            relation = User.where{id.in([1,2,3]) & User.arel_table[:id].not_eq(nil) }
+            relation.to_sql.should match /SELECT "users".\* FROM "users"\s+WHERE \(\("users"."id" IN \(1, 2, 3\) AND "users"."id" IS NOT NULL\)\)/
+            relation = User.where{
+              (id.in([1,2,3]) | User.arel_table[:id].eq(1)) & ((id == 1) | User.arel_table[:id].not_eq(nil)) }
+            relation.to_sql.should match /SELECT "users".\* FROM "users"\s+WHERE \(\(\("users"."id" IN \(1, 2, 3\) OR "users"."id" = 1\) AND \("users"."id" = 1 OR "users"."id" IS NOT NULL\)\)\)/
+          end
+
         end
 
         describe '#joins' do

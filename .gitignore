@@ -5,3 +5,4 @@ pkg/*
 .rvmrc
 .ruby-version
 .ruby-gemset
+script
