@@ -1,7 +1,14 @@
-## 1.1.2 (unreleased)
+## 1.2.1 (Unreleased)
 
 * Properly append binds from a relation used in a subquery. Fixes #272.
 * Use the correct attribute name when finding a Join node. Fixes #273.
+
+## 1.2.0 (2014-07-16)
+
+* Add compatibility to Ruby 2.0+ with Rails 4.1 and 4.2.0.alpha.
+  Fixes #301, #305, #307
+* Enable using a relation as a subquery. Fixes #309
+* Bind params correctly in subquery using associations. Fixes #312
 
 ## 1.1.1 (2013-09-03)
 
