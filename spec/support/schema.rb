@@ -1,10 +1,79 @@
 require 'active_record'
 require 'squeel'
+require 'pathname'
+require 'yaml'
 
-ActiveRecord::Base.establish_connection(
-  :adapter  => 'sqlite3',
-  :database => ':memory:'
-)
+ENV['SQ_DB'] ||= 'sqlite3'
+
+MYSQL_ENV = ENV['SQ_DB'] =~ /mysql/
+SQLITE_ENV = ENV['SQ_DB'] == 'sqlite3'
+PG_ENV = ENV['SQ_DB'] == 'postgresql'
+Q = MYSQL_ENV ? '`' : '"' #Quotes difference in MySQL
+
+module Squeel
+  module Test
+    extend self
+
+    def config
+      @config ||= read_config
+    end
+
+    def read_config
+      config_file = Pathname.new(ENV['SQ_CONFIG_FILE'] || File.expand_path('../../', __FILE__) + '/config.yml')
+      expand_config(YAML.parse(config_file.read).transform)
+    end
+
+    def expand_config(config)
+      config["databases"].each do |adapter, connection|
+        connection['adapter'] ||= adapter
+      end
+
+      config
+    end
+
+    def build_connection(adapter)
+      case adapter
+        when 'sqlite3'
+          ActiveRecord::Base.establish_connection(
+            :adapter  => 'sqlite3',
+            :database => ':memory:'
+          )
+        else
+          Squeel::Test.send "rebuild_#{ENV['SQ_DB']}_db"
+
+          ActiveRecord::Base.establish_connection(
+            Squeel::Test.config['databases'][ENV['SQ_DB']]
+          )
+        end
+    end
+
+    private
+      def rebuild_mysql_db
+        config = self.config['databases']['mysql']
+        %x( mysqladmin --user=#{config['username']} -f drop #{config['database']} )
+        %x( mysql --user=#{config['username']} -e "create DATABASE #{config['database']} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci ")
+      end
+
+      def rebuild_mysql2_db
+        config = self.config['databases']['mysql2']
+        %x( mysqladmin --user=#{config['username']} -f drop #{config['database']} )
+        %x( mysql --user=#{config['username']} -e "create DATABASE #{config['database']} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci ")
+      end
+
+      def rebuild_postgresql_db
+        config = self.config['databases']['postgresql']
+        %x( dropdb #{config['database']} )
+        %x( createdb -E UTF8 -T template0 #{config['database']} )
+    end
+  end
+end
+
+case ENV['SQ_DB']
+  when 'sqlite3', 'mysql', 'mysql2', 'postgresql'
+    Squeel::Test.build_connection(ENV['SQ_DB'])
+  else
+    raise RuntimeError, "Error SQ_DB setting, must be included in sqlite3, mysql, mysql2, postgresql."
+  end
 
 silence_stream(STDOUT) do
   ActiveRecord::Migration.verbose = false

@@ -1,0 +1,13 @@
+databases:
+  mysql:
+    database: squeel_test_examples
+    username: travis
+    encoding: utf8
+  mysql2:
+    database: squeel_test_examples
+    username: travis
+    encoding: utf8
+  postgresql:
+    database: squeel_test_examples
+    min_messages: warning
+    username: postgres

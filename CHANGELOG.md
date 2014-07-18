@@ -1,7 +1,9 @@
 ## 1.2.1 (Unreleased)
 
+* Run all specs against sqlite, mysql and postgresql!
+* Genereta table names correctly when joining through an association. Fixes#302.
+* Enable Arel nodes in Squeel with "|" operator. Fixes #314.
 * Properly append binds from a relation used in a subquery. Fixes #272.
-* Use the correct attribute name when finding a Join node. Fixes #273.
 
 ## 1.2.0 (2014-07-16)
 
@@ -9,6 +11,7 @@
   Fixes #301, #305, #307
 * Enable using a relation as a subquery. Fixes #309
 * Bind params correctly in subquery using associations. Fixes #312
+* Use the correct attribute name when finding a Join node. Fixes #273.
 
 ## 1.1.1 (2013-09-03)
 

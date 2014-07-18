@@ -419,6 +419,23 @@ module Squeel
           end
         end
 
+        def preprocess_attrs_with_ar(attributes)
+          attributes.map do |key, value|
+            case key
+              when Squeel::Nodes::Node
+                {key => value}
+              when Symbol
+                if value.is_a?(Hash)
+                  {key => value}
+                else
+                  ::ActiveRecord::PredicateBuilder.build_from_hash(klass, {key => value}, table)
+                end
+              else
+                ::ActiveRecord::PredicateBuilder.build_from_hash(klass, {key => value}, table)
+              end
+          end
+        end
+
       end
     end
   end

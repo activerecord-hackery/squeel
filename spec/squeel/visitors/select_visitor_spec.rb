@@ -18,7 +18,7 @@ module Squeel
 
       it 'selects predicates' do
         selects = @v.accept(dsl{name == 'Ernie'})
-        selects.to_sql.should match /"people"."name" = 'Ernie'/
+        selects.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} = 'Ernie'/
       end
 
     end

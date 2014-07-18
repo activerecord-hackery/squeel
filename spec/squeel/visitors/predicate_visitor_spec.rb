@@ -101,32 +101,32 @@ module Squeel
 
       it 'generates IS NULL for hash keys with a value of [nil]' do
         predicate = @v.accept(:id => [nil])
-        predicate.to_sql.should be_like '"people"."id" IS NULL'
+        predicate.to_sql.should be_like "#{Q}people#{Q}.#{Q}id#{Q} IS NULL"
       end
 
       it 'generates IS NULL for in predicates with a value of [nil]' do
         predicate = @v.accept(:id.in => [nil])
-        predicate.to_sql.should be_like '"people"."id" IS NULL'
+        predicate.to_sql.should be_like "#{Q}people#{Q}.#{Q}id#{Q} IS NULL"
       end
 
       it 'generates IS NOT NULL for not_in predicates with a value of [nil]' do
         predicate = @v.accept(:id.not_in => [nil])
-        predicate.to_sql.should be_like '"people"."id" IS NOT NULL'
+        predicate.to_sql.should be_like "#{Q}people#{Q}.#{Q}id#{Q} IS NOT NULL"
       end
 
       it 'generates IN OR IS NULL for hash keys with a value of [1, 2, 3, nil]' do
         predicate = @v.accept(:id => [1, 2, 3, nil])
-        predicate.to_sql.should be_like '("people"."id" IN (1, 2, 3) OR "people"."id" IS NULL)'
+        predicate.to_sql.should be_like "(#{Q}people#{Q}.#{Q}id#{Q} IN (1, 2, 3) OR #{Q}people#{Q}.#{Q}id#{Q} IS NULL)"
       end
 
       it 'generates IN OR IS NULL for in predicates with a value of [1, 2, 3, nil]' do
         predicate = @v.accept(:id.in => [1, 2, 3, nil])
-        predicate.to_sql.should be_like '("people"."id" IN (1, 2, 3) OR "people"."id" IS NULL)'
+        predicate.to_sql.should be_like "(#{Q}people#{Q}.#{Q}id#{Q} IN (1, 2, 3) OR #{Q}people#{Q}.#{Q}id#{Q} IS NULL)"
       end
 
       it 'generates IN AND IS NOT NULL for not_in predicates with a value of [1, 2, 3, nil]' do
         predicate = @v.accept(:id.not_in => [1, 2, 3, nil])
-        predicate.to_sql.should be_like '"people"."id" NOT IN (1, 2, 3) AND "people"."id" IS NOT NULL'
+        predicate.to_sql.should be_like "#{Q}people#{Q}.#{Q}id#{Q} NOT IN (1, 2, 3) AND #{Q}people#{Q}.#{Q}id#{Q} IS NOT NULL"
       end
 
       it 'allows a subquery on the value side of an explicit predicate' do
@@ -146,25 +146,25 @@ module Squeel
       it 'selects the primary key of a relation with no select_values with an explicit predicate' do
         predicate = @v.accept dsl{name.in(PersonWithNamePrimaryKey.where{name.in(['Aric Smith', 'Gladyce Kulas'])})}
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.right.to_sql.should match /SELECT "people"."name"/
+        predicate.right.to_sql.should match /SELECT #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it 'selects the primary key of a relation with no select_values with an implicit predicate' do
         predicate = @v.accept(:name => PersonWithNamePrimaryKey.where{name.in(['Aric Smith', 'Gladyce Kulas'])})
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.right.to_sql.should match /SELECT "people"."name"/
+        predicate.right.to_sql.should match /SELECT #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it "doesn't clobber a relation value's existing select_values if present with an explicit predicate" do
         predicate = @v.accept dsl{name.in(Person.select{name})}
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.right.to_sql.should match /SELECT "people"."name"/
+        predicate.right.to_sql.should match /SELECT #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it "doesn't clobber a relation value's existing select_values if present with an implicit predicate" do
         predicate = @v.accept(:name => Person.select{name})
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.right.to_sql.should match /SELECT "people"."name"/
+        predicate.right.to_sql.should match /SELECT #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it 'converts ActiveRecord::Base objects to their id' do
@@ -280,28 +280,28 @@ module Squeel
         predicate = @v.accept(dsl{{name => name}})
         predicate.should be_a Arel::Nodes::Equality
         predicate.right.should be_a Arel::Attribute
-        predicate.to_sql.should match /"people"."name" = "people"."name"/
+        predicate.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} = #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it 'contextualizes Symbol values' do
         predicate = @v.accept(:name => :name)
         predicate.should be_a Arel::Nodes::Equality
         predicate.right.should be_a Arel::Attribute
-        predicate.to_sql.should match /"people"."name" = "people"."name"/
+        predicate.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} = #{Q}people#{Q}.#{Q}name#{Q}/
       end
 
       it 'contextualizes KeyPath values in hashes' do
         predicate = @v.accept(dsl{{name => children.name}})
         predicate.should be_a Arel::Nodes::Equality
         predicate.right.should be_a Arel::Attribute
-        predicate.to_sql.should match /"people"."name" = "children_people"."name"/
+        predicate.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} = #{Q}children_people#{Q}.#{Q}name#{Q}/
       end
 
       it 'contextualizes KeyPath values in predicates' do
         predicate = @v.accept(dsl{name == children.name})
         predicate.should be_a Arel::Nodes::Equality
         predicate.right.should be_a Arel::Attribute
-        predicate.to_sql.should match /"people"."name" = "children_people"."name"/
+        predicate.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} = #{Q}children_people#{Q}.#{Q}name#{Q}/
       end
 
       it 'visits Squeel Sifters at top level' do
@@ -309,8 +309,8 @@ module Squeel
         predicate.should be_a Arel::Nodes::Grouping
         expr = predicate.expr
         expr.should be_a Arel::Nodes::Or
-        expr.left.to_sql.should match /"people"."name" LIKE 'smith%'/
-        expr.right.to_sql.should match /"people"."name" LIKE '%smith'/
+        expr.left.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} [I]*LIKE 'smith%'/
+        expr.right.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} [I]*LIKE '%smith'/
       end
 
       it 'visits nested Squeel sifters' do
@@ -318,8 +318,8 @@ module Squeel
         predicate.should be_a Arel::Nodes::Grouping
         expr = predicate.expr
         expr.should be_a Arel::Nodes::Or
-        expr.left.to_sql.should match /"children_people"."name" LIKE 'smith%'/
-        expr.right.to_sql.should match /"children_people"."name" LIKE '%smith'/
+        expr.left.to_sql.should match /#{Q}children_people#{Q}.#{Q}name#{Q} [I]*LIKE 'smith%'/
+        expr.right.to_sql.should match /#{Q}children_people#{Q}.#{Q}name#{Q} [I]*LIKE '%smith'/
       end
 
       it 'visits sifters in a keypath' do
@@ -327,14 +327,14 @@ module Squeel
         predicate.should be_a Arel::Nodes::Grouping
         expr = predicate.expr
         expr.should be_a Arel::Nodes::Or
-        expr.left.to_sql.should match /"children_people"."name" LIKE 'smith%'/
-        expr.right.to_sql.should match /"children_people"."name" LIKE '%smith'/
+        expr.left.to_sql.should match /#{Q}children_people#{Q}.#{Q}name#{Q} [I]*LIKE 'smith%'/
+        expr.right.to_sql.should match /#{Q}children_people#{Q}.#{Q}name#{Q} [I]*LIKE '%smith'/
       end
 
       it 'honors an explicit table in string keys' do
         predicate = @v.accept('things.attribute' => 'retro')
         predicate.should be_a Arel::Nodes::Equality
-        predicate.to_sql.should match /"things"."attribute" = 'retro'/
+        predicate.to_sql.should match /#{Q}things#{Q}.#{Q}attribute#{Q} = 'retro'/
       end
 
       it 'does not allow "table.column" keys after context change' do
@@ -349,21 +349,21 @@ module Squeel
         predicate = @v.accept(dsl{id >> Person.select{id}.limit(3).order{id.desc}})
         predicate.should be_a Arel::Nodes::In
         predicate.right.should be_a Arel::Nodes::SelectStatement
-        predicate.to_sql.should be_like '"people"."id" IN (SELECT  "people"."id" FROM "people"  ORDER BY "people"."id" DESC LIMIT 3)'
+        predicate.to_sql.should be_like "#{Q}people#{Q}.#{Q}id#{Q} IN (SELECT  #{Q}people#{Q}.#{Q}id#{Q} FROM #{Q}people#{Q}  ORDER BY #{Q}people#{Q}.#{Q}id#{Q} DESC LIMIT 3)"
       end
 
       it 'converts ActiveRecord::Relation values in function arguments to their Arel AST' do
         predicate = @v.accept(dsl{exists(Person.where{name == 'Aric Smith'})})
         predicate.should be_a Arel::Nodes::NamedFunction
         predicate.expressions.first.should be_a Arel::Nodes::SelectStatement
-        predicate.to_sql.should be_like "exists(SELECT \"people\".* FROM \"people\"  WHERE \"people\".\"name\" = 'Aric Smith')"
+        predicate.to_sql.should be_like "exists(SELECT #{Q}people#{Q}.* FROM #{Q}people#{Q}  WHERE #{Q}people#{Q}.#{Q}name#{Q} = 'Aric Smith')"
       end
 
       it "doesn't try to sanitize_sql an array of strings in the value of a Predicate" do
         predicate = @v.accept(dsl{name >> ['Aric Smith', 'Gladyce Kulas']})
         predicate.should be_a Arel::Nodes::In
         predicate.right.should be_an Array
-        predicate.to_sql.should match /"people"."name" IN \('Aric Smith', 'Gladyce Kulas'\)/
+        predicate.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} IN \('Aric Smith', 'Gladyce Kulas'\)/
       end
 
       it 'creates a node of the proper type when a hash has a Predicate as a key' do
@@ -442,7 +442,7 @@ module Squeel
 
       it 'maps symbols in Function args to Arel attributes' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3'))
-        function.to_sql.should match /"people"."id"/
+        function.to_sql.should match /#{Q}people#{Q}.#{Q}id#{Q}/
       end
 
       it 'sets the alias on the Arel NamedFunction from the Function alias' do
@@ -452,12 +452,12 @@ module Squeel
 
       it 'accepts As nodes containing symbols' do
         as = @v.accept(:name.as('other_name'))
-        as.to_sql.should match /"people"."name" AS other_name/
+        as.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} AS other_name/
       end
 
       it 'accepts As nodes containing stubs' do
         as = @v.accept(dsl{name.as(other_name)})
-        as.to_sql.should match /"people"."name" AS other_name/
+        as.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} AS other_name/
       end
 
       it 'creates an Arel Addition node for an Operation node with + as operator' do

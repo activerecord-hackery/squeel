@@ -35,5 +35,3 @@ else
     gem 'activerecord'
   end
 end
-
-gem 'polyamorous', git: 'git://github.com/activerecord-hackery/polyamorous.git'

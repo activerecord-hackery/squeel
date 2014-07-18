@@ -69,7 +69,7 @@ module Squeel
       it 'allows a subquery as a selection' do
         relation = Person.where(:name => 'Aric Smith').select(:id)
         node = @v.accept(relation.as('aric'))
-        node.to_sql.should be_like "(SELECT \"people\".\"id\" FROM \"people\"  WHERE \"people\".\"name\" = 'Aric Smith') aric"
+        node.to_sql.should be_like "(SELECT #{Q}people#{Q}.#{Q}id#{Q} FROM #{Q}people#{Q}  WHERE #{Q}people#{Q}.#{Q}name#{Q} = 'Aric Smith') aric"
       end
 
       it 'creates an Arel NamedFunction node for a Function node' do
@@ -79,12 +79,12 @@ module Squeel
 
       it 'maps symbols in Function args to Arel attributes' do
         function = @v.accept(:find_in_set.func(:id, '1,2,3'))
-        function.to_sql.should match /find_in_set\("people"."id", '1,2,3'\)/
+        function.to_sql.should match /find_in_set\(#{Q}people#{Q}.#{Q}id#{Q}, '1,2,3'\)/
       end
 
       it 'accepts keypaths as function args' do
         function = @v.accept(dsl{find_in_set(children.children.id, '1,2,3')})
-        function.to_sql.should match /find_in_set\("children_people_2"."id", '1,2,3'\)/
+        function.to_sql.should match /find_in_set\(#{Q}children_people_2#{Q}.#{Q}id#{Q}, '1,2,3'\)/
       end
 
       it 'sets the alias on the Arel NamedFunction from the Function alias' do
@@ -94,17 +94,17 @@ module Squeel
 
       it 'accepts As nodes containing symbols' do
         as = @v.accept(:name.as('other_name'))
-        as.to_sql.should match /"people"."name" AS other_name/
+        as.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} AS other_name/
       end
 
       it 'accepts As nodes containing stubs' do
         as = @v.accept(dsl{name.as(other_name)})
-        as.to_sql.should match /"people"."name" AS other_name/
+        as.to_sql.should match /#{Q}people#{Q}.#{Q}name#{Q} AS other_name/
       end
 
       it 'accepts As nodes containing keypaths' do
         as = @v.accept(dsl{children.name.as(other_name)})
-        as.to_sql.should match /"children_people"."name" AS other_name/
+        as.to_sql.should match /#{Q}children_people#{Q}.#{Q}name#{Q} AS other_name/
       end
 
       it 'creates an Arel Grouping node for a Squeel Grouping node' do

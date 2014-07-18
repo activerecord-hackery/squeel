@@ -1,3 +1,10 @@
+before_script:
+  - mysql -e "create database squeel_test_examples;"
+  - psql -c "create database squeel_test_examples;" -U postgres
+
+script:
+  - bundle exec rake test:$ADAPTER
+
 rvm:
   - 1.9.3
   - 2.0.0
@@ -5,9 +12,29 @@ rvm:
   - 2.1.2
 
 env:
-  - RAILS=master AREL=master
-  - RAILS=4-1-stable AREL=5-0-stable
-  - RAILS=4-0-stable AREL=4-0-stable
-  - RAILS=3-2-stable AREL=3-0-stable
-  - RAILS=3-1-stable AREL=2-2-stable
-  - RAILS=3-0-stable AREL=2-0-stable
+  global:
+    - SQ_CONFIG_FILE=$TRAVIS_BUILD_DIR/spec/config.travis.yml
+  matrix:
+    - RAILS=master AREL=master ADAPTER=sqlite3
+    - RAILS=4-1-stable AREL=5-0-stable ADAPTER=sqlite3
+    - RAILS=4-0-stable AREL=4-0-stable ADAPTER=sqlite3
+    - RAILS=3-2-stable AREL=3-0-stable ADAPTER=sqlite3
+    - RAILS=3-1-stable AREL=2-2-stable ADAPTER=sqlite3
+    - RAILS=3-0-stable AREL=2-0-stable ADAPTER=sqlite3
+    - RAILS=master AREL=master ADAPTER=mysql
+    - RAILS=4-1-stable AREL=5-0-stable ADAPTER=mysql
+    - RAILS=4-0-stable AREL=4-0-stable ADAPTER=mysql
+    - RAILS=3-2-stable AREL=3-0-stable ADAPTER=mysql
+    - RAILS=3-1-stable AREL=2-2-stable ADAPTER=mysql
+    - RAILS=3-0-stable AREL=2-0-stable ADAPTER=mysql
+    - RAILS=master AREL=master ADAPTER=mysql2
+    - RAILS=4-1-stable AREL=5-0-stable ADAPTER=mysql2
+    - RAILS=4-0-stable AREL=4-0-stable ADAPTER=mysql2
+    - RAILS=3-2-stable AREL=3-0-stable ADAPTER=mysql2
+    - RAILS=3-1-stable AREL=2-2-stable ADAPTER=mysql2
+    - RAILS=master AREL=master ADAPTER=postgresql
+    - RAILS=4-1-stable AREL=5-0-stable ADAPTER=postgresql
+    - RAILS=4-0-stable AREL=4-0-stable ADAPTER=postgresql
+    - RAILS=3-2-stable AREL=3-0-stable ADAPTER=postgresql
+    - RAILS=3-1-stable AREL=2-2-stable ADAPTER=postgresql
+    - RAILS=3-0-stable AREL=2-0-stable ADAPTER=postgresql

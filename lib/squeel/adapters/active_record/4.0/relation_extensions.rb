@@ -70,6 +70,16 @@ module Squeel
           arel.from(build_from) if from_value
           arel.lock(lock_value) if lock_value
 
+          # Reorder bind indexes when joins or subqueries include more bindings.
+          # Special for PostgreSQL
+          if bind_values.size > 1
+            bvs = bind_values
+            arel.ast.grep(Arel::Nodes::BindParam).each_with_index do |bp, i|
+              column = bvs[i].first
+              bp.replace connection.substitute_at(column, i)
+            end
+          end
+
           arel
         end
 
@@ -83,16 +93,13 @@ module Squeel
               when Array  # Just in case there's an array in there somewhere
                 @klass.send(:sanitize_sql, arg)
               when Hash
-                attrs = @klass.send(:expand_hash_conditions_for_aggregates, arg)
-                attrs.values.grep(::ActiveRecord::Relation) do |rel|
+                attributes = @klass.send(:expand_hash_conditions_for_aggregates, arg)
+
+                attributes.values.grep(::ActiveRecord::Relation) do |rel|
                   self.bind_values += rel.bind_values
                 end
 
-                unless attrs.keys.grep(Squeel::Nodes::Node).empty? && attrs.keys.grep(Symbol).empty?
-                  attrs
-                else
-                  super
-                end
+                preprocess_attrs_with_ar(attributes)
 
               when Squeel::Nodes::Node
                 arg.grep(::ActiveRecord::Relation) do |rel|

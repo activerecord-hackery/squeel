@@ -95,6 +95,16 @@ module Squeel
           arel.from(build_from) if from_value
           arel.lock(lock_value) if lock_value
 
+          # Reorder bind indexes when joins or subqueries include more bindings.
+          # Special for PostgreSQL
+          if arel.bind_values.any? || bind_values.size > 1
+            bvs = arel.bind_values + bind_values
+            arel.ast.grep(Arel::Nodes::BindParam).each_with_index do |bp, i|
+              column = bvs[i].first
+              bp.replace connection.substitute_at(column, i)
+            end
+          end
+
           arel
         end
 
@@ -181,19 +191,11 @@ module Squeel
             [opts, *other].map do |arg|
               case arg
               when Array  # Just in case there's an array in there somewhere
-                @klass.send(:sanitize_sql, arg)
+                super
               when Hash
-                attrs = @klass.send(:expand_hash_conditions_for_aggregates, arg)
-                attrs.values.grep(::ActiveRecord::Relation) do |rel|
-                  self.bind_values += rel.bind_values
-                end
+                attributes = expand_attrs_from_hash(arg)
 
-                unless attrs.keys.grep(Squeel::Nodes::Node).empty? && attrs.keys.grep(Symbol).empty?
-                  attrs
-                else
-                  super
-                end
-
+                preprocess_attrs_with_ar(attributes)
               when Squeel::Nodes::Node
                 arg.grep(::ActiveRecord::Relation) do |rel|
                   self.bind_values += rel.bind_values
@@ -267,6 +269,17 @@ module Squeel
         end
 
         private
+
+          def expand_attrs_from_hash(opts)
+            opts = ::ActiveRecord::PredicateBuilder.resolve_column_aliases(klass, opts)
+            attributes = @klass.send(:expand_hash_conditions_for_aggregates, opts)
+
+            attributes.values.grep(::ActiveRecord::Relation) do |rel|
+              self.bind_values += rel.bind_values
+            end
+
+            attributes
+          end
 
           def dehashified_order_values
             order_values.map { |o|
