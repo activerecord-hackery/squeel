@@ -741,7 +741,7 @@ module Squeel
             relation.to_a.second.amount.to_i.should eq(10)
           end
 
-          it 'joins from an association with default scopes', focus: true do
+          it 'joins from an association with default scopes' do
             if activerecord_version_at_least('3.1.0')
               if MYSQL_ENV
                 User.first.groups.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 1/
