@@ -23,8 +23,6 @@ just a simple example -- Squeel's capable of a whole lot more. Keep reading.
 In your Gemfile:
 
 ```ruby
-# Make sure you are using the latest version of polyamorous
-gem "polyamorous", :git => "git://github.com/activerecord-hackery/polyamorous.git"
 gem "squeel"  # Last officially released gem
 # gem "squeel", :git => "git://github.com/activerecord-hackery/squeel.git" # Track git repo
 ```

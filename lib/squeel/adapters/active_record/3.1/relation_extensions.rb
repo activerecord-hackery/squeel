@@ -32,6 +32,10 @@ module Squeel
           arel
         end
 
+        def execute_grouped_calculation(operation, column_name, distinct)
+          super
+        end
+
       end
     end
   end

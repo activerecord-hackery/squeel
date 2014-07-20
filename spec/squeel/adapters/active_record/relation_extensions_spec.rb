@@ -523,6 +523,27 @@ module Squeel
             block.to_sql.should eq standard.to_sql
           end
 
+          it 'returns size correctly using group' do
+            if activerecord_version_at_least('3.2.0')
+              relation = Article.joins{person}.group{person.id}
+              relation.size.should have(10).items
+              relation.size[Person.first.id].should == 3
+            end
+
+            relation = Article.joins{person}.group{"people.id"}
+            relation.size.should have(10).items
+            relation.size[Person.first.id].should == 3
+
+            relation = Article.joins{person}.group("people.id")
+            relation.size.should have(10).items
+            relation.size[Person.first.id].should == 3
+
+            relation = Article.group{person_id}
+            relation.size.should have(11).items
+            relation.size[Person.first.id].should == 3
+
+          end
+
         end
 
         describe '#where' do

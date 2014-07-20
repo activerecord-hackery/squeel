@@ -436,6 +436,12 @@ module Squeel
           end
         end
 
+        def execute_grouped_calculation(operation, column_name, distinct)
+          arel = Arel::SelectManager.new(table.engine, table)
+          build_join_dependency(arel, joins_values.flatten) unless joins_values.empty?
+          self.group_values = group_visit(group_values.uniq.reject{|g| g.blank?}) unless group_values.empty?
+          super
+        end
       end
     end
   end

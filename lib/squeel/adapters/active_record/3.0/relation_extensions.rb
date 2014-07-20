@@ -117,6 +117,10 @@ module Squeel
           Hash[equalities.map { |where| [where.left.name, where.right] }]
         end
 
+        def execute_grouped_calculation(operation, column_name, distinct)
+          super
+        end
+
       end
     end
   end

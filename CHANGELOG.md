@@ -1,4 +1,9 @@
-## 1.2.1 (Unreleased)
+## 1.2.2 (Unreleased)
+
+* Size method can return the result correctly when grouping by the column of a
+  joined table. Fixes #286
+
+## 1.2.1 (2014-07-18)
 
 * Run all specs against sqlite, mysql and postgresql!
 * Genereta table names correctly when joining through an association. Fixes#302.
