@@ -6,8 +6,8 @@ Gem::Specification.new do |s|
   s.name        = "squeel"
   s.version     = Squeel::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Ernie Miller"]
-  s.email       = ["ernie@erniemiller.org"]
+  s.authors     = ["Ernie Miller", "Xiang Li"]
+  s.email       = ["ernie@erniemiller.org", "bigxiang@gmail.com"]
   s.homepage    = "https://github.com/ernie/squeel"
   s.summary     = %q{Active Record, improved.}
   s.description = %q{
