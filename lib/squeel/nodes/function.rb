@@ -8,6 +8,7 @@ module Squeel
       include Operators
       include Ordering
       include Aliasing
+      include Keyword
 
       alias :== :eq
       alias :'^' :not_eq
@@ -31,7 +32,7 @@ module Squeel
       # @param [Symbol] name The function name
       # @param [Array] args The array of arguments to pass to the function.
       def initialize(function_name, args)
-        @function_name, @args = function_name, args
+        @function_name, @args = translate_keyword(function_name), args
       end
 
       # expand_hash_conditions_for_aggregates assumes our hash keys can be

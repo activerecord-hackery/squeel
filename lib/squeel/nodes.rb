@@ -12,6 +12,7 @@ require 'squeel/nodes/operators'
 require 'squeel/nodes/predicate_operators'
 require 'squeel/nodes/aliasing'
 require 'squeel/nodes/ordering'
+require 'squeel/nodes/keyword'
 
 require 'squeel/nodes/literal'
 require 'squeel/nodes/stub'

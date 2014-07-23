@@ -8,6 +8,7 @@ module Squeel
       include Operators
       include Aliasing
       include Ordering
+      include Keyword
 
       alias :== :eq
       alias :'^' :not_eq
@@ -34,7 +35,7 @@ module Squeel
       # Create a new Stub.
       # @param [Symbol] symbol The symbol that this Stub contains
       def initialize(symbol)
-        @symbol = symbol
+        @symbol = translate_keyword(symbol)
       end
 
       # Object comparison

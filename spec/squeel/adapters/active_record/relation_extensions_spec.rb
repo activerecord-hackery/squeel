@@ -492,6 +492,18 @@ module Squeel
             aric.last_article_id.to_i.should eq Article.where(:person_id => 1).last.id
           end
 
+          it 'works with star' do
+            if activerecord_version_at_least('3.1.0')
+              relation = Person.select{_star}.where{id == 1}
+              relation.to_sql.should match /SELECT #{Q}people#{Q}.\*/
+
+              relation = Person.select{articles._star}.joins{articles}
+              relation.to_sql.should match /SELECT #{Q}articles#{Q}.\*/
+            else
+              pending "Arel 2.0 doesn't support table[:*]"
+            end
+          end
+
         end
 
         describe '#count' do
@@ -608,6 +620,9 @@ module Squeel
             articles = scope.where(:id => scope)
             articles.should have(3).articles
 
+            articles = Article.where(:id => scope)
+            articles.should have(3).articles
+
             articles = Tag.all.second.articles.where(:id => scope)
             articles.should have(1).articles
           end
@@ -686,6 +701,18 @@ module Squeel
             relation = User.where{
               (id.in([1,2,3]) | User.arel_table[:id].eq(1)) & ((id == 1) | User.arel_table[:id].not_eq(nil)) }
             relation.to_sql.should match /SELECT #{Q}users#{Q}.\* FROM #{Q}users#{Q}\s+WHERE \(\(\(#{Q}users#{Q}.#{Q}id#{Q} IN \(1, 2, 3\) OR #{Q}users#{Q}.#{Q}id#{Q} = 1\) AND \(#{Q}users#{Q}.#{Q}id#{Q} = 1 OR #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL\)\)\)/
+          end
+
+          it 'uses exists clause in where clause' do
+            relation = User.where{
+              (id == 1) |
+              _not(exists(Membership.where{(memberships.member_type == 'User') & (memberships.member_id == users.id)}.select{'1'})) }
+
+            relation.to_sql.should match /WHERE \(\(#{Q}users#{Q}.#{Q}id#{Q} = 1/
+            relation.to_sql.should match /OR NOT\(exists\(SELECT 1 FROM #{Q}memberships#{Q}/
+            relation.to_sql.should match /WHERE #{Q}memberships#{Q}.#{Q}active#{Q} = ['t1]{1,3}/
+            relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}member_type#{Q} = 'User' AND #{Q}memberships#{Q}.#{Q}member_id#{Q} = #{Q}users#{Q}.#{Q}id#{Q}/
+            relation.should have(1).user
           end
 
         end

@@ -113,7 +113,7 @@ class Membership < ActiveRecord::Base
     default_scope where(active: true)
   end
 
-  before_save :set_active
+  before_create :set_active
 
   def set_active
     self.active = true
