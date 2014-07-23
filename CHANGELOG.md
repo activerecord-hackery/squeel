@@ -2,6 +2,7 @@
 
 * Size method can return the result correctly when grouping by the column of a
   joined table. Fixes #286
+* Add a keyword node to use * and not in Squeel. Fix #17, #182.
 
 ## 1.2.1 (2014-07-18)
 
