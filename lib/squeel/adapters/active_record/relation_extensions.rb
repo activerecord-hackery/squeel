@@ -272,9 +272,7 @@ module Squeel
 
           groups = binaries.group_by {|b| [b.class, b.left]}
 
-          groups.each do |_, bins|
-            arel.where(Arel::Nodes::And.new(bins))
-          end
+          arel.where(Arel::Nodes::And.new(groups.map{|_, bins| bins}.flatten)) if groups.any?
 
           (wheres - binaries).each do |where|
             where = Arel.sql(where) if String === where
