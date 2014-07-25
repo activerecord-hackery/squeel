@@ -16,7 +16,7 @@ module Squeel
           specify { expect {subject.sifter 'blah'}.to raise_error ArgumentError }
 
           context 'with a sifter defned via block' do
-            before :all do
+            before do
               subject.sifter :title_or_body_contains do |value|
                 (title =~ "%#{value}%") | (body =~ "%#{value}%")
               end
@@ -27,7 +27,7 @@ module Squeel
           end
 
           context 'with a sifter defined via method' do
-            before :all do
+            before do
               def subject.sifter_title_starts_with(val)
                 squeel{title =~ "#{val}%"}
               end
