@@ -13,20 +13,20 @@ module Squeel
       end
 
       it 'defaults to Squeel::InnerJoin' do
-        @j.type.should eq Squeel::InnerJoin
+        expect(@j.type).to eq Squeel::InnerJoin
       end
 
       it 'allows setting join type' do
         @j.outer
-        @j.type.should eq Squeel::OuterJoin
+        expect(@j.type).to eq Squeel::OuterJoin
       end
 
       it 'subquery should be a Nodes::As' do
-        @j.subquery.should be_kind_of(As)
+        expect(@j.subquery).to be_kind_of(As)
       end
 
       it 'constraints should be a node' do
-        @j.constraints.should be_kind_of(Node)
+        expect(@j.constraints).to be_kind_of(Node)
       end
 
       it 'only convert an ActiveRecord::Relation to a SubqueryJoin' do
@@ -37,7 +37,7 @@ module Squeel
             OrderItem.scoped.as('items').on{(items.orderable_id == id) & (items.orderable_type == 'Seat')}
           end
 
-        j.should be_kind_of(SubqueryJoin)
+        expect(j).to be_kind_of(SubqueryJoin)
 
         expect { As.new('name', 'alias').on{(items.orderable_id == id) & (items.orderable_type == 'Seat')} }.to raise_error
       end

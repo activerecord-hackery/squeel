@@ -10,16 +10,16 @@ module Squeel
       Squeel::Constants::PREDICATES.each do |method_name|
         it "creates #{method_name} predicates with no value" do
           predicate = @o.send(method_name)
-          predicate.expr.should eq @o
-          predicate.method_name.should eq method_name
-          predicate.value?.should be_false
+          expect(predicate.expr).to eq @o
+          expect(predicate.method_name).to eq method_name
+          expect(predicate.value?).to be false
         end
 
         it "creates #{method_name} predicates with a value" do
           predicate = @o.send(method_name, 'value')
-          predicate.expr.should eq @o
-          predicate.method_name.should eq method_name
-          predicate.value.should eq 'value'
+          expect(predicate.expr).to eq @o
+          expect(predicate.method_name).to eq method_name
+          expect(predicate.value).to eq 'value'
         end
       end
 
@@ -28,16 +28,16 @@ module Squeel
           ['', '_any', '_all'].each do |suffix|
             it "creates #{method_name.to_s + suffix} predicates with no value using the alias #{aliaz.to_s + suffix}" do
               predicate = @o.send(aliaz.to_s + suffix)
-              predicate.expr.should eq @o
-              predicate.method_name.should eq "#{method_name}#{suffix}".to_sym
-              predicate.value?.should be_false
+              expect(predicate.expr).to eq @o
+              expect(predicate.method_name).to eq "#{method_name}#{suffix}".to_sym
+              expect(predicate.value?).to be false
             end
 
             it "creates #{method_name.to_s + suffix} predicates with a value using the alias #{aliaz.to_s + suffix}" do
               predicate = @o.send((aliaz.to_s + suffix), 'value')
-              predicate.expr.should eq @o
-              predicate.method_name.should eq "#{method_name}#{suffix}".to_sym
-              predicate.value.should eq 'value'
+              expect(predicate.expr).to eq @o
+              expect(predicate.method_name).to eq "#{method_name}#{suffix}".to_sym
+              expect(predicate.value).to eq 'value'
             end
           end
         end
@@ -45,118 +45,118 @@ module Squeel
 
       it 'creates ascending Order nodes with #asc' do
         order = @o.asc
-        order.expr.should eq @o
-        order.should be_ascending
+        expect(order.expr).to eq @o
+        expect(order).to be_ascending
       end
 
       it 'creates descending Order nodes with #desc' do
         order = @o.desc
-        order.expr.should eq @o
-        order.should be_descending
+        expect(order.expr).to eq @o
+        expect(order).to be_descending
       end
 
       it 'creates eq predicates with ==' do
         predicate = @o == 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :eq
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :eq
+        expect(predicate.value).to eq 1
       end
 
       it 'creates not_eq predicates with ^' do
         predicate = @o ^ 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :not_eq
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :not_eq
+        expect(predicate.value).to eq 1
       end
 
       it 'creates not_eq predicates with !=' do
         predicate = @o != 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :not_eq
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :not_eq
+        expect(predicate.value).to eq 1
       end if respond_to?('!=')
 
       it 'creates in predicates with >>' do
         predicate = @o >> [1,2,3]
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :in
-        predicate.value.should eq [1,2,3]
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :in
+        expect(predicate.value).to eq [1,2,3]
       end
 
       it 'creates not_in predicates with <<' do
         predicate = @o << [1,2,3]
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :not_in
-        predicate.value.should eq [1,2,3]
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :not_in
+        expect(predicate.value).to eq [1,2,3]
       end
 
       it 'creates matches predicates with =~' do
         predicate = @o =~ '%bob%'
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :matches
-        predicate.value.should eq '%bob%'
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :matches
+        expect(predicate.value).to eq '%bob%'
       end
 
       it 'creates does_not_match predicates with !~' do
         predicate = @o !~ '%bob%'
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :does_not_match
-        predicate.value.should eq '%bob%'
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :does_not_match
+        expect(predicate.value).to eq '%bob%'
       end if respond_to?('!~')
 
       it 'creates gt predicates with >' do
         predicate = @o > 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :gt
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :gt
+        expect(predicate.value).to eq 1
       end
 
       it 'creates gteq predicates with >=' do
         predicate = @o >= 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :gteq
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :gteq
+        expect(predicate.value).to eq 1
       end
 
       it 'creates lt predicates with <' do
         predicate = @o < 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :lt
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :lt
+        expect(predicate.value).to eq 1
       end
 
       it 'creates lteq predicates with <=' do
         predicate = @o <= 1
-        predicate.expr.should eq @o
-        predicate.method_name.should eq :lteq
-        predicate.value.should eq 1
+        expect(predicate.expr).to eq @o
+        expect(predicate.method_name).to eq :lteq
+        expect(predicate.value).to eq 1
       end
 
       it 'can be ORed with another node' do
         right = Predicate.new :name, :eq, 'Bob'
         combined = @o | right
-        combined.should be_a Nodes::Or
-        combined.left.should eq @o
-        combined.right.should eq right
+        expect(combined).to be_a Nodes::Or
+        expect(combined.left).to eq @o
+        expect(combined.right).to eq right
       end
 
       it 'can be ANDed with another node' do
         right = Predicate.new :name, :eq, 'Bob'
         combined = @o & right
-        combined.should be_a Nodes::And
-        combined.children.should eq [@o, right]
+        expect(combined).to be_a Nodes::And
+        expect(combined.children).to eq [@o, right]
       end
 
       it 'can be negated' do
         negated = -@o
-        negated.should be_a Nodes::Not
-        negated.expr.should eq @o
+        expect(negated).to be_a Nodes::Not
+        expect(negated.expr).to eq @o
       end
 
       it 'implements equivalence check' do
         other = dsl{name + 1}
         array = [@o, other]
-        array.uniq.should have(1).operation
+        expect(array.uniq.size).to eq(1)
       end
 
     end

@@ -5,16 +5,16 @@ describe Symbol do
   Squeel::Constants::PREDICATES.each do |method_name|
     it "creates #{method_name} predicates with no value" do
       predicate = :attribute.send(method_name)
-      predicate.expr.should eq :attribute
-      predicate.method_name.should eq method_name
-      predicate.value?.should be_false
+      expect(predicate.expr).to eq :attribute
+      expect(predicate.method_name).to eq method_name
+      expect(predicate.value?).to be false
     end
 
     it "creates #{method_name} predicates with a value" do
       predicate = :attribute.send(method_name, 'value')
-      predicate.expr.should eq :attribute
-      predicate.method_name.should eq method_name
-      predicate.value.should eq 'value'
+      expect(predicate.expr).to eq :attribute
+      expect(predicate.method_name).to eq method_name
+      expect(predicate.value).to eq 'value'
     end
   end
 
@@ -23,16 +23,16 @@ describe Symbol do
       ['', '_any', '_all'].each do |suffix|
         it "creates #{method_name.to_s + suffix} predicates with no value using the alias #{aliaz.to_s + suffix}" do
           predicate = :attribute.send(aliaz.to_s + suffix)
-          predicate.expr.should eq :attribute
-          predicate.method_name.should eq "#{method_name}#{suffix}".to_sym
-          predicate.value?.should be_false
+          expect(predicate.expr).to eq :attribute
+          expect(predicate.method_name).to eq "#{method_name}#{suffix}".to_sym
+          expect(predicate.value?).to be false
         end
 
         it "creates #{method_name.to_s + suffix} predicates with a value using the alias #{aliaz.to_s + suffix}" do
           predicate = :attribute.send((aliaz.to_s + suffix), 'value')
-          predicate.expr.should eq :attribute
-          predicate.method_name.should eq "#{method_name}#{suffix}".to_sym
-          predicate.value.should eq 'value'
+          expect(predicate.expr).to eq :attribute
+          expect(predicate.method_name).to eq "#{method_name}#{suffix}".to_sym
+          expect(predicate.value).to eq 'value'
         end
       end
     end
@@ -40,36 +40,36 @@ describe Symbol do
 
   it 'creates ascending orders' do
     order = :attribute.asc
-    order.should be_ascending
+    expect(order).to be_ascending
   end
 
   it 'creates descending orders' do
     order = :attribute.desc
-    order.should be_descending
+    expect(order).to be_descending
   end
 
   it 'creates functions' do
     function = :function.func
-    function.should be_a Squeel::Nodes::Function
+    expect(function).to be_a Squeel::Nodes::Function
   end
 
   it 'creates inner joins' do
     join = :join.inner
-    join.should be_a Squeel::Nodes::Join
-    join._type.should eq Squeel::InnerJoin
+    expect(join).to be_a Squeel::Nodes::Join
+    expect(join._type).to eq Squeel::InnerJoin
   end
 
   it 'creates outer joins' do
     join = :join.outer
-    join.should be_a Squeel::Nodes::Join
-    join._type.should eq Squeel::OuterJoin
+    expect(join).to be_a Squeel::Nodes::Join
+    expect(join._type).to eq Squeel::OuterJoin
   end
 
   it 'creates as nodes' do
     as = :column.as('other_name')
-    as.should be_a Squeel::Nodes::As
-    as.left.should eq :column
-    as.right.should eq 'other_name'
+    expect(as).to be_a Squeel::Nodes::As
+    expect(as.left).to eq :column
+    expect(as.right).to eq 'other_name'
   end
 
 end

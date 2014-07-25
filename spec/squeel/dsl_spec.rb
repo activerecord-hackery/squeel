@@ -5,28 +5,28 @@ module Squeel
 
     it 'evaluates code' do
       result = DSL.eval { {id => 1} }
-      result.should be_a Hash
-      result.keys.first.should be_a Nodes::Stub
+      expect(result).to be_a Hash
+      expect(result.keys.first).to be_a Nodes::Stub
     end
 
     it 'creates function nodes when a method has arguments' do
       result = DSL.eval { max(id) }
-      result.should be_a Nodes::Function
-      result.args.should eq [Nodes::Stub.new(:id)]
+      expect(result).to be_a Nodes::Function
+      expect(result.args).to eq [Nodes::Stub.new(:id)]
     end
 
     it 'creates polymorphic join nodes when a method has a single class argument' do
       result = DSL.eval { association(Person) }
-      result.should be_a Nodes::Join
-      result._klass.should eq Person
+      expect(result).to be_a Nodes::Join
+      expect(result._klass).to eq Person
     end
 
     it 'handles OR between predicates' do
       result = DSL.eval {(name =~ 'Joe%') | (articles.title =~ 'Hello%')}
-      result.should be_a Nodes::Or
-      result.left.should be_a Nodes::Predicate
-      result.right.should be_a Nodes::KeyPath
-      result.right.endpoint.should be_a Nodes::Predicate
+      expect(result).to be_a Nodes::Or
+      expect(result.left).to be_a Nodes::Predicate
+      expect(result.right).to be_a Nodes::KeyPath
+      expect(result.right.endpoint).to be_a Nodes::Predicate
     end
 
     it 'is not a full closure (instance_evals) when the block supplied has no arity' do
@@ -42,11 +42,11 @@ module Squeel
 
       obj = my_class.new
       result = obj.dsl_test
-      result.should be_a Nodes::Predicate
-      result.expr.should eq :name
-      result.method_name.should eq :matches
-      result.value.should be_a Nodes::Stub
-      result.value.symbol.should eq :a_method
+      expect(result).to be_a Nodes::Predicate
+      expect(result.expr).to eq :name
+      expect(result.method_name).to eq :matches
+      expect(result.value).to be_a Nodes::Stub
+      expect(result.value.symbol).to eq :a_method
     end
 
     it 'is a full closure (yields self) when the block supplied has an arity' do
@@ -62,19 +62,19 @@ module Squeel
 
       obj = my_class.new
       result = obj.dsl_test
-      result.should be_a Nodes::Predicate
-      result.expr.should eq :name
-      result.method_name.should eq :matches
-      result.value.should be_a String
-      result.value.should eq 'test'
+      expect(result).to be_a Nodes::Predicate
+      expect(result.expr).to eq :name
+      expect(result.method_name).to eq :matches
+      expect(result.value).to be_a String
+      expect(result.value).to eq 'test'
     end
 
     describe '#my' do
       it 'allows access to caller instance variables' do
         @test_var = "test"
         result = DSL.eval{my{@test_var}}
-        result.should be_a String
-        result.should eq @test_var
+        expect(result).to be_a String
+        expect(result).to eq @test_var
       end
 
       it 'allows access to caller methods' do
@@ -83,38 +83,38 @@ module Squeel
         end
 
         result = DSL.eval{my{test_scoped_method}}
-        result.should be_a Symbol
-        result.should eq :name
+        expect(result).to be_a Symbol
+        expect(result).to eq :name
       end
     end
 
     describe '`string`' do
       it 'creates a Literal' do
         result = dsl{`blah`}
-        result.should be_a Nodes::Literal
-        result.should eq 'blah'
+        expect(result).to be_a Nodes::Literal
+        expect(result).to eq 'blah'
       end
     end
 
     describe '#sift' do
       it 'creates a Sifter' do
         result = dsl{sift :blah}
-        result.should be_a Nodes::Sifter
-        result.name.should eq :blah
+        expect(result).to be_a Nodes::Sifter
+        expect(result.name).to eq :blah
       end
 
       it 'casts Stubs to Symbols for sifter names' do
         result = dsl{sift blah}
-        result.should be_a Nodes::Sifter
-        result.name.should eq :blah
+        expect(result).to be_a Nodes::Sifter
+        expect(result.name).to eq :blah
       end
     end
 
     describe '#_' do
       it 'creates a Grouping' do
         result = dsl{_(id + 1)}
-        result.should be_a Nodes::Grouping
-        result.expr.should eq Nodes::Operation.new(:+, Nodes::Stub.new(:id), 1)
+        expect(result).to be_a Nodes::Grouping
+        expect(result.expr).to eq Nodes::Operation.new(:+, Nodes::Stub.new(:id), 1)
       end
     end
 

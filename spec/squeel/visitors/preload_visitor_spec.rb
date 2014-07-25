@@ -9,33 +9,33 @@ module Squeel
       end
 
       it 'returns symbols unmodified' do
-        @v.accept(:blah).should eq :blah
+        expect(@v.accept(:blah)).to eq :blah
       end
 
       it 'converts stubs to symbols' do
-        @v.accept(dsl{blah}).should eq :blah
+        expect(@v.accept(dsl{blah})).to eq :blah
       end
 
       it 'converts joins to their names' do
-        @v.accept(dsl{blah(Article)}).should eq :blah
+        expect(@v.accept(dsl{blah(Article)})).to eq :blah
       end
 
       it 'converts keypaths to their hash equivalents' do
-        @v.accept(dsl{one.two.three.four}).should eq({
+        expect(@v.accept(dsl{one.two.three.four})).to eq({
           :one => {:two => {:three => :four}}
         })
       end
 
       it 'visits hashes' do
-        @v.accept(dsl{{
+        expect(@v.accept(dsl{{
           blah1 => {blah2(Article) => blah3}
-        }}).should eq({:blah1 => {:blah2 => :blah3}})
+        }})).to eq({:blah1 => {:blah2 => :blah3}})
       end
 
       it 'visits arrays' do
-        @v.accept(dsl{[{
+        expect(@v.accept(dsl{[{
           blah1 => {blah2(Article) => blah3}
-        }]}).should eq([{:blah1 => {:blah2 => :blah3}}])
+        }]})).to eq([{:blah1 => {:blah2 => :blah3}}])
       end
 
     end

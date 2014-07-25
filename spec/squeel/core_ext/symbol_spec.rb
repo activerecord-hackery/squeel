@@ -4,55 +4,55 @@ describe Symbol do
   describe '#asc' do
     it 'creates an ascending order node' do
       order = :blah.asc
-      order.should be_a Squeel::Nodes::Order
-      order.expr.should eq :blah
-      order.should be_ascending
+      expect(order).to be_a Squeel::Nodes::Order
+      expect(order.expr).to eq :blah
+      expect(order).to be_ascending
     end
   end
 
   describe '#desc' do
     it 'creates a descending order node' do
       order = :blah.desc
-      order.should be_a Squeel::Nodes::Order
-      order.expr.should eq :blah
-      order.should be_descending
+      expect(order).to be_a Squeel::Nodes::Order
+      expect(order.expr).to eq :blah
+      expect(order).to be_descending
     end
   end
 
   describe '#func' do
     it 'creates a function node' do
       function = :blah.func('foo')
-      function.should be_a Squeel::Nodes::Function
-      function.function_name.should eq :blah
-      function.args.should eq ['foo']
+      expect(function).to be_a Squeel::Nodes::Function
+      expect(function.function_name).to eq :blah
+      expect(function.args).to eq ['foo']
     end
   end
 
   describe '#inner' do
     it 'creates an inner join' do
       join = :blah.inner
-      join.should be_a Squeel::Nodes::Join
-      join._name.should eq :blah
-      join._type.should eq Squeel::InnerJoin
+      expect(join).to be_a Squeel::Nodes::Join
+      expect(join._name).to eq :blah
+      expect(join._type).to eq Squeel::InnerJoin
     end
   end
 
   describe '#outer' do
     it 'creates an outer join' do
       join = :blah.outer
-      join.should be_a Squeel::Nodes::Join
-      join._name.should eq :blah
-      join._type.should eq Squeel::OuterJoin
+      expect(join).to be_a Squeel::Nodes::Join
+      expect(join._name).to eq :blah
+      expect(join._type).to eq Squeel::OuterJoin
     end
   end
 
   describe '#of_class' do
     it 'creates an inner polymorphic join with the given class' do
       join = :blah.of_class(Person)
-      join.should be_a Squeel::Nodes::Join
-      join._name.should eq :blah
-      join._type.should eq Squeel::InnerJoin
-      join._klass.should eq Person
+      expect(join).to be_a Squeel::Nodes::Join
+      expect(join._name).to eq :blah
+      expect(join._type).to eq Squeel::InnerJoin
+      expect(join._klass).to eq Person
     end
   end
 end

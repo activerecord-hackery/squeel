@@ -9,65 +9,65 @@ module Squeel
 
       it 'appends to its path when endpoint is a Stub' do
         @k.third.fourth.fifth
-        @k.path.should eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
+        expect(@k.path).to eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
       end
 
       it 'becomes absolute when prefixed with ~' do
         ~@k.third.fourth.fifth
-        @k.path.should eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
-        @k.should be_absolute
+        expect(@k.path).to eq [:first, :second, :third, :fourth, Stub.new(:fifth)]
+        expect(@k).to be_absolute
       end
 
       it 'stops appending once its endpoint is not a Stub' do
         @k.third.fourth.fifth == 'cinco'
-        @k.endpoint.should eql Predicate.new(Stub.new(:fifth), :eq, 'cinco')
+        expect(@k.endpoint).to eql Predicate.new(Stub.new(:fifth), :eq, 'cinco')
         expect { @k.another }.to raise_error NoMethodError
       end
 
       it 'allows specification of a type column' do
         node = @k.type
-        node.should be_a KeyPath # not a Class (Ruby 1.8 Object#type)
+        expect(node).to be_a KeyPath # not a Class (Ruby 1.8 Object#type)
       end
 
       it 'sends missing calls to its endpoint if the endpoint responds to them' do
         @k.third.fourth.fifth.matches('Joe%')
-        @k.endpoint.should be_a Predicate
-        @k.endpoint.expr.should eq :fifth
-        @k.endpoint.method_name.should eq :matches
-        @k.endpoint.value.should eq 'Joe%'
+        expect(@k.endpoint).to be_a Predicate
+        expect(@k.endpoint.expr).to eq :fifth
+        expect(@k.endpoint.method_name).to eq :matches
+        expect(@k.endpoint.value).to eq 'Joe%'
       end
 
       it 'creates a polymorphic join at its endpoint' do
         @k.third.fourth.fifth(Person)
-        @k.endpoint.should be_a Join
-        @k.endpoint.should be_polymorphic
+        expect(@k.endpoint).to be_a Join
+        expect(@k.endpoint).to be_polymorphic
       end
 
       it 'creates a named function at its endpoint' do
         @k.third.fourth.fifth.max(1,2,3)
-        @k.endpoint.should be_a Function
-        @k.endpoint.function_name.should eq :max
-        @k.endpoint.args.should eq [1,2,3]
+        expect(@k.endpoint).to be_a Function
+        expect(@k.endpoint.function_name).to eq :max
+        expect(@k.endpoint.args).to eq [1,2,3]
       end
 
       it 'creates as nodes with #as' do
         @k.as('other_name')
         as = @k.endpoint
-        as.should be_a Squeel::Nodes::As
-        as.left.should eq Stub.new(:fourth)
-        as.right.should eq 'other_name'
+        expect(as).to be_a Squeel::Nodes::As
+        expect(as.left).to eq Stub.new(:fourth)
+        expect(as.right).to eq 'other_name'
       end
 
       it 'creates sifter nodes with #sift' do
         @k.sift(:blah, 1)
         sifter = @k.endpoint
-        sifter.should be_a Sifter
+        expect(sifter).to be_a Sifter
       end
 
       it 'creates AND nodes with & if the endpoint responds to &' do
         node = @k.third.fourth.eq('Bob') & Stub.new(:attr).eq('Joe')
-        node.should be_a And
-        node.children.should eql [@k, Stub.new(:attr).eq('Joe')]
+        expect(node).to be_a And
+        expect(node.children).to eql [@k, Stub.new(:attr).eq('Joe')]
       end
 
       it 'raises NoMethodError with & if the endpoint does not respond to &' do
@@ -76,9 +76,9 @@ module Squeel
 
       it 'creates Or nodes with | if the endpoint responds to |' do
         node = @k.third.fourth.eq('Bob') | Stub.new(:attr).eq('Joe')
-        node.should be_a Or
-        node.left.should eql @k
-        node.right.should eql Stub.new(:attr).eq('Joe')
+        expect(node).to be_a Or
+        expect(node.left).to eql @k
+        expect(node.right).to eql Stub.new(:attr).eq('Joe')
       end
 
       it 'raises NoMethodError with | if the endpoint does not respond to |' do
@@ -87,9 +87,9 @@ module Squeel
 
       it 'creates Operation nodes with - if the endpoint responds to -' do
         node = @k.third.fourth - 4
-        node.should be_an Operation
-        node.left.should eq @k
-        node.right.should eq 4
+        expect(node).to be_an Operation
+        expect(node.left).to eq @k
+        expect(node.right).to eq 4
       end
 
       it 'raises NoMethodError with - if the endpoint does not respond to -' do
@@ -98,8 +98,8 @@ module Squeel
 
       it 'creates NOT nodes with -@ if the endpoint responds to -@' do
         node = - @k.third.fourth.eq('Bob')
-        node.should be_a Not
-        node.expr.should eql @k
+        expect(node).to be_a Not
+        expect(node.expr).to eql @k
       end
 
       it 'raises NoMethodError with -@ if the endpoint does not respond to -@' do
@@ -110,8 +110,8 @@ module Squeel
         k1 = KeyPath.new([:one, :two])
         k2 = k1.dup
         k2.three
-        k2.path.should have(3).items
-        k1.path.should have(2).items
+        expect(k2.path.size).to eq(3)
+        expect(k1.path.size).to eq(2)
       end
 
     end

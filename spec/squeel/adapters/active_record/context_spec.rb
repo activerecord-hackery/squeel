@@ -21,25 +21,25 @@ module Squeel
             else
               @c.contextualize @jd.join_associations.last
             end
-          table.table_alias.should eq 'parents_people_2'
+          expect(table.table_alias).to eq 'parents_people_2'
         end
 
         it 'contextualizes symbols as a generic table' do
           table = @c.contextualize :table
-          table.name.should eq 'table'
-          table.table_alias.should be_nil
+          expect(table.name).to eq 'table'
+          expect(table.table_alias).to be_nil
         end
 
         it 'contextualizes polymorphic Join nodes to the arel_table of their klass' do
           table = @c.contextualize Nodes::Join.new(:notable, Squeel::InnerJoin, Article)
-          table.name.should eq 'articles'
-          table.table_alias.should be_nil
+          expect(table.name).to eq 'articles'
+          expect(table.table_alias).to be_nil
         end
 
         it 'contextualizes non-polymorphic Join nodes to the table for their name' do
           table = @c.contextualize Nodes::Join.new(:notes, Squeel::InnerJoin)
-          table.name.should eq 'notes'
-          table.table_alias.should be_nil
+          expect(table.name).to eq 'notes'
+          expect(table.table_alias).to be_nil
         end
 
       end
