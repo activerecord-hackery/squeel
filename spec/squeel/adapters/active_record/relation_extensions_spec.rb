@@ -739,7 +739,12 @@ module Squeel
           end
 
           it 'validates polymorphic relationship with source type' do
-            if activerecord_version_at_least '3.2.7'
+            if activerecord_version_at_least('4.0.0')
+              relation = Group.joins{users}
+              relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = ['1t']{1,3} AND #{Q}memberships#{Q}.#{Q}member_type#{Q} = 'User'/
+              relation.to_sql.should match /INNER JOIN #{Q}users#{Q} ON #{Q}users#{Q}.#{Q}id#{Q} = #{Q}memberships#{Q}.#{Q}member_id#{Q}/
+              relation.to_sql.should match /INNER JOIN #{Q}memberships#{Q} ON #{Q}memberships#{Q}.#{Q}group_id#{Q} = #{Q}groups#{Q}.#{Q}id#{Q}/
+            elsif activerecord_version_at_least('3.2.7')
               Group.first.users.to_sql.should match /#{Q}memberships#{Q}.#{Q}member_type#{Q} = 'User'/
             else
               Group.first.users.size.should eq 1
