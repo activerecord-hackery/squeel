@@ -339,6 +339,10 @@ module Squeel
             relation.debug_sql.should match /SELECT #{Q}notes#{Q}.* FROM #{Q}notes#{Q} LEFT OUTER JOIN #{Q}articles#{Q} ON #{Q}articles#{Q}.#{Q}id#{Q} = #{Q}notes#{Q}.#{Q}notable_id#{Q} AND #{Q}notes#{Q}.#{Q}notable_type#{Q} = 'Article' LEFT OUTER JOIN #{Q}people#{Q} ON #{Q}people#{Q}.#{Q}id#{Q} = #{Q}articles#{Q}.#{Q}person_id#{Q} LEFT OUTER JOIN #{Q}people#{Q} #{Q}children_people#{Q} ON #{Q}children_people#{Q}.#{Q}parent_id#{Q} = #{Q}people#{Q}.#{Q}id#{Q} WHERE #{Q}children_people#{Q}.#{Q}name#{Q} = 'Ernie'/
           end
 
+          it 'eager loads has_and_belongs_to_many' do
+            expect { Article.includes{tags}.to_a }.should_not raise_error
+            expect { Person.includes{authored_article_comments}.to_a }.should_not raise_error
+          end
         end
 
         describe '#preload' do
@@ -991,9 +995,9 @@ module Squeel
           end
 
         end
-        
+
         describe '#where_unscoping' do
-          
+
           it "doesn't ruin everything when predicate expression in where_values doesn't respond to :symbol method" do
             unless activerecord_version_at_least '4.2.0'
               if activerecord_version_at_least '4.0.0'
@@ -1007,9 +1011,9 @@ module Squeel
               pending 'Not required in AR versions > 4.2.0'
             end
           end
-          
+
         end
-        
+
         describe '#as' do
 
           it 'aliases the relation in an As node' do

@@ -17,7 +17,7 @@ module Squeel
           if records.empty?
             []
           else
-            Visitors::PreloadVisitor.new.accept(associations).each do |association|
+            Visitors::PreloadVisitor.new.accept(associations).flat_map do |association|
               preloaders_on(association, records, preload_scope)
             end
           end
