@@ -339,6 +339,14 @@ module Squeel
             relation.debug_sql.should match /SELECT #{Q}notes#{Q}.* FROM #{Q}notes#{Q} LEFT OUTER JOIN #{Q}articles#{Q} ON #{Q}articles#{Q}.#{Q}id#{Q} = #{Q}notes#{Q}.#{Q}notable_id#{Q} AND #{Q}notes#{Q}.#{Q}notable_type#{Q} = 'Article' LEFT OUTER JOIN #{Q}people#{Q} ON #{Q}people#{Q}.#{Q}id#{Q} = #{Q}articles#{Q}.#{Q}person_id#{Q} LEFT OUTER JOIN #{Q}people#{Q} #{Q}children_people#{Q} ON #{Q}children_people#{Q}.#{Q}parent_id#{Q} = #{Q}people#{Q}.#{Q}id#{Q} WHERE #{Q}children_people#{Q}.#{Q}name#{Q} = 'Ernie'/
           end
 
+          it 'eager loads has_and_belongs_to_many' do
+            relation = Article.includes{tags}.to_a
+          end
+
+          it 'eager loads `has_many through:`' do
+            relation = Person.includes{authored_article_comments}.to_a
+          end
+
         end
 
         describe '#preload' do
