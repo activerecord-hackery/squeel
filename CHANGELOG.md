@@ -5,6 +5,8 @@
 * Properly add 'AND' to generated SQL when joining through a polymorphic model
   with the source type configuration and default scopes above Rails 4. Fixes #270.
 * Fix NoMethodError when calling unscope method above Rails 4. By @estum
+* Fix error when including HABTM or HMT associations without eager loading.
+  Fixes #326.
 
 ## 1.2.1 (2014-07-18)
 
