@@ -53,7 +53,7 @@ module Squeel
             when Hash
               rel.stringify_keys.has_key?(target_value)
             when Squeel::Nodes::Predicate
-              rel.expr.symbol.to_s == target_value
+              rel.expr.symbol.to_s == target_value if rel.expr.respond_to?(:symbol)
             end
           end
 
