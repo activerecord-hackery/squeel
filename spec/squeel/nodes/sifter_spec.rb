@@ -6,17 +6,17 @@ module Squeel
 
       subject { Sifter.new :title_or_body_contains, ['awesome'] }
 
-      specify { subject.name.should eq :title_or_body_contains }
-      specify { subject.args.should eq ['awesome'] }
+      specify { expect(subject.name).to eq :title_or_body_contains }
+      specify { expect(subject.args).to eq ['awesome'] }
 
-      it { should respond_to :& }
-      it { should respond_to :| }
-      it { should respond_to :-@ }
+      it { is_expected.to respond_to :& }
+      it { is_expected.to respond_to :| }
+      it { is_expected.to respond_to :-@ }
 
-      specify { (subject & subject).should be_a And }
-      specify { (subject | subject).should be_a Or }
-      specify { (-subject).should be_a Not }
-      specify { [subject, Sifter.new(:title_or_body_contains, ['awesome'])].uniq.should have(1).sifter }
+      specify { expect(subject & subject).to be_a And }
+      specify { expect(subject | subject).to be_a Or }
+      specify { expect(-subject).to be_a Not }
+      specify { expect([subject, Sifter.new(:title_or_body_contains, ['awesome'])].uniq.size).to eq(1) }
 
     end
   end

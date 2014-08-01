@@ -10,24 +10,24 @@ module Squeel
 
       it 'defaults to ascending order' do
         @o = Order.new :attribute
-        @o.should be_ascending
+        expect(@o).to be_ascending
       end
 
       it 'allows reversal of order' do
         @o = Order.new :attribute, 1
         @o.reverse!
-        @o.should be_descending
+        expect(@o).to be_descending
       end
 
       it 'allows setting order' do
         @o = Order.new :attribute
         @o.desc
-        @o.should be_descending
+        expect(@o).to be_descending
       end
 
       it 'implements equivalence check' do
         array = [Order.new(:attribute, 1), Order.new(:attribute, 1)]
-        array.uniq.should have(1).order
+        expect(array.uniq.size).to eq(1)
       end
 
     end

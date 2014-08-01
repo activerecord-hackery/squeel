@@ -12,7 +12,7 @@ module Squeel
 
       it 'allows strings' do
         from = @v.accept('people')
-        from.should eq 'people'
+        expect(from).to eq 'people'
       end
 
     end
