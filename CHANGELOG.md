@@ -7,6 +7,7 @@
 * Fix NoMethodError when calling unscope method above Rails 4. By @estum
 * Fix error when including HABTM or HMT associations without eager loading.
   Fixes #326.
+* Ordering sequence is now correct when chaining multiple order methods. Fixes #276.
 
 ## 1.2.1 (2014-07-18)
 

@@ -776,7 +776,6 @@ module Squeel
               if MYSQL_ENV
                 User.first.groups.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 1/
               else
-                puts User.first.groups.to_sql
                 User.first.groups.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 't'/
               end
 
@@ -834,6 +833,11 @@ module Squeel
           it 'allows ordering by an attributes of a joined table' do
             relation = Article.joins(:person).order { person.id.asc }
             relation.to_sql.should match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} ASC/
+          end
+
+          it 'orders chain in correct sequence' do
+            relation = Article.order {id.asc}.order {title.desc}
+            relation.to_sql.should match /#{Q}articles#{Q}.#{Q}id#{Q} ASC, #{Q}articles#{Q}.#{Q}title#{Q} DESC/
           end
 
         end
