@@ -216,6 +216,11 @@ module Squeel
           end
         end
 
+        def reorder!(*args)
+          self.reverse_order_value = false
+          super
+        end
+
         def joins(*args)
           if block_given? && args.empty?
             super(DSL.eval &Proc.new)
