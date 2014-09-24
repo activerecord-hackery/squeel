@@ -178,13 +178,13 @@ module Squeel
           end
         end
 
-        def select(value = Proc.new)
-          if block_given? && Proc === value
-            if value.arity > 0 || (Squeel.sane_arity? && value.arity < 0)
-              to_a.select {|*block_args| value.call(*block_args)}
+        def select(*args, &block)
+          if block_given? && Proc === block
+            if block.arity > 0 || (Squeel.sane_arity? && block.arity < 0)
+              to_a.select {|*block_args| block.call(*block_args)}
             else
               relation = clone
-              relation.select_values += Array.wrap(DSL.eval &value)
+              relation.select_values += Array.wrap(DSL.eval &block)
               relation
             end
           else
