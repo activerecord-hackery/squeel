@@ -89,7 +89,9 @@ associations like this to perform a query:
 #### Rails 4+
 
 ```ruby
-Person.joins(:articles => {:comments => :person}).references(:all)
+Person.select('"people".*').joins('LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+  LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+  LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"')
 # => SELECT "people".* FROM "people"
 #    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
 #    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
