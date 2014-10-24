@@ -91,7 +91,7 @@ associations like this to perform a query:
 ```ruby
 Person.select('"people".*').joins('LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
   LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-  LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"')
+  LEFT OUTER JOIN "people_comments" ON "people_comments"."id" = "comments"."person_id"')
 # => SELECT "people".* FROM "people"
 #    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
 #    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
@@ -111,7 +111,7 @@ Person.joins(:articles => {:comments => :person})
 # => SELECT "people".* FROM "people"
 #    INNER JOIN "articles" ON "articles"."person_id" = "people"."id"
 #    INNER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-#    INNER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+#    INNER JOIN "people_comments" ON "people_comments"."id" = "comments"."person_id"
 ```
 
 With a keypath, this would look like:
