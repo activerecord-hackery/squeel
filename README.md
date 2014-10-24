@@ -95,7 +95,7 @@ Person.select('"people".*').joins('LEFT OUTER JOIN "articles" ON "articles"."per
 # => SELECT "people".* FROM "people"
 #    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
 #    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+#    LEFT OUTER JOIN "people_comments" ON "people_comments"."id" = "comments"."person_id"
 ```
 
 With a keypath, this would look like:
