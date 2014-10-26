@@ -443,7 +443,7 @@ you need to use `references` with `includes` together.
 
 ```ruby
 Person.includes(:articles => {:comments => :person}).references(:all)
-# => SELECT "people".* FROM "people"
+# => SELECT * FROM "people"
 #    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
 #    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
 #    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
