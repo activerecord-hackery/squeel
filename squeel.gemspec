@@ -27,6 +27,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'mysql', '~> 2.9.1'
   s.add_development_dependency 'mysql2', '~> 0.3.16'
   s.add_development_dependency 'pg', '~> 0.17.1'
+  s.add_development_dependency 'git_pretty_accept', '~> 0.4.0'
+  s.add_development_dependency 'pry'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

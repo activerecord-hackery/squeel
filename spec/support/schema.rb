@@ -79,10 +79,15 @@ silence_stream(STDOUT) do
   ActiveRecord::Migration.verbose = false
 
   ActiveRecord::Schema.define do
+    create_table :depts, :force => true do |t|
+      t.string :name
+    end
+
     create_table :people, :force => true do |t|
       t.integer  :parent_id
       t.string   :name
       t.integer  :salary
+      t.integer  :dept_id
     end
 
     create_table :messages, :force => true do |t|

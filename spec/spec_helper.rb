@@ -1,6 +1,8 @@
+require 'pry'
 require 'faker'
 require 'active_record'
 require 'active_support'
+require 'active_support/core_ext/string'
 
 module ActiveRecord
   # Shamelessly swiped from the AR test code
