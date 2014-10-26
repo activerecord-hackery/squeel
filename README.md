@@ -86,24 +86,6 @@ A Squeel keypath is essentially a more concise and readable alternative to a
 deeply nested hash. For instance, in standard Active Record, you might join several
 associations like this to perform a query:
 
-#### Rails 4+
-
-```ruby
-Person.joins(:articles => {:comments => :person}).references(:all)
-# => SELECT "people".* FROM "people"
-#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
-#    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
-#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
-```
-
-With a keypath, this would look like:
-
-```ruby
-Person.joins{articles.comments.person}.references(:all)
-```
-
-#### Rails 3.x
-
 ```ruby
 Person.joins(:articles => {:comments => :person})
 # => SELECT "people".* FROM "people"
@@ -450,6 +432,43 @@ Seat.joins { [payment.outer, subquery.as('seat_order_items').on { id == seat_ord
 #      FROM "order_items"
 #      GROUP BY "order_items"."orderable_id"
 #    ) seat_order_items ON "seats"."id" = "seat_order_items"."orderable_id"
+```
+
+### Includes
+
+Includes works similarly with joins, it uses outer join defaultly. In Rails 4,
+you need to use `references` with `includes` together.
+
+#### Rails 4+
+
+```ruby
+Person.includes(:articles => {:comments => :person}).references(:all)
+# => SELECT "people".* FROM "people"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```
+
+With a keypath, this would look like:
+
+```ruby
+Person.includes{articles.comments.person}.references(:all)
+```
+
+#### Rails 3.x
+
+```ruby
+Person.includes(:articles => {:comments => :person})
+# => SELECT "people".* FROM "people"
+#    LEFT OUTER JOIN "articles" ON "articles"."person_id" = "people"."id"
+#    LEFT OUTER JOIN "comments" ON "comments"."article_id" = "articles"."id"
+#    LEFT OUTER JOIN "people" "people_comments" ON "people_comments"."id" = "comments"."person_id"
+```
+
+With a keypath, this would look like:
+
+```ruby
+Person.includes{articles.comments.person}
 ```
 
 ### Functions
