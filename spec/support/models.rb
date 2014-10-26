@@ -1,4 +1,5 @@
 class Person < ActiveRecord::Base
+  belongs_to :dept
   belongs_to :parent, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :children, :class_name => 'Person', :foreign_key => :parent_id
   has_many   :articles
@@ -56,6 +57,19 @@ class PersonNamedBill < ActiveRecord::Base
   scope :highly_compensated, lambda { where {salary > 200000} }
   scope :ending_with_ill, lambda { where{name =~ '%ill'} }
   scope :with_salary_equal_to, lambda { |value| where{abs(salary) == value} }
+end
+
+class Dept < ActiveRecord::Base
+  has_many :people_named_bill_with_low_salary,
+    class_name: 'PersonNamedBillAndLowSalary', foreign_key: 'dept_id'
+end
+
+class PersonNamedBillAndLowSalary < Person
+  if ActiveRecord::VERSION::MAJOR > 3 || ActiveRecord::VERSION::MINOR > 0
+    default_scope { where { name == 'Bill' }.where { salary < 20000 } }
+  else # 3.0 doesn't support callables for default_scope
+    default_scope where { name == 'Bill' }.where { salary < 20000 }
+  end
 end
 
 class Message < ActiveRecord::Base
@@ -145,9 +159,14 @@ end
 
 class Models
   def self.make
+    dept = Dept.create(name: Faker::Lorem.name)
+
     10.times do |i|
       # 10 people total, salary gt 30000
-      person = Person.create(name: Faker::Name.name, salary: 30000 + (i + 1) * 1000)
+      person = Person.create(name: Faker::Name.name,
+        salary: 30000 + (i + 1) * 1000,
+        dept: dept)
+
       2.times do
         # 20 unidentified object total, 2 per person
         person.unidentified_objects.create(name: Faker::Lorem.words(1).first)

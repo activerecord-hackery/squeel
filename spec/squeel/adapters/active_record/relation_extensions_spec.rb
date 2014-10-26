@@ -686,12 +686,44 @@ module Squeel
 
           it 'uses Squeel and Arel at the same time' do
             relation = User.where{id.in([1,2,3]) & User.arel_table[:id].not_eq(nil) }
-            relation.to_sql.should match /SELECT #{Q}users#{Q}.\* FROM #{Q}users#{Q}\s+WHERE \(\(#{Q}users#{Q}.#{Q}id#{Q} IN \(1, 2, 3\) AND #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL\)\)/
-            relation = User.where{
-              (id.in([1,2,3]) | User.arel_table[:id].eq(1)) & ((id == 1) | User.arel_table[:id].not_eq(nil)) }
-            relation.to_sql.should match /SELECT #{Q}users#{Q}.\* FROM #{Q}users#{Q}\s+WHERE \(\(\(#{Q}users#{Q}.#{Q}id#{Q} IN \(1, 2, 3\) OR #{Q}users#{Q}.#{Q}id#{Q} = 1\) AND \(#{Q}users#{Q}.#{Q}id#{Q} = 1 OR #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL\)\)\)/
+
+            if activerecord_version_at_least '4.2.0'
+              relation.to_sql.should eq "
+                SELECT #{Q}users#{Q}.* FROM #{Q}users#{Q}
+                WHERE (#{Q}users#{Q}.#{Q}id#{Q} IN (1, 2, 3)
+                AND #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL)
+              ".squish
+            else
+              relation.to_sql.should match /SELECT #{Q}users#{Q}.\* FROM #{Q}users#{Q}\s+WHERE \(\(#{Q}users#{Q}.#{Q}id#{Q} IN \(1, 2, 3\) AND #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL\)\)/
+            end
+
+            relation = User.where {
+              (id.in([1,2,3]) | User.arel_table[:id].eq(1)) &
+              ((id == 1) | User.arel_table[:id].not_eq(nil)) }
+
+            if activerecord_version_at_least '4.2.0'
+              relation.to_sql.should eq "
+                SELECT #{Q}users#{Q}.*
+                FROM #{Q}users#{Q}
+                WHERE ((#{Q}users#{Q}.#{Q}id#{Q} IN (1, 2, 3) OR #{Q}users#{Q}.#{Q}id#{Q} = 1)
+                AND (#{Q}users#{Q}.#{Q}id#{Q} = 1 OR #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL))
+              ".squish
+            else
+              relation.to_sql.should match /SELECT #{Q}users#{Q}.\* FROM #{Q}users#{Q}\s+WHERE \(\(\(#{Q}users#{Q}.#{Q}id#{Q} IN \(1, 2, 3\) OR #{Q}users#{Q}.#{Q}id#{Q} = 1\) AND \(#{Q}users#{Q}.#{Q}id#{Q} = 1 OR #{Q}users#{Q}.#{Q}id#{Q} IS NOT NULL\)\)\)/
+            end
           end
 
+          it "large than & less than" do
+            if activerecord_version_at_least '4.1.0'
+              relation = User.where { created_at <= 1.hours.ago }
+              expect { relation.to_sql }.not_to raise_error
+
+              relation = User.where { created_at < 1.hours.ago }
+              expect { relation.to_sql }.not_to raise_error
+            else
+              pending 'Unsupported under Rails 4.1'
+            end
+          end
         end
 
         describe '#joins' do
@@ -745,7 +777,14 @@ module Squeel
           it 'validates polymorphic relationship with source type' do
             if activerecord_version_at_least('4.0.0')
               relation = Group.joins{users}
-              relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = ['1t']{1,3} AND #{Q}memberships#{Q}.#{Q}member_type#{Q} = 'User'/
+
+              if MYSQL_ENV
+                relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 1/
+              else
+                relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 't'/
+              end
+
+              relation.to_sql.should match /#{Q}memberships#{Q}.#{Q}member_type#{Q} = 'User'/
               relation.to_sql.should match /INNER JOIN #{Q}users#{Q} ON #{Q}users#{Q}.#{Q}id#{Q} = #{Q}memberships#{Q}.#{Q}member_id#{Q}/
               relation.to_sql.should match /INNER JOIN #{Q}memberships#{Q} ON #{Q}memberships#{Q}.#{Q}group_id#{Q} = #{Q}groups#{Q}.#{Q}id#{Q}/
             elsif activerecord_version_at_least('3.2.7')
@@ -778,9 +817,25 @@ module Squeel
               else
                 User.first.groups.to_sql.should match /#{Q}memberships#{Q}.#{Q}active#{Q} = 't'/
               end
-
             else
               pending "Rails 3.0.x doesn't support to_sql in an association."
+            end
+          end
+
+          it 'default scopes with multiple wheres' do
+            if activerecord_version_at_least('4.0.0')
+              relation = Dept.joins { people_named_bill_with_low_salary }
+
+              relation.to_sql.should eq "
+                  SELECT #{Q}depts#{Q}.*
+                  FROM #{Q}depts#{Q}
+                  INNER JOIN #{Q}people#{Q} ON
+                    #{Q}people#{Q}.#{Q}dept_id#{Q} = #{Q}depts#{Q}.#{Q}id#{Q} AND
+                    #{Q}people#{Q}.#{Q}name#{Q} = 'Bill' AND
+                    #{Q}people#{Q}.#{Q}salary#{Q} < 20000
+                ".squish
+            else
+              pending "Rails 3.x doesn't support default scope in joins"
             end
           end
         end
