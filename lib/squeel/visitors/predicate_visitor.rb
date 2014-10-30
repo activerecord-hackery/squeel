@@ -21,7 +21,7 @@ module Squeel
         context = contextualize(parent)
         ar_base = o.value
         conditions = [
-          context[association.foreign_key.to_s].send(o.method_name, ar_base.id)
+          context[association.foreign_key.to_s].send(o.method_name, visit(ar_base, parent))
         ]
         if association.options[:polymorphic]
           conditions << [
