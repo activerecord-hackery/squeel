@@ -41,7 +41,7 @@ before_script:
 script: bundle exec rake test:$ADAPTER
 
 matrix:
-  allowed_failures:
+  allow_failures:
     - env: RAILS=master AREL=master ADAPTER=sqlite3
     - env: RAILS=master AREL=master ADAPTER=mysql
     - env: RAILS=master AREL=master ADAPTER=mysql2
