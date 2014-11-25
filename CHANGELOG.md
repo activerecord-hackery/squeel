@@ -1,4 +1,6 @@
-## 1.2.2 (Unreleased)
+## 1.2.3 (Unreleased)
+
+## 1.2.2 (2014-11-25)
 
 * Size method can return the result correctly when grouping by the column of a
   joined table. Fixes #286
