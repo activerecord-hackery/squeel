@@ -39,3 +39,11 @@ before_script:
   - psql -c "create database squeel_test_examples;" -U postgres
 
 script: bundle exec rake test:$ADAPTER
+
+matrix:
+  allowed_failures:
+    - env: RAILS=master AREL=master ADAPTER=sqlite3
+    - env: RAILS=master AREL=master ADAPTER=mysql
+    - env: RAILS=master AREL=master ADAPTER=mysql2
+    - env: RAILS=master AREL=master ADAPTER=postgresql
+    
