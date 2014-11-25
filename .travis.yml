@@ -34,6 +34,8 @@ env:
     - RAILS=3-1-stable AREL=2-2-stable ADAPTER=postgresql
     - RAILS=3-0-stable AREL=2-0-stable ADAPTER=postgresql
 
+sudo: false
+
 before_script:
   - mysql -e "create database squeel_test_examples;"
   - psql -c "create database squeel_test_examples;" -U postgres
