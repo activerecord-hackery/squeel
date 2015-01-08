@@ -89,7 +89,12 @@ module Squeel
         def expand_attrs_from_hash(opts)
           opts = ::ActiveRecord::PredicateBuilder.resolve_column_aliases(klass, opts)
           
-          tmp_opts, bind_values = create_binds(opts)
+          bind_args = [opts]
+          # Active Record 4.1 compatibility
+          # (for commits before 08579e4078454c6058f1289b58bf5bfa26661376 - https://github.com/rails/rails/commit/08579e4078454c6058f1289b58bf5bfa26661376)
+          bind_args << bind_values.length if method(:create_binds).arity > 1
+          tmp_opts, bind_values = create_binds(*bind_args)
+
           self.bind_values += bind_values
 
           attributes = @klass.send(:expand_hash_conditions_for_aggregates, tmp_opts)
