@@ -3,12 +3,8 @@ gemspec
 
 gem 'rake'
 
-rails = ENV['RAILS'] || 'master'
-arel = ENV['AREL'] || 'master'
-
-if rails == 'master'
-  gem 'i18n', github: 'svenfuchs/i18n', branch: 'master'
-end
+rails = ENV['RAILS'] || '4-2-stable'
+arel = ENV['AREL'] || '6-0-stable'
 
 arel_opts = case arel
 when /\// # A path
