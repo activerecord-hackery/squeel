@@ -17,6 +17,30 @@ module Squeel
           self
         end
 
+        def build_arel
+          arel = Arel::SelectManager.new(table.engine, table)
+
+          build_joins(arel, joins_values.flatten) unless joins_values.empty?
+
+          collapse_wheres(arel, where_visit((where_values - ['']).uniq))
+
+          arel.having(*having_visit(having_values.uniq.reject(&:blank?))) unless having_values.empty?
+
+          arel.take(connection.sanitize_limit(limit_value)) if limit_value
+          arel.skip(offset_value.to_i) if offset_value
+          arel.group(*group_visit(group_values.uniq.reject(&:blank?))) unless group_values.empty?
+
+          build_order(arel)
+
+          build_select(arel)
+
+          arel.distinct(distinct_value)
+          arel.from(build_from) if from_value
+          arel.lock(lock_value) if lock_value
+
+          arel
+        end
+
         def build_join_dependency(manager, joins)
           buckets = joins.group_by do |join|
             case join
@@ -89,8 +113,7 @@ module Squeel
         def expand_attrs_from_hash(opts)
           opts = ::ActiveRecord::PredicateBuilder.resolve_column_aliases(klass, opts)
 
-          bv_len = bind_values.length
-          tmp_opts, bind_values = create_binds(opts, bv_len)
+          tmp_opts, bind_values = create_binds(opts)
           self.bind_values += bind_values
 
           attributes = @klass.send(:expand_hash_conditions_for_aggregates, tmp_opts)

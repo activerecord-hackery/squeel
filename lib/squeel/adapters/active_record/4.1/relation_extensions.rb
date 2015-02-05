@@ -80,16 +80,15 @@ module Squeel
 
           collapse_wheres(arel, where_visit((where_values - ['']).uniq))
 
-          arel.having(*having_visit(having_values.uniq.reject{|h| h.blank?})) unless having_values.empty?
+          arel.having(*having_visit(having_values.uniq.reject(&:blank?))) unless having_values.empty?
 
           arel.take(connection.sanitize_limit(limit_value)) if limit_value
           arel.skip(offset_value.to_i) if offset_value
-
-          arel.group(*group_visit(group_values.uniq.reject{|g| g.blank?})) unless group_values.empty?
+          arel.group(*group_visit(group_values.uniq.reject(&:blank?))) unless group_values.empty?
 
           build_order(arel)
 
-          build_select(arel, select_visit(select_values.uniq))
+          build_select(arel)
 
           arel.distinct(distinct_value)
           arel.from(build_from) if from_value
@@ -229,6 +228,14 @@ module Squeel
           orders = reverse_sql_order(orders) if reverse_order_value && !reordering_value
 
           arel.order(*orders) unless orders.empty?
+        end
+
+        def build_select(arel)
+          if select_values.any?
+            arel.project(*select_visit(select_values.uniq))
+          else
+            arel.project(@klass.arel_table[Arel.star])
+          end
         end
 
         def where_values_hash_with_squeel(relation_table_name = table_name)

@@ -134,7 +134,12 @@ module Squeel
             })
 
             arel = relation.build_arel
-            arel.to_sql.should match /#{Q}parents_people_2#{Q}.#{Q}name#{Q} = 'bob'/
+
+            if activerecord_version_at_least('4.2.0')
+              arel.to_sql.should match /#{Q}parents_people_2#{Q}.#{Q}name#{Q} = ?/
+            else
+              arel.to_sql.should match /#{Q}parents_people_2#{Q}.#{Q}name#{Q} = 'bob'/
+            end
           end
 
           it 'combines multiple conditions of the same type against the same column with AND' do
@@ -174,7 +179,12 @@ module Squeel
             })
 
             arel = relation.build_arel
-            arel.to_sql.should match /HAVING #{Q}parents_people_2#{Q}.#{Q}name#{Q} = 'joe'/
+
+            if activerecord_version_at_least('4.2.0')
+              arel.to_sql.should match /HAVING #{Q}parents_people_2#{Q}.#{Q}name#{Q} = ?/
+            else
+              arel.to_sql.should match /HAVING #{Q}parents_people_2#{Q}.#{Q}name#{Q} = 'joe'/
+            end
           end
 
           it 'maps orders inside a hash to their appropriate association table' do
