@@ -94,19 +94,14 @@ module Squeel
           arel.distinct(distinct_value)
           arel.from(build_from) if from_value
           arel.lock(lock_value) if lock_value
-          
-          # Check if we are dealing with a version prior to Arel commit 590c784a30b13153667f8db7915998d7731e24e5
-          # where BindParam is changed from SqlLiteral to a Node
-          # https://github.com/rails/arel/commit/590c784a30b13153667f8db7915998d7731e24e5
-          if Arel::Nodes::BindParam.class.is_a? Arel::Nodes::SqlLiteral
-            # Reorder bind indexes when joins or subqueries include more bindings.
-            # Special for PostgreSQL
-            if arel.bind_values.any? || bind_values.size > 1
-              bvs = arel.bind_values + bind_values
-              arel.ast.grep(Arel::Nodes::BindParam).each_with_index do |bp, i|
-                column = bvs[i].first
-                bp.replace connection.substitute_at(column, i)
-              end
+
+          # Reorder bind indexes when joins or subqueries include more bindings.
+          # Special for PostgreSQL
+          if arel.bind_values.any? || bind_values.size > 1
+            bvs = arel.bind_values + bind_values
+            arel.ast.grep(Arel::Nodes::BindParam).each_with_index do |bp, i|
+              column = bvs[i].first
+              bp.replace connection.substitute_at(column, i)
             end
           end
 
