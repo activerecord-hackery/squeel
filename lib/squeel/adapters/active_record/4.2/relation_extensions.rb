@@ -103,6 +103,7 @@ module Squeel
             [name, binds.fetch(name.to_s) {
               case where.right
               when Array then where.right.map(&:val)
+              when Arel::Nodes::Unary then where.right.value
               else
                 where.right.val
               end

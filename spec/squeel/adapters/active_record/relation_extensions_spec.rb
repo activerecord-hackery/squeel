@@ -1062,7 +1062,21 @@ module Squeel
               raise ::ActiveRecord::Rollback
             end
           end
-
+          
+          it 'creates new records with equality predicates from has_many polymorphic associations' do
+            if activerecord_version_at_least '4.2.0'
+              Payment.transaction do
+                seat = Seat.first
+                order_item = seat.order_items.create(:quantity => 0)
+                order_item.should be_persisted
+                order_item.orderable_id.should eq seat.id
+                order_item.orderable_type.should eq 'Seat'
+                raise ::ActiveRecord::Rollback
+              end
+            else
+              pending 'Not required in AR versions < 4.2.0'
+            end              
+          end
         end
 
         describe '#where_unscoping' do
