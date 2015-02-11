@@ -270,14 +270,14 @@ module Squeel
           wheres = Array(wheres)
           binaries = wheres.grep(Arel::Nodes::Binary)
 
-          groups = binaries.group_by {|b| [b.class, b.left]}
-
-          arel.where(Arel::Nodes::And.new(groups.map{|_, bins| bins}.flatten)) if groups.any?
+          groups = binaries.group_by {|b| [b.class, b.left]}.map{|_, bins| bins}.flatten
 
           (wheres - binaries).each do |where|
             where = Arel.sql(where) if String === where
-            arel.where(Arel::Nodes::Grouping.new(where))
+            groups.push(Arel::Nodes::Grouping.new(where))
           end
+
+          arel.where(Arel::Nodes::And.new(groups)) if groups.any?
         end
 
         def find_equality_predicates(nodes, relation_table_name = table_name)
