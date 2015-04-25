@@ -918,6 +918,26 @@ module Squeel
             block.to_sql.should match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q}/
           end
 
+          it 'returns the proper #first on reordering' do
+            queries = queries_for do
+              @standard.reorder{id.asc}.first
+            end
+            queries.size.should eq(1)
+            query = queries.first
+            query.should match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} ASC/
+            query.should_not match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} DESC/
+          end
+
+          it 'returns the proper #last on reordering' do
+            queries = queries_for do
+              @standard.reorder{id.asc}.last
+            end
+            queries.size.should eq(1)
+            query = queries.last
+            query.should match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} DESC/
+            query.should_not match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} ASC/
+          end
+
           it 'drops order by clause when passed nil' do
             block = @standard.reorder(nil)
             sql = block.to_sql
