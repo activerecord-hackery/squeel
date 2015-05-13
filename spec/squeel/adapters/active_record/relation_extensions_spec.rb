@@ -632,6 +632,13 @@ module Squeel
             articles.should have(3).articles
           end
 
+          it 'allows a subquery from Relation that  in a Squeel node' do
+            names = [Person.first.name, Person.last.name]
+            scope = Person.where(name: names).joins(:notes).select { notes.notable_id }
+            people = Person.where { id.in scope }
+            people.should eq([Person.first, Person.last])
+          end
+
           it 'is backwards-compatible with "where.not"' do
             if activerecord_version_at_least '4.0.0'
               name = Person.first.name

@@ -197,7 +197,7 @@ module Squeel
                 preprocess_attrs_with_ar(attributes)
               when Squeel::Nodes::Node
                 arg.grep(::ActiveRecord::Relation) do |rel|
-                  self.bind_values += rel.bind_values
+                  self.bind_values += rel.arel.bind_values + rel.bind_values
                 end
                 arg
               else
