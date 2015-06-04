@@ -470,6 +470,10 @@ module Squeel
             Article.select("title, body").size.should eq 31
           end
 
+          it 'works with multiple arguments in select' do
+            Article.select("title", "body").size.should eq 31
+          end
+
           it 'allows a function in the select values via Symbol#func' do
             relation = Person.select(:max.func(:id).as('max_id')).order('max_id')
             relation.first.max_id.to_i.should eq 10
