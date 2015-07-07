@@ -176,6 +176,20 @@ module Squeel
         predicate.value.should eq 1
       end
 
+      it 'creates nil? predicates with ==' do
+        predicate = @s.nil?
+        predicate.expr.should eq :attribute
+        predicate.method_name.should eq :eq
+        predicate.value.should eq nil
+      end
+
+      it 'creates present? predicates with ==' do
+        predicate = @s.present?
+        predicate.expr.should eq :attribute
+        predicate.method_name.should eq :not_eq
+        predicate.value.should eq nil
+      end
+
       it 'creates ascending orders' do
         order = @s.asc
         order.should be_ascending

@@ -20,6 +20,14 @@ module Squeel
         end
       end
 
+      def nil?
+        eq(nil)
+      end
+
+      def present?
+        not_eq(nil)
+      end
+
     end
   end
 end
