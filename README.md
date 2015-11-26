@@ -593,8 +593,7 @@ scope :in_state, lambda {|state| where(:state => state.to_s) }
 
 For further information, see
 [this post to the Rails list](https://groups.google.com/forum/?fromgroups=#!topic/rubyonrails-core/NQJJzZ7R7S0),
-[this commit](https://github.com/lifo/docrails/commit/50c5005bafe7e43f81a141cd2c512379aec74325) to
-the [Active Record guides](http://edgeguides.rubyonrails.org/active_record_querying.html#hash-conditions),
+[Active Record guides](http://edgeguides.rubyonrails.org/active_record_querying.html#hash-conditions),
 [#67](https://github.com/activerecord-hackery/squeel/issues/67),
 [#75](https://github.com/activerecord-hackery/squeel/issues/75), and
 [#171](https://github.com/activerecord-hackery/squeel/issues/171).
