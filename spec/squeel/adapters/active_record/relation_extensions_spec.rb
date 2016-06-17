@@ -1067,6 +1067,10 @@ module Squeel
 
         describe '#where_unscoping' do
 
+          it "isn't broken" do
+            OrderItem.where(:quantity => 0).unscope(:where => :quantity).where_values.should be_empty
+          end
+
           it "doesn't ruin everything when predicate expression in where_values doesn't respond to :symbol method" do
             if activerecord_version_at_least '4.0.0'
               order_items = OrderItem.where{quantity == 0}.where{unit_price / 2 == 5}

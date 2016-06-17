@@ -32,6 +32,7 @@ module Squeel
 
         def where_unscoping(target_value)
           target_value = target_value.to_s
+          where_values.flatten!
 
           where_values.reject! do |rel|
             case rel
