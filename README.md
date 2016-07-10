@@ -114,7 +114,7 @@ to interpreting functions and the like. We'll cover those later.
 ### Predicates
 
 All of the Arel "predication" methods can be accessed inside the Squeel DSL, via
-their method name, an alias, or an an operator, to create Arel predicates, which are
+their method name, an alias, or an operator, to create Arel predicates, which are
 used in `WHERE` or `HAVING` clauses.
 
 <table>
