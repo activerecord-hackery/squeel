@@ -223,3 +223,5 @@ class Models
   end
 end
 
+class Cat < ActiveRecord::Base
+end

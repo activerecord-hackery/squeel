@@ -163,6 +163,10 @@ silence_stream(STDOUT) do
 
     end
 
+    create_table :cats do |t|
+      t.string :name
+      t.string :hair_type
+    end
   end
 end
 

@@ -270,9 +270,7 @@ module Squeel
           wheres = Array(wheres)
           binaries = wheres.grep(Arel::Nodes::Binary)
 
-          groups = binaries.group_by {|b| [b.class, b.left]}
-
-          arel.where(Arel::Nodes::And.new(groups.map{|_, bins| bins}.flatten)) if groups.any?
+          arel.where(Arel::Nodes::And.new(binaries)) if binaries.any?
 
           (wheres - binaries).each do |where|
             where = Arel.sql(where) if String === where

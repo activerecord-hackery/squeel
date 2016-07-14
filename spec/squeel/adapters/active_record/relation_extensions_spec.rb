@@ -1000,6 +1000,15 @@ module Squeel
 
         end
 
+        describe '#collapse_wheres' do
+
+          it 'does not reorder binaries' do
+            relation = Cat.where(hair_type: "short").where(name: "Crookshanks").where(hair_type: "long")
+            relation.to_sql.should eq "SELECT #{Q}cats#{Q}.* FROM #{Q}cats#{Q} WHERE #{Q}cats#{Q}.#{Q}hair_type#{Q} = 'short' AND #{Q}cats#{Q}.#{Q}name#{Q} = 'Crookshanks' AND #{Q}cats#{Q}.#{Q}hair_type#{Q} = 'long'"
+          end
+
+        end
+
         describe '#debug_sql' do
 
           it 'returns the query that would be run against the database, even if eager loading' do
