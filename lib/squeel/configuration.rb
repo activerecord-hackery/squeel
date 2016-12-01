@@ -17,7 +17,7 @@ module Squeel
     #
     # @example Alias a predicate
     #   Squeel.configure do |config|
-    #     config.alias_ptedicate :is_less_than, :lt
+    #     config.alias_predicate :is_less_than, :lt
     #   end
     def configure
       yield self
@@ -51,5 +51,17 @@ module Squeel
       end
     end
 
+    # Add an ARel predicate method
+    # @param [Symbol] new_name The alias name
+    # @raise [ArgumentError] The existing name is an _any/_all variation, and not the original predicate name
+    def define_predicate(method_name)
+      Nodes::PredicateMethods.class_eval <<-RUBY
+        unless defined?(#{method_name})
+          def #{method_name}(value = :__undefined__)
+            Nodes::Predicate.new self, :#{method_name}, value
+          end
+        end
+      RUBY
+    end
   end
 end
