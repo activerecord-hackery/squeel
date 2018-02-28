@@ -5,12 +5,12 @@ module Squeel
       # @return The expression being ordered on. Might be an attribute, function, or operation
       attr_reader :expr
 
-      # @return [Fixnum] 1 or -1, depending on ascending or descending direction, respectively
+      # @return [Integer] 1 or -1, depending on ascending or descending direction, respectively
       attr_reader :direction
 
       # Create a new Order node with the given expression and direction
       # @param expr The expression to order on
-      # @param [Fixnum] direction 1 or -1, depending on the desired sort direction
+      # @param [Integer] direction 1 or -1, depending on the desired sort direction
       def initialize(expr, direction = 1)
         raise ArgumentError, "Direction #{direction} is not valid. Must be -1 or 1." unless [-1,1].include? direction
         @expr, @direction = expr, direction
