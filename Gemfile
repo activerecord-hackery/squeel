@@ -1,7 +1,7 @@
 source "http://rubygems.org"
 gemspec
 
-gem 'rake'
+gem 'rake', '< 11.0'
 
 rails = ENV['RAILS'] || '4-2-stable'
 arel = ENV['AREL'] || '6-0-stable'
