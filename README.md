@@ -1,5 +1,7 @@
 # Squeel [![Build Status](https://secure.travis-ci.org/activerecord-hackery/squeel.png)](http://travis-ci.org/activerecord-hackery/squeel) [![endorse](http://api.coderwall.com/ernie/endorsecount.png)](http://coderwall.com/ernie)
 
+**NOTE**: Squeel is no longer actively maintained. [New maintainers are welcome.](https://ernie.io/2013/11/17/anyone-interested-in-activerecord-hackery/) At this point the gem [does not support ActiveRecord 5+.](https://github.com/activerecord-hackery/squeel/issues/412) If you are not interested in maintaining Squeel but need to upgrade, [baby_squeel](https://github.com/rzane/baby_squeel) will allow you to migrate with just a few syntactical changes (and supports ActiveRecord <= 5.2). [Click here for migration information](https://github.com/rzane/baby_squeel/wiki/Migrating-from-Squeel)
+
 Squeel lets you write your Active Record queries with fewer strings, and more Ruby,
 by making the Arel awesomeness that lies beneath Active Record more accessible.
 
