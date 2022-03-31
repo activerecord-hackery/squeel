@@ -138,7 +138,7 @@ module Squeel
       #   object if not passed as an SqlLiteral.
       def quoted?(object)
         case object
-        when Arel::Nodes::SqlLiteral, Bignum, Fixnum,
+        when Arel::Nodes::SqlLiteral, Integer
           Arel::SelectManager
           false
         when NilClass
@@ -208,8 +208,7 @@ module Squeel
         object
       end
 
-      alias :visit_Fixnum :visit_passthrough
-      alias :visit_Bignum :visit_passthrough
+      alias :visit_Integer :visit_passthrough
 
       # Visit an array, which involves accepting any values we know how to
       # accept, and skipping the rest.
@@ -448,7 +447,7 @@ module Squeel
       #
       # @param [ActiveRecord::Base] o The AR::Base object to visit
       # @param parent The current parent object in the context
-      # @return [Fixnum] The id of the object
+      # @return [Integer] The id of the object
       def visit_ActiveRecord_Base(o, parent)
         o.id
       end
