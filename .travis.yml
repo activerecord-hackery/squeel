@@ -1,9 +1,4 @@
-before_script:
-  - mysql -e "create database squeel_test_examples;"
-  - psql -c "create database squeel_test_examples;" -U postgres
-
-script:
-  - bundle exec rake test:$ADAPTER
+language: ruby
 
 rvm:
   - 1.9.3
@@ -37,3 +32,19 @@ env:
     - RAILS=3-2-stable AREL=3-0-stable ADAPTER=postgresql
     - RAILS=3-1-stable AREL=2-2-stable ADAPTER=postgresql
     - RAILS=3-0-stable AREL=2-0-stable ADAPTER=postgresql
+
+sudo: false
+
+before_script:
+  - mysql -e "create database squeel_test_examples;"
+  - psql -c "create database squeel_test_examples;" -U postgres
+
+script: bundle exec rake test:$ADAPTER
+
+matrix:
+  allow_failures:
+    - env: RAILS=master AREL=master ADAPTER=sqlite3
+    - env: RAILS=master AREL=master ADAPTER=mysql
+    - env: RAILS=master AREL=master ADAPTER=mysql2
+    - env: RAILS=master AREL=master ADAPTER=postgresql
+    
