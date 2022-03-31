@@ -1063,6 +1063,17 @@ module Squeel
             end
           end
 
+          it 'creates new records with values from a polymorphic association' do
+            if activerecord_version_at_least '4.0.0'
+              article = Article.first
+              note = Note.where(notable: article).new
+              note.notable_id.should eq article.id
+              note.notable_type.should eq 'Article'
+            else
+              pending 'Not required pre-4.0'
+            end
+          end
+
         end
 
         describe '#where_unscoping' do
