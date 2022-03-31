@@ -86,7 +86,7 @@ module Squeel
     # @param [Symbol, Nodes::Stub] name The name of the sifter defined in the model.
     # @return [Nodes::Sifter] The sifter node
     def sift(name, *args)
-      Nodes::Sifter.new name.to_sym, args
+      Nodes::Grouping.new(Nodes::Sifter.new(name.to_sym, args))
     end
 
     # Node generation inside DSL blocks.
