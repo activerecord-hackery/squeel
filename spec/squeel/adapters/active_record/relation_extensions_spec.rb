@@ -506,6 +506,9 @@ module Squeel
             aric.last_article_id.to_i.should eq Article.where(:person_id => 1).last.id
           end
 
+          it 'works with multiple arguments in select' do
+            Article.select("title", "body").size.should eq 31
+          end
         end
 
         describe '#count' do
