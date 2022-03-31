@@ -231,6 +231,14 @@ module Squeel
             ordered.to_sql.scan('name').should have(1).item
           end
 
+          it 'returns the first item when #last is called after reversing the order' do
+            sorted_people = Person.all.to_a.sort {|a, b| a.name.downcase <=> b.name.downcase}
+            Person.order(name: :desc).first.should eq sorted_people.last
+            Person.order(name: :desc).last.should eq sorted_people.first
+            Person.reorder(name: :desc).first.should eq sorted_people.last
+            Person.reorder(:name).reverse_order.last.should eq sorted_people.first
+            Person.reorder(name: :desc).last.should eq sorted_people.first # this fails
+          end
         end
 
         describe '#to_sql' do

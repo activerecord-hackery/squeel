@@ -225,7 +225,7 @@ module Squeel
         def build_order(arel)
           orders = order_visit(dehashified_order_values)
           orders = orders.uniq.reject(&:blank?)
-          orders = reverse_sql_order(orders) if reverse_order_value && !reordering_value
+          orders = reverse_sql_order(orders) if reverse_order_value
 
           arel.order(*orders) unless orders.empty?
         end
