@@ -44,12 +44,10 @@ module Squeel
 
         def where_unscoping(target_value)
           target_value = target_value.to_s
+          where_values.flatten!
 
           where_values.reject! do |rel|
             case rel
-            when Arel::Nodes::In, Arel::Nodes::NotIn, Arel::Nodes::Equality, Arel::Nodes::NotEqual
-              subrelation = (rel.left.kind_of?(Arel::Attributes::Attribute) ? rel.left : rel.right)
-              subrelation.name == target_value
             when Hash
               rel.stringify_keys.has_key?(target_value)
             when Squeel::Nodes::Predicate
@@ -57,7 +55,7 @@ module Squeel
             end
           end
 
-          bind_values.reject! { |col,_| col.name == target_value }
+          super
         end
 
         def reverse_sql_order(order_query)

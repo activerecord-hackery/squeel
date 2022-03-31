@@ -7,6 +7,21 @@ module Squeel
 
         undef_method 'to_sql_with_binding_params'
 
+        def where_unscoping(target_value)
+          target_value = target_value.to_s
+
+          self.where_values = where_values.flatten.reject do |rel|
+            case rel
+            when Hash
+              rel.stringify_keys.has_key?(target_value)
+            when Squeel::Nodes::Predicate
+              rel.expr.symbol.to_s == target_value if rel.expr.respond_to?(:symbol)
+            end
+          end
+
+          super
+        end
+
         attr_accessor :reverse_order_value
         private :reverse_order_value, :reverse_order_value=
 
