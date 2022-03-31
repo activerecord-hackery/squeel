@@ -759,6 +759,13 @@ module Squeel
             Person.first.authored_article_comments.joins(:article).first.should eq Comment.first
           end
 
+          it 'does not break hash conditions that specify the table name' do
+            person = Comment.first.article.person
+            person.should be_present
+            Comment.joins(:article).where(articles: {person_id: person}).should be_present
+            Comment.joins(:article).where(articles: {person: person}).should be_present
+          end
+
           it 'joins polymorphic belongs_to associations' do
             relation = Note.joins{notable(Article)}
             relation.to_sql.should match /#{Q}notes#{Q}.#{Q}notable_type#{Q} = 'Article'/
