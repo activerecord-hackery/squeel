@@ -10,6 +10,8 @@ class Person < ActiveRecord::Base
     has_many   :article_comments_with_first_post,
       lambda { where :body => 'first post' },
       :through => :articles, :source => :comments
+    has_many   :articles_with_order, lambda { order :title => :desc },
+      :class_name => 'Article'
   else
     has_many   :articles_with_condition, :conditions => {:title => 'Condition'},
       :class_name => 'Article'

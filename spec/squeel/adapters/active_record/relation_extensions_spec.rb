@@ -895,6 +895,15 @@ module Squeel
             end
           end
 
+          it 'allows AR 4.0-style hash options inside an association' do
+            if activerecord_version_at_least '4.0.0'
+              block = Person.first.articles_with_order
+              block.to_sql.should match /ORDER BY "articles"\."title" DESC/
+            else
+              pending 'Not required in AR versions < 4.0.0'
+            end
+          end
+
           it 'allows ordering by an attributes of a joined table' do
             relation = Article.joins(:person).order { person.id.asc }
             relation.to_sql.should match /ORDER BY #{Q}people#{Q}.#{Q}id#{Q} ASC/
