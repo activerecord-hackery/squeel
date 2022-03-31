@@ -167,18 +167,23 @@ module Squeel
         %w(where having group order).each do |visitor|
           define_method "#{visitor}_visit" do |values|
             join_dependencies = [join_dependency] + stashed_join_dependencies
-            join_dependencies.each do |jd|
+            result = join_dependencies.find do |jd|
               context = Adapters::ActiveRecord::Context.new(jd)
               begin
-                return Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept!(values)
+                # Don't use return here, it breaks Rubinius 2.3.0.
+                break Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept!(values)
               rescue Adapters::ActiveRecord::Context::NoParentFoundError => e
                 next
               end
             end
 
-            # Fail Safe, call the normal accept method.
-            context = Adapters::ActiveRecord::Context.new(join_dependency)
-            Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept(values)
+            if result.nil?
+              # Fail Safe, call the normal accept method.
+              context = Adapters::ActiveRecord::Context.new(join_dependency)
+              Visitors.const_get("#{visitor.capitalize}Visitor").new(context).accept(values)
+            else
+              result
+            end
           end
         end
 
