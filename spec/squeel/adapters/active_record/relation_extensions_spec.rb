@@ -930,6 +930,11 @@ module Squeel
             sql.should_not match /ORDER BY/
           end
 
+          it 'reverses the order if used with last' do
+            expected = Person.all.sort_by { |p| p.id }.last
+            result = Person.reorder(:id).last
+            result.should eq(expected)
+          end
         end
 
         describe '#from' do
